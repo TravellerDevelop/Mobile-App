@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import color from '../global/globalVariable';
+import { userInfo, color } from "../global/globalVariable";
+
 
 export default function MainHeader() {
+    let [user, setUser] = useState(userInfo());
+
     return (
         <LinearGradient
             style={styles.header}
             start={{ x: 0.5, y: 0.2 }}
-            colors={['#4960FF', '#4900FF']}
+            colors={[color.primary, color.secondary]}
         >
             <View style={styles.rowHeader}>
                 <Text style={styles.logo}>TRAVELLER</Text>
@@ -26,11 +29,11 @@ export default function MainHeader() {
                         color="#490099" />
 
                     <View style={styles.whiteRound} ></View>
-                    <Avatar label="Pietro Bossolasco" size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                    <Avatar label={user.name + " " + user.surname} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
                 </View>
             </View>
             <View>
-                <Text style={styles.headerTitle}>Buongiorno Pietro!</Text>
+                <Text style={styles.headerTitle}>Buongiorno {user.name}!</Text>
                 <Text style={styles.headerSubtitle}>Dove andiamo oggi? 🚀</Text>
             </View>
         </LinearGradient>
@@ -60,7 +63,7 @@ const styles = StyleSheet.create({
         fontFamily: "montserrat-light",
     },
     header: {
-        backgroundColor: "#4960FF",
+        backgroundColor: color.primary,
         width: "100%",
         paddingTop: 40,
         paddingBottom: 20,

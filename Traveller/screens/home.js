@@ -6,6 +6,7 @@ import { Backdrop } from '@react-native-material/core';
 import MainHeader from '../components/mainHeader';
 import BottomBar from '../components/bottombar';
 import InteractiveCard from '../components/interactiveCard';
+import { color } from '../global/globalVariable';
 
 export default function Home() {
     return (
@@ -61,9 +62,7 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#4960ff',
-        // paddingBottom: 75,
-        // width: "100%",
+        backgroundColor: color.primary,
     },
     title: {
         fontSize: 30,
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },
     blue: {
-        backgroundColor: "#4900FF",
+        backgroundColor: color.secondary,
         height: "100%",
         width: "100%",
     },
