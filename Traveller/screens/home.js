@@ -1,18 +1,16 @@
 import React from 'react';
 import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
-import Card from '../components/card';
-import { Backdrop } from '@react-native-material/core';
-// import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import BottomBar from '../components/bottombar';
 import InteractiveCard from '../components/interactiveCard';
 import { color } from '../global/globalVariable';
 
-export default function Home() {
+export default function Home( { navigation } ) {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <MainHeader />
+                <MainHeader navigation={navigation} />
                 <View style={styles.blue}>
                     <View style={styles.content}>
                         <Text style={styles.title}>Home</Text>
@@ -54,6 +52,7 @@ export default function Home() {
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>
             </ScrollView >
+            <BottomBar />
         </View>
     );
 }

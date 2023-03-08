@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { userInfo, color } from "../global/globalVariable";
 
 
-export default function MainHeader() {
+export default function MainHeader({ navigation }) {
     let [user, setUser] = useState(userInfo());
 
     return (
@@ -18,15 +18,17 @@ export default function MainHeader() {
             <View style={styles.rowHeader}>
                 <Text style={styles.logo}>TRAVELLER</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Badge label={
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
-                            <Text
-                                style={{ color: 'white', fontFamily: "montserrat-regular" }}
-                            >3+</Text>
-                        </View>
-                    }
-                        color="#490099" />
+                    <TouchableOpacity onPress={() => navigation.navigate("Notifications")} >
+                        <Badge label={
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
+                                <Text
+                                    style={{ color: 'white', fontFamily: "montserrat-regular" }}
+                                >3+</Text>
+                            </View>
+                        }
+                            color="#490099" />
+                    </TouchableOpacity>
 
                     <View style={styles.whiteRound} ></View>
                     <Avatar label={user.name + " " + user.surname} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />

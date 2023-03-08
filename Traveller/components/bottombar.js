@@ -11,13 +11,19 @@ export default function BottomBar() {
                 </View>
             </TouchableOpacity>
             <TouchableOpacity>
-                <Image style={styles.image} source={require("../assets/image/icona-biglietto-1.png")} />
+                <View style={styles.containerInactive}>
+                    <Image style={styles.image} source={require("../assets/image/icona-biglietto-1.png")} />
+                </View>
             </TouchableOpacity>
             <TouchableOpacity>
-                <Image style={styles.image} source={require("../assets/image/airplane.png")} />
+                <View style={styles.containerInactive}>
+                    <Image style={styles.image} source={require("../assets/image/airplane.png")} />
+                </View>
             </TouchableOpacity>
             <TouchableOpacity>
-                <Image style={styles.image} source={require("../assets/image/icona-user.png")} />
+                <View style={styles.containerInactive}>
+                    <Image style={styles.image} source={require("../assets/image/icona-user.png")} />
+                </View>
             </TouchableOpacity>
         </View>
     )
@@ -28,6 +34,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         height: 55,
         width: "85%",
+        left: "7.5%",
         position: "absolute",
         bottom: 10,
         borderRadius: 10,
@@ -41,20 +48,27 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.23,
         shadowRadius: 2.62,
-
         elevation: 3,
     },
-    image : {
+    image: {
         width: 30,
         height: 30,
     },
-    imageActive : {
+    imageActive: {
         width: 30,
         height: 30,
         tintColor: "white",
     },
-    containerActive : {
-        backgroundColor: color.third,
+    containerActive: {
+        backgroundColor: color.secondary,
+        width: 45,
+        height: 45,
+        borderRadius: 50,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    containerInactive: {
+        backgroundColor: "white",
         width: 45,
         height: 45,
         borderRadius: 50,
