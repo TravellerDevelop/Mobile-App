@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { userInfo, color } from "../global/globalVariable";
+import { userInfo, color, font } from "../global/globalVariable";
 
 
 export default function MainHeader({ navigation }) {
@@ -38,6 +38,14 @@ export default function MainHeader({ navigation }) {
                 <Text style={styles.headerTitle}>Buongiorno {user.name}!</Text>
                 <Text style={styles.headerSubtitle}>Dove andiamo oggi? 🚀</Text>
             </View>
+
+            <TouchableOpacity>
+                <View style={styles.headerButton}>
+                    <Text style={styles.headerText}>+ Unisciti ad un viaggio!</Text>
+                </View>
+            </TouchableOpacity>
+
+            {/* <Badge label="+ Aggiungiti ad un viaggio" style={{height: 30, fontFamily: font.montserrat }} fontFamily={font.montserrat} tintColor="white" color={color.third} /> */}
         </LinearGradient>
     )
 }
@@ -67,7 +75,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 40,
+        paddingTop: 15,
         paddingBottom: 20,
         justifyContent: 'space-between',
         padding: 10,
@@ -84,5 +92,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 10,
         marginBottom: 20,
+    },
+    headerButton: {
+        marginLeft: 10,
+        marginTop: 10,
+        backgroundColor: "white",
+        width: "50%",
+        height: 25,
+        borderRadius: 12.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerText: {
+        color: "black",
+        fontSize: 12,
+        fontFamily: font.montserrat,
     }
 })

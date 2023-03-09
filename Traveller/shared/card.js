@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { Avatar } from "@react-native-material/core";
 import { color } from "../global/globalVariable";
 
-export default function Card(data) {
+export default function Card({ navigation, data }) {
     return (
-        <TouchableNativeFeedback>
+        <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail")}>
             <View style={styles.container}>
                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
-                    <Text style={styles.cardTitle}>{data.data.key}</Text>
+                    <Text style={styles.cardTitle}>{data.key}</Text>
                     <Text style={styles.cardSubtitle}>Creato il 10/02/2023</Text>
                 </View>
                 <View style={{ flexDirection: "row", position: "absolute", right: 25, bottom: 10 }}>

@@ -15,7 +15,7 @@ export default function Home( { navigation } ) {
                     <View style={styles.content}>
                         <Text style={styles.title}>Home</Text>
 
-                        <Text style={styles.subtitle}>Horizontal FlatList</Text>
+                        <Text style={styles.subtitle}>I tuoi ultimi viaggi:</Text>
                         <FlatList
                             data={[
                                 { key: 'Devin' },
@@ -28,7 +28,7 @@ export default function Home( { navigation } ) {
                                 { key: 'Jillian' },
                             ]}
                             horizontal
-                            renderItem={({ item }) => <Card data={item} />}
+                            renderItem={({ item }) => <Card data={item} navigation={navigation} />}
                         />
 
                         <InteractiveCard />
