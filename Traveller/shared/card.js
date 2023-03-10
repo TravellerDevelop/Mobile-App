@@ -5,7 +5,7 @@ import { color } from "../global/globalVariable";
 
 export default function Card({ navigation, data }) {
     return (
-        <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail")}>
+        <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
             <View style={styles.container}>
                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
                     <Text style={styles.cardTitle}>{data.key}</Text>

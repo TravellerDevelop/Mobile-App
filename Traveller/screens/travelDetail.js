@@ -1,15 +1,18 @@
 import React from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
-import Card from '../shared/card';
-import MainHeader from '../components/mainHeader';
-import BottomBar from '../components/bottombar';
-import InteractiveCard from '../components/interactiveCard';
-import { color } from '../global/globalVariable';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import HeaderTravelDetail from '../shared/headerTravelDetail';
 
-export default function ( {} ) {
+export default function TravelDetail({ navigation, data }) {
     return (
         <View style={styles.container}>
-            
+            <ScrollView>
+                <HeaderTravelDetail navigation={navigation} data={data} />
+                <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
+                    <View style={styles.contentContainer}>
+
+                    </View>
+                </View>
+            </ScrollView>
         </View>
     )
 }
@@ -18,5 +21,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "white",
+    },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: "#FFF",
+        borderTopEndRadius: 20,
+        borderTopLeftRadius: 20,
+        minHeight: 100
     }
 });

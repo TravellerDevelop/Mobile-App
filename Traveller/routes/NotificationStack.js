@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Home from '../screens/home'
 import Notifications from '../screens/notifications'
-import { font } from '../global/globalVariable'
+import { font, color } from '../global/globalVariable'
 import TravelDetail from '../screens/travelDetail'
 
 const Stack = createStackNavigator()
@@ -29,10 +29,7 @@ export default function Navigator() {
 
         <Stack.Screen name='TravelDetail' component={TravelDetail}
           options={{
-            title: 'Dettagli viaggio',
-            headerTitleStyle: {
-              fontFamily: font.montserrat
-            }
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

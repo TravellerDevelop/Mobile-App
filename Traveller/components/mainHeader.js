@@ -44,8 +44,6 @@ export default function MainHeader({ navigation }) {
                     <Text style={styles.headerText}>+ Unisciti ad un viaggio!</Text>
                 </View>
             </TouchableOpacity>
-
-            {/* <Badge label="+ Aggiungiti ad un viaggio" style={{height: 30, fontFamily: font.montserrat }} fontFamily={font.montserrat} tintColor="white" color={color.third} /> */}
         </LinearGradient>
     )
 }
@@ -75,7 +73,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 15,
+        paddingTop: 40,
         paddingBottom: 20,
         justifyContent: 'space-between',
         padding: 10,
