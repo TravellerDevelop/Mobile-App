@@ -3,11 +3,7 @@ import React from "react";
 import { StyleSheet, View, FlatList } from "react-native";
 
 export default function CardPartecipants(data) {
-
     if (data.data.participants.length < 4) {
-        console.log(data.data.participants.length)
-        console.log(data.data.participants)
-
         if (data.data.participants.length == 1) {
             return (
                 <View style={styles.row}>
@@ -85,6 +81,6 @@ const styles = StyleSheet.create({
         marginRight: -15,
     },
     row: {
-        flexDirection: "row",        
+        flexDirection: "row",
     }
 })

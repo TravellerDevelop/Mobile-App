@@ -22,7 +22,7 @@ export default function HeaderTravelDetail ({ navigation, data }) {
                 </View>
                 <Text style={styles.subtitle}>Creato da {data.creator}</Text>
 
-                <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 100 }}>
+                <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 100 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
                     <CardPartecipants data={data} />
                 </TouchableOpacity>
             </LinearGradient>

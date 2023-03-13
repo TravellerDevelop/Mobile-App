@@ -3,8 +3,9 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Home from '../screens/home'
 import Notifications from '../screens/notifications'
-import { font, color } from '../global/globalVariable'
+import { font } from '../global/globalVariable'
 import TravelDetail from '../screens/travelDetail'
+import TravelPartecipants from '../screens/travelPartecipants'
 
 const Stack = createStackNavigator()
 
@@ -28,6 +29,12 @@ export default function Navigator() {
         />
 
         <Stack.Screen name='TravelDetail' component={TravelDetail}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='TravelPartecipants' component={TravelPartecipants}
           options={{
             headerShown: false,
           }}
