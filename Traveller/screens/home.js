@@ -6,7 +6,7 @@ import BottomBar from '../components/bottombar';
 import InteractiveCard from '../components/interactiveCard';
 import { color } from '../global/globalVariable';
 
-export default function Home( { navigation } ) {
+export default function Home({ navigation }) {
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -18,14 +18,66 @@ export default function Home( { navigation } ) {
                         <Text style={styles.subtitle}>I tuoi ultimi viaggi:</Text>
                         <FlatList
                             data={[
-                                { key: 'Devin' },
-                                { key: 'Dan' },
-                                { key: 'Dominic' },
-                                { key: 'Jackson' },
-                                { key: 'James' },
-                                { key: 'Joel' },
-                                { key: 'John' },
-                                { key: 'Jillian' },
+                                {
+                                    key: 'Muzaffarabad', creator: "Marco Montemagno", participants: [
+                                        "Maro Montemagno",
+                                        "Domenico Pizzetti",
+                                        "Micheletto Trentini",
+                                        "Nanni Pininfarina",
+                                        "Gelsomina Cuda",
+                                        "Olga Barcaccia"
+                                    ]
+                                },
+                                {
+                                    key: 'Moriago della Battaglia', creator: "Danny Lazzarin", participants: [
+                                        "Danny Lazzarin",
+                                        "Gian Comeriato",
+                                        "Annetta Tomasini"
+                                    ]
+                                },
+                                {
+                                    key: 'Oropesa', creator: "Angelo Greco", participants: [
+                                        "Angelo Greco",
+                                        "Gianluca Pizzolante",
+                                        "Alfio Bernardi",
+                                        "Elio Cuda",
+                                    ]
+                                },
+                                {
+                                    key: 'Rosedale', creator: "Marcello Ascani", participants: [
+                                        "Marcello Ascani",
+                                        "Gianfranco Bernabei",
+                                        "Corrado Cattaneo",
+                                        "Renato Bocchetti",
+                                        "Ernesto Cuda",
+                                        "Gelsomina Sforza",
+                                        "Serena Bellini",
+                                    ]
+                                },
+                                {
+                                    key: 'Pakusari', creator: "Marco Silvestro",
+                                    participants: [
+                                        "Marco Silvestro",
+                                    ]
+                                },
+                                {
+                                    key: 'Ascheberg', creator: "Emily Pallini",
+                                    participants: [
+                                        "Emily Pallini",
+                                        "Gianluca Suda",
+                                    ]
+                                },
+                                {
+                                    key: 'Brockhampton', creator: "Emilio Fibonacci",
+                                    participants: [
+                                        "Emilio Fibonacci",
+                                        "Ernesto Manolesto",
+                                        "Arresto Cuda",
+                                        "Pericle Minutolo",
+                                        "Eleonora pudra",
+                                    ]
+                                },
+                                { key: 'Gursu', creator: "Pietro Bossolasco", participants: ["Pietro Bossolasco"] },
                             ]}
                             horizontal
                             renderItem={({ item }) => <Card data={item} navigation={navigation} />}
@@ -34,7 +86,7 @@ export default function Home( { navigation } ) {
                         <InteractiveCard />
 
                         <Text style={styles.subtitle}>Horizontal FlatList</Text>
-                        <FlatList
+                        {/* <FlatList
                             data={[
                                 { key: 'Devin' },
                                 { key: 'Dan' },
@@ -47,7 +99,7 @@ export default function Home( { navigation } ) {
                             ]}
                             horizontal
                             renderItem={({ item }) => <Card data={item} />}
-                        />
+                        /> */}
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>

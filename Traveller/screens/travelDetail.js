@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 
-export default function TravelDetail({ navigation, data }) {
+export default function TravelDetail({ navigation, route }) {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <HeaderTravelDetail navigation={navigation} data={data} />
+                <HeaderTravelDetail navigation={navigation} data={route.params}  />
                 <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
                     <View style={styles.contentContainer}>
 

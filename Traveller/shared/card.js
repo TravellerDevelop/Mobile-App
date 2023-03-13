@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { Avatar } from "@react-native-material/core";
 import { color } from "../global/globalVariable";
+import CardPartecipants from "./cardPartecipants";
 
 export default function Card({ navigation, data }) {
     return (
@@ -11,19 +12,8 @@ export default function Card({ navigation, data }) {
                     <Text style={styles.cardTitle}>{data.key}</Text>
                     <Text style={styles.cardSubtitle}>Creato il 10/02/2023</Text>
                 </View>
-                <View style={{ flexDirection: "row", position: "absolute", right: 25, bottom: 10 }}>
-                    <View style={styles.avatarContainer}>
-                        <Avatar label={"Marco Montemagno"} autoColor size={30}/>
-                    </View>
-                    <View style={styles.avatarContainer}>
-                        <Avatar label={"Andrea Abbate"} autoColor size={30}/>
-                    </View>
-                    <View style={styles.avatarContainer}>
-                        <Avatar label={"Testa di cazzo"} autoColor size={30}/>
-                    </View>
-                    <View style={styles.avatarContainer}>
-                        <Avatar label={"+ 4"} size={30}/>
-                    </View>
+                <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
+                    <CardPartecipants data={data} />
                 </View>
             </View>
         </TouchableNativeFeedback>
@@ -41,13 +31,13 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         color: "white",
-        fontSize: 30,
+        fontSize: 24,
         textAlign: "left",
         fontFamily: "montserrat-regular",
     },
     cardSubtitle: {
         color: "white",
-        fontSize: 18,
+        fontSize: 16,
         textAlign: "left",
         fontFamily: "montserrat-light",
     },
