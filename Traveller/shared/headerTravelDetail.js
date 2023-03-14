@@ -15,7 +15,7 @@ export default function HeaderTravelDetail ({ navigation, data }) {
             >
 
                 <View style={styles.row}>
-                    <TouchableNativeFeedback onPress={() => navigation.navigate("Home")}>
+                    <TouchableNativeFeedback onPress={() => navigation.goBack()}>
                         <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
                     </TouchableNativeFeedback>
                     <Text style={styles.title}>{data.key}</Text>
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 40,
+        paddingTop: 20,
         paddingBottom: 20,
     },
     row: {

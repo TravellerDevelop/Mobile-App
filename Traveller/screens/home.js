@@ -20,7 +20,7 @@ export default function Home({ navigation }) {
                             data={[
                                 {
                                     key: 'Muzaffarabad', creator: "Marco Montemagno", participants: [
-                                        "Maro Montemagno",
+                                        "Marco Montemagno",
                                         "Domenico Pizzetti",
                                         "Micheletto Trentini",
                                         "Nanni Pininfarina",

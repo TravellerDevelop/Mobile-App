@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 40,
+        paddingTop: 20,
         paddingBottom: 20,
         justifyContent: 'space-between',
         padding: 10,
