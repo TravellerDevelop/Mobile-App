@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, TouchableNativeFeedback } from 'react-native';
-import { color, font } from '../global/globalVariable';
+import { color, font, paddingTopPage } from '../global/globalVariable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Avatar } from '@react-native-material/core';
 import CardPartecipants from './cardPartecipants';
 
 export default function HeaderTravelDetail ({ navigation, data }) {
@@ -33,7 +32,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 20,
+        paddingTop: paddingTopPage,
         paddingBottom: 20,
     },
     row: {

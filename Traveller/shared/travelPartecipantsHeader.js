@@ -1,6 +1,6 @@
 import React from "react";
-import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback } from "react-native";
-import { font, color } from "../global/globalVariable";
+import { StyleSheet, View, Text } from "react-native";
+import { font, color, paddingTopPage } from "../global/globalVariable";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -28,7 +28,7 @@ export default function TravelPartecipantsHeader({ navigation, route }) {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: "black",
-        paddingTop: 20,
+        paddingTop: paddingTopPage,
         paddingLeft: 10,
         paddingBottom: 20,
         paddingRight: 10,

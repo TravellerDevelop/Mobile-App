@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "white",
+        paddingBottom: 70
     },
     title: {
         fontSize: 30,
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     },
     leave: {
         backgroundColor: color.primary,
-        height: 60,
+        height: 50,
         width: "90%",
         position: "absolute",
         bottom: 20,

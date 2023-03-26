@@ -26,3 +26,6 @@ export const font = {
 }
 
 export const actualPage = "home";
+
+// In produzione cambiare il valore a 20
+export const paddingTopPage = 15;

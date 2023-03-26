@@ -1,6 +1,6 @@
 import { Avatar } from "@react-native-material/core";
 import React from "react";
-import { StyleSheet, View, FlatList } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function CardPartecipants(data) {
     if (data.data.participants.length < 4) {

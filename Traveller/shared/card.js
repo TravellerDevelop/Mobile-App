@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
-import { Avatar } from "@react-native-material/core";
-import { color } from "../global/globalVariable";
 import CardPartecipants from "./cardPartecipants";
+import { color, font } from "../global/globalVariable";
 
 export default function Card({ navigation, data }) {
     return (
@@ -22,24 +21,33 @@ export default function Card({ navigation, data }) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#4960FF",
+        backgroundColor: color.primary,
         height: 140,
         width: 250,
         borderRadius: 10,
         margin: 10,
         padding: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+
+        elevation: 5,
     },
     cardTitle: {
         color: "white",
         fontSize: 24,
         textAlign: "left",
-        fontFamily: "montserrat-regular",
+        fontFamily: font.montserrat,
     },
     cardSubtitle: {
         color: "white",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: "montserrat-light",
+        fontFamily: font.montserratLight,
     },
     avatarContainer: {
         backgroundColor: "white",

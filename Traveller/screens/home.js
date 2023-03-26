@@ -25,6 +25,12 @@ export default function Home({ navigation }) {
                                         "Micheletto Trentini",
                                         "Nanni Pininfarina",
                                         "Gelsomina Cuda",
+                                        "Olga Barcaccia",
+                                        "Marco Montemagno",
+                                        "Domenico Pizzetti",
+                                        "Micheletto Trentini",
+                                        "Nanni Pininfarina",
+                                        "Gelsomina Cuda",
                                         "Olga Barcaccia"
                                     ]
                                 },
@@ -104,7 +110,6 @@ export default function Home({ navigation }) {
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>
             </ScrollView >
-            <BottomBar />
         </View>
     );
 }

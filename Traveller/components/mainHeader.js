@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { userInfo, color, font } from "../global/globalVariable";
+import { userInfo, color, font, paddingTopPage } from "../global/globalVariable";
 
 
 export default function MainHeader({ navigation }) {
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: color.primary,
         width: "100%",
-        paddingTop: 20,
+        paddingTop: paddingTopPage,
         paddingBottom: 20,
         justifyContent: 'space-between',
         padding: 10,
