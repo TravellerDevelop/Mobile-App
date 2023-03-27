@@ -1,11 +1,9 @@
 import React from 'react';
 import Font from './components/font';
-import Navigator from './routes/NotificationStack';
-import { Image } from 'react-native';
+import { Image, View } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Home from './screens/home';
 import Nav from './screens/nav';
 import Tickets from './screens/tickets';
 import Travels from './screens/travels';
@@ -64,7 +62,7 @@ export default function App() {
                 iconName = focused ? require('./assets/image/airplane.png') : require('./assets/image/airplane.png');
               }
 
-              return <Image style={{ width: 30, height: 30, tintColor: color }} source={iconName} />;
+              return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20}} source={iconName} />;
             }
           })}
         >

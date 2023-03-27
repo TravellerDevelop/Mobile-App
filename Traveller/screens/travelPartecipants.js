@@ -7,7 +7,7 @@ import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 export default function TravelPartecipants({ navigation, route }) {
     let num = route.params.participants.length;
     return (
-        <>
+        <View style={{flex: 1}}>
             <TravelPartecipantsHeader navigation={navigation} route={route} />
             <View style={styles.container}>
                 <Text style={styles.title}>Partecipanti</Text>
@@ -32,7 +32,7 @@ export default function TravelPartecipants({ navigation, route }) {
                     <Text style={styles.leaveText}>Abbandona viaggio</Text>
                 </View>
             </TouchableNativeFeedback>
-        </>
+        </View>
     )
 }
 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "white",
-        paddingBottom: 70
+        paddingBottom: 100
     },
     title: {
         fontSize: 30,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
         height: 50,
         width: "90%",
         position: "absolute",
-        bottom: 20,
+        bottom: 100,
         left: "5%",
         borderRadius: 10,
         display: "flex",
