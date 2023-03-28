@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Nav from './screens/nav';
 import Tickets from './screens/tickets';
 import Travels from './screens/travels';
+import Profile from './screens/profile';
 
 export default function App() {
   let fontLoaded = Font();
@@ -85,7 +86,7 @@ export default function App() {
             options={{
               headerShown: false
             }}
-            name="Settings" component={Loading} />
+            name="Settings" component={Profile} />
         </Tab.Navigator>
       </NavigationContainer>
     )
