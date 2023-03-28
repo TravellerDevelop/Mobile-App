@@ -62,13 +62,13 @@ const styles = StyleSheet.create({
         color: "white",
         marginLeft: 10,
         fontSize: 20,
-        fontFamily: "montserrat-regular",
+        fontFamily: font.montserrat,
     },
     headerSubtitle: {
         color: "white",
         marginLeft: 10,
         fontSize: 15,
-        fontFamily: "montserrat-light",
+        fontFamily: font.montserratLight,
     },
     header: {
         backgroundColor: color.primary,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 20,
         marginLeft: 10,
-        fontFamily: "montserrat-bold",
+        fontFamily: font.montserratBold,
     },
     rowHeader: {
         flexDirection: 'row',

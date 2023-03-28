@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
 import { font } from "../../global/globalVariable";
 
 let companies = {
@@ -21,7 +21,7 @@ export default function TicketsPreview({ company }) {
 
 
     return (
-        <TouchableOpacity>
+        <TouchableNativeFeedback>
             <View style={[styles.container, { backgroundColor: col }]} >
                 <View style={styles.left}></View>
                 <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
@@ -31,7 +31,7 @@ export default function TicketsPreview({ company }) {
                 <Text style={styles.date}>12-03-2024 12:32</Text>
                 <View style={styles.right}></View>
             </View>
-        </TouchableOpacity>
+        </TouchableNativeFeedback>
     )
 }
 
