@@ -40,7 +40,7 @@ export default function TicketsHeader() {
                         <View style={modalstyles.card}>
                             <View style={modalstyles.row}>
                                 <Image style={modalstyles.image} source={require("../../assets/image/icona-edit.png")} />
-                                <Text style={modalstyles.subtitle}>Inserisci i dati manualmente</Text>
+                                <Text style={modalstyles.subtitle}>Inserisci manualmente</Text>
                             </View>
                             <Text style={modalstyles.paragraph}>
                                 Inserisci manualmente i dati del biglietto, come il numero di volo, la compagnia aerea, la data e l'ora di partenza e arrivo. 📝 📝
@@ -108,18 +108,20 @@ const modalstyles = StyleSheet.create({
     },
     subtitle: {
         fontFamily: font.montserrat,
-        fontSize: 20,
+        fontSize: 19,
         maxWidth: "80%",
     },
     row: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-evenly",
+        justifyContent: "flex-start",
         height: 50,
+        paddingLeft: 20,
     },
     image: {
         height: 25,
         width: 25,
+        marginRight: 10,
     },
     card: {
         width: "90%",
