@@ -9,10 +9,13 @@ import Tickets from './screens/tickets';
 import Travels from './screens/travels';
 import Profile from './screens/profile';
 import InitialModal from './screens/Modals/initialModal';
+import { getStringDataWithStateReverse } from './shared/data/localdata';
 
 export default function App() {
   let fontLoaded = Font();
-  let [modalVisible, setModalVisible] = React.useState(true);
+  let [modalVisible, setModalVisible] = React.useState(false);
+
+  getStringDataWithStateReverse('initialModal', modalVisible , setModalVisible);
 
   if (!fontLoaded) {
     return (
