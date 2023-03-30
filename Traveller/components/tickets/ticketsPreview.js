@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
 import { font } from "../../global/globalVariable";
+import TicketModal from "../../screens/Modals/ticketModal";
 
 let companies = {
     "Ryanair": "#2B4779",
@@ -19,19 +20,24 @@ export default function TicketsPreview({ company }) {
         img = require("../../assets/image/airlines/EasyJet.png");
     }
 
+    let [modalVisibility, setModalVisibility] = useState(false);
 
     return (
-        <TouchableNativeFeedback>
-            <View style={[styles.container, { backgroundColor: col }]} >
-                <View style={styles.left}></View>
-                <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
-                <Text style={styles.name}>BOSSOLASCO PIETRO</Text>
-                <Text style={styles.nrFlight}>Numero di volo: FR0464</Text>
-                <Text style={styles.destination}>From STN to TRN</Text>
-                <Text style={styles.date}>12-03-2024 12:32</Text>
-                <View style={styles.right}></View>
-            </View>
-        </TouchableNativeFeedback>
+        <>
+            <TicketModal visibility={modalVisibility} data={company} setVisibility={setModalVisibility} />
+
+            <TouchableNativeFeedback onPress={() => setModalVisibility(true)} >
+                <View style={[styles.container, { backgroundColor: col }]} >
+                    <View style={styles.left}></View>
+                    <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
+                    <Text style={styles.name}>BOSSOLASCO PIETRO</Text>
+                    <Text style={styles.nrFlight}>Numero di volo: FR0464</Text>
+                    <Text style={styles.destination}>From STN to TRN</Text>
+                    <Text style={styles.date}>12-03-2024 12:32</Text>
+                    <View style={styles.right}></View>
+                </View>
+            </TouchableNativeFeedback>
+        </>
     )
 }
 
