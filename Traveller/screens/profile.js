@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
 import { font, color, paddingTopPage } from "../global/globalVariable";
 import { Avatar } from "@react-native-material/core";
+import AnimatedLottieView from "lottie-react-native";
 
 export default function Profile() {
     return (
@@ -37,6 +38,11 @@ export default function Profile() {
                         <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
                     </View>
                 </TouchableNativeFeedback>
+
+                <View style={{flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop:50 }}>
+                    <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{width: 150, height: 150}}  />
+                    <Text style={styles.err}>Ancora nessun viaggio : /</Text>
+                </View>
             </View>
         </View>
     )
@@ -50,6 +56,7 @@ const styles = StyleSheet.create({
         paddingTop: paddingTopPage,
     },
     content: {
+        flex: 1,
         marginTop: 60,
         width: "100%",
         backgroundColor: "#FFF",
@@ -106,4 +113,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         marginBottom: 20,
     },
+    err: {
+        fontFamily: font.montserrat,
+        fontSize: 20,
+        color: "#000",
+    }
 });

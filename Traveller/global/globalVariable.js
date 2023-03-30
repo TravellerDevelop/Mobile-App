@@ -29,4 +29,4 @@ export const actualPage = "home";
 
 // In produzione cambiare il valore a 15
 // In sviluppo cambiare il valore a 40
-export const paddingTopPage = 40;
+export const paddingTopPage = 15;
