@@ -13,7 +13,7 @@ export default function InitialModal({ visibility, setVisibility }) {
     }
 
     const finish = () => {
-        storeStringData('initialModal', 'true');
+        storeStringData('initialModal', true.toString());
         setVisibility(false);
     }
 

@@ -60,7 +60,9 @@ export const getStringDataWithStateReverse = async (key, state, setState) => {
     try {
         const value = await AsyncStorage.getItem(key)
         if (value != null && value != undefined){
-            setState(!value);
+            value = !value;
+            console.log(value);
+            setState(value);
         }
         else{
             setState(true);
