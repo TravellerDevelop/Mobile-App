@@ -1,21 +1,23 @@
 import React from 'react';
 import Font from './components/font';
-import { Image, Modal, View } from 'react-native';
+import { Image } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Nav from './screens/nav';
 import Tickets from './screens/tickets';
 import Travels from './screens/travels';
-import Profile from './screens/profile';
 import InitialModal from './screens/Modals/initialModal';
-import { getStringDataWithStateReverse, storeStringData } from './shared/data/localdata';
+import { getStringDataWithStateReverse } from './shared/data/localdata';
+import Money from './screens/money';
+import WhitePage from './shared/white';
 
 export default function App() {
+  // storeStringData('openLogin', 'true');
   let fontLoaded = Font();
   let [modalVisible, setModalVisible] = React.useState(false);
 
-  getStringDataWithStateReverse('initialModal', modalVisible , setModalVisible);
+  getStringDataWithStateReverse('initialModal', modalVisible, setModalVisible);
 
   if (!fontLoaded) {
     return (
@@ -24,13 +26,12 @@ export default function App() {
   } else {
     const Tab = createBottomTabNavigator();
 
-
     return (
       <>
         <InitialModal visibility={modalVisible} setVisibility={setModalVisible} />
         <NavigationContainer>
           <Tab.Navigator
-            initialRouteName="Home"
+            initialRouteName="White"
             screenOptions={({ route }) => ({
               tabBarShowLabel: false,
               activeTintColor: '#e91e63',
@@ -70,11 +71,25 @@ export default function App() {
                 else if (route.name === 'Travels') {
                   iconName = focused ? require('./assets/image/airplane.png') : require('./assets/image/airplane.png');
                 }
+                else if (route.name === 'Money') {
+                  iconName = focused ? require('./assets/image/icona-wallet.png') : require('./assets/image/icona-wallet.png');
+                }
 
-                return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20 }} source={iconName} />;
+
+                if(route.name != 'White')
+                  return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20 }} source={iconName} />;
+                else
+                  size = 0;
               }
             })}
           >
+            <Tab.Screen
+              options={{
+                headerShown: false,
+                tabBarButton: (props) => null,
+                // tabBarStyle: { display: 'none' },
+              }}
+              name="White" component={WhitePage} />
             <Tab.Screen
               options={{
                 headerShown: false
@@ -94,7 +109,7 @@ export default function App() {
               options={{
                 headerShown: false
               }}
-              name="Settings" component={Profile} />
+              name="Money" component={Money} />
           </Tab.Navigator>
         </NavigationContainer>
       </>

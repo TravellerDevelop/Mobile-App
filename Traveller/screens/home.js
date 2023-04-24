@@ -1,12 +1,45 @@
-import React from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
-import BottomBar from '../components/bottombar';
 import InteractiveCard from '../components/interactiveCard';
-import { color } from '../global/globalVariable';
+import { color, serverLink } from '../global/globalVariable';
+import axios from 'axios';
+import { getData, getStringDataWithState, storeJsonData } from '../shared/data/localdata';
+import { GlobalStateProvider, UserInfo } from '../global/globalStates';
 
 export default function Home({ navigation }) {
+    let [userData, setUserData] = useState(null);
+
+
+    useEffect(() => {
+        if (getData("user") != null) {
+            console.log("Entro")
+
+
+
+            let data = getData("user");
+
+            console.log(data)
+            // getStringDataWithState("user", userData, setUserData);
+
+            // setUserData(data);
+
+            if (userData != null && userData.toString() != '[]') {
+                console.log(userData.toString())
+                userData = JSON.parse(userData);
+                axios.get(serverLink + "api/user/info?username=" + userData.username)
+                    .then((response) => {
+                        storeJsonData("user", response.data);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
+            }
+        }
+    }, [])
+
+
     return (
         <View style={styles.container}>
             <ScrollView>

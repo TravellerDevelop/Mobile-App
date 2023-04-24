@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback, Modal } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { userInfo, color, font, paddingTopPage } from "../global/globalVariable";
+import { color, font, paddingTopPage, userInfo } from "../global/globalVariable";
+import AnimatedLottieView from 'lottie-react-native';
+import { getData } from '../shared/data/localdata';
 
 
 export default function MainHeader({ navigation }) {
-    let [user, setUser] = useState(userInfo());
+    let [touch, setTouch] = useState(0);
+    // let [user, setUser] = useState(userInfo);
+    let [easterVisibility, setEasterVisibility] = useState(false);
+
+    let user = userInfo();
+    setInterval(() => { setTouch(0) }, 5000)
+
+
+    // setTimeout(() => {
+    //     setUser(getData("user"));
+    // }, 50)
 
     return (
         <LinearGradient
@@ -15,8 +27,20 @@ export default function MainHeader({ navigation }) {
             start={{ x: 0.5, y: 0.2 }}
             colors={[color.primary, color.secondary]}
         >
+            <Modal visible={easterVisibility} animation="slide">
+                <AnimatedLottieView source={require('../assets/animation/toucan-walk-cycle.json')} autoPlay loop />
+                <Text style={{ fontFamily: font.montserrat, fontSize: 18, textAlign: "center", marginTop: 50 }}>Hai clickato troppe volte, ora sei obbligato a guardare il tucano!</Text>
+            </Modal>
             <View style={styles.rowHeader}>
-                <Text style={styles.logo}>TRAVELLER</Text>
+                <TouchableWithoutFeedback onPress={() => {
+                    setTouch(touch++);
+                    if (touch == 10) {
+                        setEasterVisibility(true);
+                        setTouch(0);
+                    }
+                }}>
+                    <Text style={styles.logo}>TRAVELLER</Text>
+                </TouchableWithoutFeedback>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity onPress={() => navigation.navigate("Notifications")} >
                         <Badge label={
@@ -31,7 +55,9 @@ export default function MainHeader({ navigation }) {
                     </TouchableOpacity>
 
                     <View style={styles.whiteRound} ></View>
-                    <Avatar label={user.name + " " + user.surname} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                    <TouchableOpacity onPress={() => navigation.navigate("Profile", navigation)}>
+                        <Avatar label={user.name + " " + user.surname} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                    </TouchableOpacity>
                 </View>
             </View>
             <View>

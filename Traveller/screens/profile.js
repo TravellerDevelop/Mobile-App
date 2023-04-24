@@ -4,9 +4,12 @@ import { font, color, paddingTopPage } from "../global/globalVariable";
 import { Avatar } from "@react-native-material/core";
 import AnimatedLottieView from "lottie-react-native";
 
-export default function Profile() {
+export default function Profile({ navigation }) {
     return (
         <View style={styles.container}>
+            <TouchableNativeFeedback onPress={ () => {navigation.goBack()} }>
+                <Image source={require("../assets/image/icona-freccia-left.png")} style={styles.back} />
+            </TouchableNativeFeedback>
             <View style={styles.content}>
                 <View style={styles.avatarview}>
                     <Avatar label="Pietro Bossolasco" autoColor size={100} labelStyle={{ fontFamily: font.montserrat, fontSize: 50 }} style={styles.avatar} />
@@ -39,8 +42,8 @@ export default function Profile() {
                     </View>
                 </TouchableNativeFeedback>
 
-                <View style={{flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop:50 }}>
-                    <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{width: 150, height: 150}}  />
+                <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
+                    <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
                     <Text style={styles.err}>Ancora nessun viaggio : /</Text>
                 </View>
             </View>
@@ -117,5 +120,12 @@ const styles = StyleSheet.create({
         fontFamily: font.montserrat,
         fontSize: 20,
         color: "#000",
+    },
+    back: {
+        width: 30,
+        height: 30,
+        position: "absolute",
+        top: 40,
+        left: 10,
     }
 });

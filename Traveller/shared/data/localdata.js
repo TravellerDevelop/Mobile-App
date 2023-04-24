@@ -1,10 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const storeStringData = async (key, value) => {
-    
     try {
         await AsyncStorage.setItem(key, value);
-        console.log(value) 
         return true;
     } catch (e) {
         return false;
@@ -69,7 +67,6 @@ export const getStringDataWithStateReverse = async (key, state, setState) => {
             setState(true);
         }
     } catch (e) {
-        console.log(e)
         setState(true);
     }
 }
