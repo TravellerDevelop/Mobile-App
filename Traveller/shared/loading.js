@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ActivityIndicator, Image, Dimensions } from "react-native";
 
 export default function Loading() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>TRAVELLER</Text>
-            <ActivityIndicator size="large" color="#FFF" />
+            <Image source={require("../assets/splash.png")} style={styles.img} />
+            <ActivityIndicator size="large" style={styles.activity} color="#FFF" />
         </View>
     )
 }
@@ -17,10 +17,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    text: {
-        color: "white",
-        fontSize: 30,
-        textAlign: "center",
-        marginBottom: 20,
+    img: {
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").height,
+    },
+    activity: {
+        position: "absolute",
+        bottom: 80,
     }
 });

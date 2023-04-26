@@ -7,38 +7,47 @@ import { color, serverLink, userInfo } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, getStringDataWithState, storeJsonData } from '../shared/data/localdata';
 import { UserInfoStateProvider, UserInfo } from '../global/globalStates';
+import { createIconSetFromFontello } from '@expo/vector-icons';
 
 export default function Home({ navigation }) {
     let [userData, setUserData] = useState(false);
 
-    // let [a, setA] = useContext(UserInfo);
+    let globalData = null;
 
-
-    
     useEffect(() => {
         verifyUserData();
+
+        async function verifyUserData() {
+            let data = await getData("user");
+            await getStringDataWithState("user", userData, setUserData);
+
+
+            if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
+                axios.get(serverLink + "api/user/info?username=" + data.username)
+                    .then(async (response) => {
+                        await storeJsonData("user", response.data);
+                        await setUserData(response.data)
+
+                        globalData = response.data;
+
+
+                        console.log("----------")
+                        console.log("Response data:")
+                        console.log(response.data.travels)
+
+                        console.log("----------")
+                        console.log("User data:")
+                        console.log(userData[0])
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
+            }
+            else {
+                storeJsonData("user", '');
+            }
+        }
     }, []);
-    
-    let verifyUserData = async () => {
-        let data = await getData("user");
-        await getStringDataWithState("user", userData, setUserData);
-
-        console.log(data)
-
-        if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
-            axios.get(serverLink + "api/user/info?username=" + data.username)
-                .then(async (response) => {
-                    await storeJsonData("user", response.data);
-                })
-                .catch((error) => {
-                    console.log(error);
-                })
-        }
-        else{
-            storeJsonData("user", '');
-        }
-    }
-
 
 
     return (
@@ -50,96 +59,22 @@ export default function Home({ navigation }) {
                         <Text style={styles.title}>Home</Text>
 
                         <Text style={styles.subtitle}>I tuoi ultimi viaggi:</Text>
-                        <FlatList
-                            data={[
-                                {
-                                    key: 'Muzaffarabad', creator: "Marco Montemagno", participants: [
-                                        "Marco Montemagno",
-                                        "Domenico Pizzetti",
-                                        "Micheletto Trentini",
-                                        "Nanni Pininfarina",
-                                        "Gelsomina Cuda",
-                                        "Olga Barcaccia",
-                                        "Marco Montemagno",
-                                        "Domenico Pizzetti",
-                                        "Micheletto Trentini",
-                                        "Nanni Pininfarina",
-                                        "Gelsomina Cuda",
-                                        "Olga Barcaccia"
-                                    ]
-                                },
-                                {
-                                    key: 'Moriago della Battaglia', creator: "Danny Lazzarin", participants: [
-                                        "Danny Lazzarin",
-                                        "Gian Comeriato",
-                                        "Annetta Tomasini"
-                                    ]
-                                },
-                                {
-                                    key: 'Oropesa', creator: "Angelo Greco", participants: [
-                                        "Angelo Greco",
-                                        "Gianluca Pizzolante",
-                                        "Alfio Bernardi",
-                                        "Elio Cuda",
-                                    ]
-                                },
-                                {
-                                    key: 'Rosedale', creator: "Marcello Ascani", participants: [
-                                        "Marcello Ascani",
-                                        "Gianfranco Bernabei",
-                                        "Corrado Cattaneo",
-                                        "Renato Bocchetti",
-                                        "Ernesto Cuda",
-                                        "Gelsomina Sforza",
-                                        "Serena Bellini",
-                                    ]
-                                },
-                                {
-                                    key: 'Pakusari', creator: "Marco Silvestro",
-                                    participants: [
-                                        "Marco Silvestro",
-                                    ]
-                                },
-                                {
-                                    key: 'Ascheberg', creator: "Emily Pallini",
-                                    participants: [
-                                        "Emily Pallini",
-                                        "Gianluca Suda",
-                                    ]
-                                },
-                                {
-                                    key: 'Brockhampton', creator: "Emilio Fibonacci",
-                                    participants: [
-                                        "Emilio Fibonacci",
-                                        "Ernesto Manolesto",
-                                        "Arresto Cuda",
-                                        "Pericle Minutolo",
-                                        "Eleonora pudra",
-                                    ]
-                                },
-                                { key: 'Gursu', creator: "Pietro Bossolasco", participants: ["Pietro Bossolasco"] },
-                            ]}
-                            horizontal
-                            renderItem={({ item }) => <Card data={item} navigation={navigation} />}
-                        />
-
+                        {(userData.travels != null && userData.travels.length > 0) ?
+                            <FlatList
+                                data={userData.travels}
+                                horizontal
+                                renderItem={({ item }) => <Card data={item} navigation={navigation} />}
+                            />
+                            :
+                            <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
+                            </View>
+                        }
                         <InteractiveCard />
-
-                        <Text style={styles.subtitle}>Horizontal FlatList</Text>
-                        {/* <FlatList
-                            data={[
-                                { key: 'Devin' },
-                                { key: 'Dan' },
-                                { key: 'Dominic' },
-                                { key: 'Jackson' },
-                                { key: 'James' },
-                                { key: 'Joel' },
-                                { key: 'John' },
-                                { key: 'Jillian' },
-                            ]}
-                            horizontal
-                            renderItem={({ item }) => <Card data={item} />}
-                        /> */}
+                        <Text style={styles.subtitle}>I viaggi dei tuoi amici</Text>
+                        <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                            <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
+                        </View>
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>
