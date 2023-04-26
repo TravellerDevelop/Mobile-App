@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Font from './components/font';
-import { Image } from 'react-native';
+import { Image, View, Text } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { serverLink } from './global/globalVariable';
 import Nav from './screens/nav';
 import Tickets from './screens/tickets';
 import Travels from './screens/travels';
@@ -11,19 +12,46 @@ import InitialModal from './screens/Modals/initialModal';
 import { getStringDataWithStateReverse } from './shared/data/localdata';
 import Money from './screens/money';
 import WhitePage from './shared/white';
+import axios from 'axios';
 
 export default function App() {
-  // storeStringData('openLogin', 'true');
   let fontLoaded = Font();
-  let [modalVisible, setModalVisible] = React.useState(false);
+  let [modalVisible, setModalVisible] = useState(false);
+  let [connection, setConnection] = useState(false);
 
   getStringDataWithStateReverse('initialModal', modalVisible, setModalVisible);
 
-  if (!fontLoaded) {
+  useEffect(() => {
+    axios({
+      method: 'get',
+      url: serverLink + "api/verifyConnection",
+      timeout: 20000,
+    })
+      .then((response) => {
+        if (response.status == 200)
+          setConnection(true);
+        else
+          setConnection('error')
+      })
+      .catch((error) => {
+        setConnection('error');
+      });
+  }, []);
+
+  if (!fontLoaded || !connection) {
     return (
       <Loading />
     )
-  } else {
+  }
+  else if (connection == 'error') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Image style={{ width: 50, height: 50, marginBottom: 20 }} source={require('./assets/image/icona-alert.png')} />
+        <Text style={{ fontSize: 20, fontWeight: 'bold', fontFamily: "montserrat-regular" }}>Errore di connessione al server : /</Text>
+      </View>
+    )
+  }
+  else if (fontLoaded && connection) {
     const Tab = createBottomTabNavigator();
 
     return (
@@ -76,10 +104,8 @@ export default function App() {
                 }
 
 
-                if(route.name != 'White')
+                if (route.name != 'White')
                   return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20 }} source={iconName} />;
-                else
-                  size = 0;
               }
             })}
           >
@@ -87,7 +113,7 @@ export default function App() {
               options={{
                 headerShown: false,
                 tabBarButton: (props) => null,
-                // tabBarStyle: { display: 'none' },
+                tabBarStyle: { display: 'none' },
               }}
               name="White" component={WhitePage} />
             <Tab.Screen

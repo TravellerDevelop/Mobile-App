@@ -45,7 +45,7 @@ export const getData = async (key) => {
 export const getStringDataWithState = async (key, state, setState) => {
     try {
         const value = await AsyncStorage.getItem(key)
-        if (value != null && value != undefined){
+        if (value != null && value != undefined && value != '[]' && value != 'false' && value != false){
             setState(value);
         }
         else{

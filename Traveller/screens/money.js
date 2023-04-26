@@ -4,11 +4,11 @@ import { font } from "../global/globalVariable";
 import { GlobalStateProvider } from "../global/globalStates";
 
 export default function Money() {
-    let [userData, setUserData] = useContext(GlobalStateProvider);
+    // let [userData, setUserData] = useContext(GlobalStateProvider);
 
-    useEffect(() => {
-        console.log(userData)
-    }, [])
+    // useEffect(() => {
+    //     console.log(userData)
+    // }, [])
 
     return (
         <>

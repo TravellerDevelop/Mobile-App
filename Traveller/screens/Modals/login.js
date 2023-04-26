@@ -47,8 +47,8 @@ export default function LoginModal({ navigation, visibility, setVisibility }) {
                                                 setIsLoading(false);
 
                                                 if (response.status == 200) {
-                                                    storeStringData("user", JSON.stringify(response.data[0]));
-                                                    storeStringData("openLogin", "true");
+                                                    storeJsonData('user', response.data[0]);
+                                                    storeStringData('openLogin', "true");
                                                     setVisibility(false);
                                                     navigation.navigate("Home");
                                                 }
@@ -65,9 +65,6 @@ export default function LoginModal({ navigation, visibility, setVisibility }) {
                                         setIsLoading(false);
                                         setError("Inserisci username e password");
                                     }
-                                    // storeStringData('openLogin', 'false');
-                                    // setVisibility(false);
-
                                 })();
                             }}>
                                 <View style={(isLoading) ? [styles.button, {display : "none"}] : styles.button}>

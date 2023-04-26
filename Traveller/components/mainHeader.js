@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback, Modal } from 'react-native';
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,17 +9,26 @@ import { getData } from '../shared/data/localdata';
 
 
 export default function MainHeader({ navigation }) {
+    let [user, setUser] = useState(null);
     let [touch, setTouch] = useState(0);
-    // let [user, setUser] = useState(userInfo);
     let [easterVisibility, setEasterVisibility] = useState(false);
 
-    let user = userInfo();
+    // let user = userInfo();
     setInterval(() => { setTouch(0) }, 5000)
 
+    useEffect(() => {
+        userData();
+    }, []);
 
-    // setTimeout(() => {
-    //     setUser(getData("user"));
-    // }, 50)
+    async function userData() {
+        setUser(await getData("user"));
+        console.log("user")
+        console.log(user)
+
+        console.log("--------------------")
+        console.log(await getData("user").name)
+        console.log("--------------------")
+    }
 
     return (
         <LinearGradient
@@ -56,12 +65,12 @@ export default function MainHeader({ navigation }) {
 
                     <View style={styles.whiteRound} ></View>
                     <TouchableOpacity onPress={() => navigation.navigate("Profile", navigation)}>
-                        <Avatar label={user.name + " " + user.surname} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                        <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
                     </TouchableOpacity>
                 </View>
             </View>
             <View>
-                <Text style={styles.headerTitle}>Buongiorno {user.name}!</Text>
+                <Text style={styles.headerTitle}>Buongiorno {(user != null && user != '[]' && user != false && user != '') ? user.name : ""}!</Text>
                 <Text style={styles.headerSubtitle}>Dove andiamo oggi? 🚀</Text>
             </View>
 

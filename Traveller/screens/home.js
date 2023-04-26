@@ -3,41 +3,42 @@ import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
-import { color, serverLink } from '../global/globalVariable';
+import { color, serverLink, userInfo } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, getStringDataWithState, storeJsonData } from '../shared/data/localdata';
-import { GlobalStateProvider, UserInfo } from '../global/globalStates';
+import { UserInfoStateProvider, UserInfo } from '../global/globalStates';
 
 export default function Home({ navigation }) {
-    let [userData, setUserData] = useState(null);
+    let [userData, setUserData] = useState(false);
+
+    // let [a, setA] = useContext(UserInfo);
 
 
+    
     useEffect(() => {
-        if (getData("user") != null) {
-            console.log("Entro")
+        verifyUserData();
+    }, []);
+    
+    let verifyUserData = async () => {
+        let data = await getData("user");
+        await getStringDataWithState("user", userData, setUserData);
 
+        console.log(data)
 
-
-            let data = getData("user");
-
-            console.log(data)
-            // getStringDataWithState("user", userData, setUserData);
-
-            // setUserData(data);
-
-            if (userData != null && userData.toString() != '[]') {
-                console.log(userData.toString())
-                userData = JSON.parse(userData);
-                axios.get(serverLink + "api/user/info?username=" + userData.username)
-                    .then((response) => {
-                        storeJsonData("user", response.data);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    })
-            }
+        if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
+            axios.get(serverLink + "api/user/info?username=" + data.username)
+                .then(async (response) => {
+                    await storeJsonData("user", response.data);
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
         }
-    }, [])
+        else{
+            storeJsonData("user", '');
+        }
+    }
+
 
 
     return (
