@@ -8,8 +8,8 @@ export default function Card({ navigation, data }) {
         <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
             <View style={styles.container}>
                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
-                    <Text style={styles.cardTitle}>{data.key}</Text>
-                    <Text style={styles.cardSubtitle}>Creato il 10/02/2023</Text>
+                    <Text style={styles.cardTitle}>{data.name}</Text>
+                    <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {data.creator}</Text>
                 </View>
                 <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
                     <CardPartecipants data={data} />

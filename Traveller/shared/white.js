@@ -3,7 +3,6 @@ import { StyleSheet, View } from "react-native";
 import { getStringDataWithStateReverse, storeStringData, getStringDataWithState, getData } from '../shared/data/localdata';
 import LoginModal from "../screens/Modals/login";
 
-
 export default function WhitePage({ navigation }) {
     let [openLogin, setOpenLogin] = React.useState(null);
     let [user, setUser] = React.useState(null);

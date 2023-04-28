@@ -5,12 +5,13 @@ import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
 import { color, serverLink, userInfo } from '../global/globalVariable';
 import axios from 'axios';
-import { getData, getStringDataWithState, storeJsonData } from '../shared/data/localdata';
+import { getData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
 import { UserInfoStateProvider, UserInfo } from '../global/globalStates';
 import { createIconSetFromFontello } from '@expo/vector-icons';
 
 export default function Home({ navigation }) {
     let [userData, setUserData] = useState(false);
+    let [travels, setTravels] = useState(false);
 
     let globalData = null;
 
@@ -23,6 +24,7 @@ export default function Home({ navigation }) {
 
 
             if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
+                storeStringData("username", data.username);
                 axios.get(serverLink + "api/user/info?username=" + data.username)
                     .then(async (response) => {
                         await storeJsonData("user", response.data);
@@ -30,14 +32,19 @@ export default function Home({ navigation }) {
 
                         globalData = response.data;
 
+                        console.log(response.data[0].username)
 
-                        console.log("----------")
-                        console.log("Response data:")
-                        console.log(response.data.travels)
+                        axios.get(serverLink + "api/user/travels?username=" + response.data[0].username)
+                            .then(async (response) => {
+                                if (response.status == 200) {
+                                    console.log(response.data)
+                                    await setTravels(response.data);
+                                }
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            })
 
-                        console.log("----------")
-                        console.log("User data:")
-                        console.log(userData[0])
                     })
                     .catch((error) => {
                         console.log(error);
@@ -59,9 +66,9 @@ export default function Home({ navigation }) {
                         <Text style={styles.title}>Home</Text>
 
                         <Text style={styles.subtitle}>I tuoi ultimi viaggi:</Text>
-                        {(userData.travels != null && userData.travels.length > 0) ?
+                        {(travels != null && travels.length > 0) ?
                             <FlatList
-                                data={userData.travels}
+                                data={travels}
                                 horizontal
                                 renderItem={({ item }) => <Card data={item} navigation={navigation} />}
                             />
@@ -70,7 +77,7 @@ export default function Home({ navigation }) {
                                 <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
                             </View>
                         }
-                        <InteractiveCard />
+                        <InteractiveCard setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>I viaggi dei tuoi amici</Text>
                         <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                             <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>

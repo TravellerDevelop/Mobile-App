@@ -44,11 +44,13 @@ export default function CardPartecipants(data) {
     else {
         let length = data.data.participants.length - 3;
 
-        let ausdata = [
-            data.data.participants[0],
-            data.data.participants[1],
-            data.data.participants[2],
-        ]
+        let ausdata = []
+
+        // let ausdata = [
+        //     data.participants[0],
+        //     data.participants[1],
+        //     data.participants[2],
+        // ]
 
         return (
             <View style={styles.row}>

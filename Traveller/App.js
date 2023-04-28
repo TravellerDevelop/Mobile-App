@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext, createContext } from 'react';
 import Font from './components/font';
 import { Image, View, Text } from 'react-native';
 import Loading from './shared/loading';
@@ -14,7 +14,11 @@ import Money from './screens/money';
 import WhitePage from './shared/white';
 import axios from 'axios';
 
+export const GlobalUserContext = createContext();
+
 export default function App() {
+  let [globalUserInfo, setGlobalUserInfo] = useState({});
+
   let fontLoaded = Font();
   let [modalVisible, setModalVisible] = useState(false);
   let [connection, setConnection] = useState(false);
@@ -57,87 +61,89 @@ export default function App() {
     return (
       <>
         <InitialModal visibility={modalVisible} setVisibility={setModalVisible} />
-        <NavigationContainer>
-          <Tab.Navigator
-            initialRouteName="White"
-            screenOptions={({ route }) => ({
-              tabBarShowLabel: false,
-              activeTintColor: '#e91e63',
-              tabBarStyle: {
-                flexDirection: "row",
-                height: 55,
-                width: "85%",
-                left: "7.5%",
-                position: "absolute",
-                bottom: 20,
-                borderRadius: 10,
-                alignItems: "center",
-                justifyContent: "space-evenly",
-                backgroundColor: "white",
-                shadowColor: "#000000FF",
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
+        <GlobalUserContext.Provider value={{ globalUserInfo, setGlobalUserInfo }}>
+          <NavigationContainer>
+            <Tab.Navigator
+              initialRouteName="White"
+              screenOptions={({ route }) => ({
+                tabBarShowLabel: false,
+                activeTintColor: '#e91e63',
+                tabBarStyle: {
+                  flexDirection: "row",
+                  height: 55,
+                  width: "85%",
+                  left: "7.5%",
+                  position: "absolute",
+                  bottom: 20,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                  backgroundColor: "white",
+                  shadowColor: "#000000FF",
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.23,
+                  shadowRadius: 2.62,
+                  elevation: 3,
                 },
-                shadowOpacity: 0.23,
-                shadowRadius: 2.62,
-                elevation: 3,
-              },
-              tabBarIcon: ({ focused, color, size }) => {
-                let iconName;
+                tabBarIcon: ({ focused, color, size }) => {
+                  let iconName;
 
-                if (route.name === 'Home') {
-                  iconName = focused
-                    ? require('./assets/image/icona-home.png')
-                    : require('./assets/image/icona-home.png');
-                } else if (route.name === 'Settings') {
-                  iconName = focused ? require('./assets/image/icona-user.png') : require('./assets/image/icona-user.png');
-                }
-                else if (route.name === 'Tickets') {
-                  iconName = focused ? require('./assets/image/icona-biglietto-1.png') : require('./assets/image/icona-biglietto-1.png');
-                }
-                else if (route.name === 'Travels') {
-                  iconName = focused ? require('./assets/image/airplane.png') : require('./assets/image/airplane.png');
-                }
-                else if (route.name === 'Money') {
-                  iconName = focused ? require('./assets/image/icona-wallet.png') : require('./assets/image/icona-wallet.png');
-                }
+                  if (route.name === 'Home') {
+                    iconName = focused
+                      ? require('./assets/image/icona-home.png')
+                      : require('./assets/image/icona-home.png');
+                  } else if (route.name === 'Settings') {
+                    iconName = focused ? require('./assets/image/icona-user.png') : require('./assets/image/icona-user.png');
+                  }
+                  else if (route.name === 'Tickets') {
+                    iconName = focused ? require('./assets/image/icona-biglietto-1.png') : require('./assets/image/icona-biglietto-1.png');
+                  }
+                  else if (route.name === 'Travels') {
+                    iconName = focused ? require('./assets/image/airplane.png') : require('./assets/image/airplane.png');
+                  }
+                  else if (route.name === 'Money') {
+                    iconName = focused ? require('./assets/image/icona-wallet.png') : require('./assets/image/icona-wallet.png');
+                  }
 
 
-                if (route.name != 'White')
-                  return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20 }} source={iconName} />;
-              }
-            })}
-          >
-            <Tab.Screen
-              options={{
-                headerShown: false,
-                tabBarButton: (props) => null,
-                tabBarStyle: { display: 'none' },
-              }}
-              name="White" component={WhitePage} />
-            <Tab.Screen
-              options={{
-                headerShown: false
-              }}
-              name="Home" component={Nav} />
-            <Tab.Screen
-              options={{
-                headerShown: false
-              }}
-              name="Tickets" component={Tickets} />
-            <Tab.Screen
-              options={{
-                headerShown: false
-              }}
-              name="Travels" component={Travels} />
-            <Tab.Screen
-              options={{
-                headerShown: false
-              }}
-              name="Money" component={Money} />
-          </Tab.Navigator>
-        </NavigationContainer>
+                  if (route.name != 'White')
+                    return <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20 }} source={iconName} />;
+                }
+              })}
+            >
+              <Tab.Screen
+                options={{
+                  headerShown: false,
+                  tabBarButton: (props) => null,
+                  tabBarStyle: { display: 'none' },
+                }}
+                name="White" component={WhitePage} />
+              <Tab.Screen
+                options={{
+                  headerShown: false
+                }}
+                name="Home" component={Nav} />
+              <Tab.Screen
+                options={{
+                  headerShown: false
+                }}
+                name="Tickets" component={Tickets} />
+              <Tab.Screen
+                options={{
+                  headerShown: false
+                }}
+                name="Travels" component={Travels} />
+              <Tab.Screen
+                options={{
+                  headerShown: false
+                }}
+                name="Money" component={Money} />
+            </Tab.Navigator>
+          </NavigationContainer >
+        </GlobalUserContext.Provider>
       </>
     )
   }

@@ -17,7 +17,7 @@ export default function HeaderTravelDetail ({ navigation, data }) {
                     <TouchableNativeFeedback onPress={() => navigation.goBack()}>
                         <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
                     </TouchableNativeFeedback>
-                    <Text style={styles.title}>{data.key}</Text>
+                    <Text style={styles.title}>{data.name}</Text>
                 </View>
                 <Text style={styles.subtitle}>Creato da {data.creator}</Text>
 
