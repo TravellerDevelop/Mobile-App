@@ -27,23 +27,14 @@ export default function Home({ navigation }) {
                 storeStringData("username", data.username);
                 axios.get(serverLink + "api/user/info?username=" + data.username)
                     .then(async (response) => {
-                        await storeJsonData("user", response.data);
+                        // await storeJsonData("user", response.data);
                         await setUserData(response.data)
 
                         globalData = response.data;
 
                         console.log(response.data[0].username)
 
-                        axios.get(serverLink + "api/user/travels?username=" + response.data[0].username)
-                            .then(async (response) => {
-                                if (response.status == 200) {
-                                    console.log(response.data)
-                                    await setTravels(response.data);
-                                }
-                            })
-                            .catch((error) => {
-                                console.log(error);
-                            })
+                        loadTravels(response.data[0].username);
 
                     })
                     .catch((error) => {
@@ -56,6 +47,19 @@ export default function Home({ navigation }) {
         }
     }, []);
 
+
+    function loadTravels(username) {
+        axios.get(serverLink + "api/user/travels?username=" + username)
+            .then(async (response) => {
+                if (response.status == 200) {
+                    console.log(response.data)
+                    await setTravels(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
 
     return (
         <View style={styles.container}>
@@ -77,7 +81,7 @@ export default function Home({ navigation }) {
                                 <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
                             </View>
                         }
-                        <InteractiveCard setUserState={setUserData} userState={userData} />
+                        <InteractiveCard updatecards={loadTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>I viaggi dei tuoi amici</Text>
                         <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                             <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>

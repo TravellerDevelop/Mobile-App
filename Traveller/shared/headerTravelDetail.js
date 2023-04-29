@@ -1,30 +1,34 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, TouchableNativeFeedback } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, TouchableNativeFeedback, Image } from 'react-native';
 import { color, font, paddingTopPage } from '../global/globalVariable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CardPartecipants from './cardPartecipants';
 
-export default function HeaderTravelDetail ({ navigation, data }) {
+export default function HeaderTravelDetail({ navigation, data }) {
+    let top = paddingTopPage + 15;
+
     return (
-            <LinearGradient
-                style={styles.header}
-                start={{ x: 0.5, y: 0.2 }}
-                colors={[color.primary, color.secondary]}
-            >
+        <LinearGradient
+            style={styles.header}
+            start={{ x: 0.5, y: 0.2 }}
+            colors={[color.primary, color.secondary]}
+        >
+            <TouchableNativeFeedback>
+                <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25, position: "absolute", right: 20, top: top }} />
+            </TouchableNativeFeedback>
+            <View style={styles.row}>
+                <TouchableNativeFeedback onPress={() => navigation.goBack()}>
+                    <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
+                </TouchableNativeFeedback>
+                <Text style={styles.title}>{data.name}</Text>
+            </View>
+            <Text style={styles.subtitle}>Creato da {data.creator}</Text>
 
-                <View style={styles.row}>
-                    <TouchableNativeFeedback onPress={() => navigation.goBack()}>
-                        <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
-                    </TouchableNativeFeedback>
-                    <Text style={styles.title}>{data.name}</Text>
-                </View>
-                <Text style={styles.subtitle}>Creato da {data.creator}</Text>
-
-                <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 100 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
-                    <CardPartecipants data={data} />
-                </TouchableOpacity>
-            </LinearGradient>
+            <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 100 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
+                <CardPartecipants data={data} />
+            </TouchableOpacity>
+        </LinearGradient>
     )
 }
 

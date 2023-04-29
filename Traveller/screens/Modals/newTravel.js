@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, TouchableNativeFeedback } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { color, font, serverLink } from '../../global/globalVariable';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
@@ -8,7 +8,7 @@ import axios from 'axios';
 import { getStringData } from '../../shared/data/localdata';
 
 
-export default function NewTravel({ userState, setUserState, setNewTravelVisibility }) {
+export default function NewTravel({ userState, setUserState, setNewTravelVisibility, updatecards }) {
     let [creator, setCreator] = React.useState("");
     let [name, setName] = React.useState("");
     let [description, setDescription] = React.useState("");
@@ -39,11 +39,11 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
     return (
         <Modal visible={true} animationType='slide'>
-            <TouchableOpacity onPress={() => { setNewTravelVisibility(false) }} >
-                <View style={{ width: 30, height: 30, position: "absolute", top: 20, left: 20 }}>
-                    <Image source={require('../../assets/image/icona-freccia-left.png')} style={{ width: 30, height: 30, tintColor: "#000" }} />
-                </View>
-            </TouchableOpacity>
+            <TouchableNativeFeedback onPress={() => { setNewTravelVisibility(false) }} >
+                {/* <View style={{ width: 30, height: 30, position: "absolute", top: 20, left: 20 }}> */}
+                    <Image source={require('../../assets/image/icona-freccia-left.png')} style={{ width: 30, height: 30, tintColor: "#000", position: "absolute", top: 20, left: 20 }} />
+                {/* </View> */}
+            </TouchableNativeFeedback>
 
             <Text style={[styles.title, { marginBottom: 30 }]}>Crea un nuovo viaggio!</Text>
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", width: "100%" }}>
@@ -98,7 +98,6 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                     />
                     <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
                         await setCreator(getStringData("username"))
-                        console.log("Create: ", getStringData("username"))
                         setIsLoading(true);
 
                         axios.post(serverLink + 'api/travel/create', {
@@ -113,6 +112,7 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                         })
                             .then(function (response) {
                                 if (response.status == 200) {
+                                    updatecards(creator)
                                     setIsLoading(false);
                                     setNewTravelVisibility(false);
                                 }
@@ -121,7 +121,7 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                                 console.log(error);
                             });
                     }}>
-                        <Text style={(isLoading) ? {display: "none"} : styles.modalButtonText}>Crea il viaggio!</Text>
+                        <Text style={(isLoading) ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
                     </TouchableOpacity>
                     {isLoading ? <ActivityIndicator size="large" color="#4900FF" /> : null}
                 </ScrollView>

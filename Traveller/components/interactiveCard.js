@@ -8,12 +8,12 @@ import axios from 'axios';
 import { getStringData } from '../shared/data/localdata';
 import NewTravel from '../screens/Modals/newTravel';
 
-export default function InteractiveCard({ userState, setUserState }) {
+export default function InteractiveCard({ userState, setUserState, updatecards }) {
     let [newTravelVisibility, setNewTravelVisibility] = React.useState(false);
 
     return (
         <>
-            {newTravelVisibility ? <NewTravel userState={userState} setUserState={setUserState} setNewTravelVisibility={setNewTravelVisibility} /> : null}
+            {newTravelVisibility ? <NewTravel userState={userState} setUserState={setUserState} updatecards={updatecards} setNewTravelVisibility={setNewTravelVisibility} /> : null}
             <View style={styles.container}>
                 <LinearGradient
                     start={{ x: 0.4, y: 0.3 }}
