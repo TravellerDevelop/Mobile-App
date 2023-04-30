@@ -1,49 +1,63 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback } from 'react-native';
 import { font } from '../global/globalVariable';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
+import NewPost from './Modals/NewPost';
 
 export default function TravelDetail({ navigation, route }) {
     let [testData, setTestData] = useState([
         { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12" },
-        { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"],"votes" : [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12" },
+        { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12" },
         { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12" },
-        { type: "payment", mode:"pay", to: [] , creator: "Bosso", amount: "28.00€" , pinned: true, dateTime: "2020-12-12 12:12:12" },
+        { type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12" },
     ])
 
-    const [sortedData, setSortedData] = useState([...testData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1));
+    let [sortedData, setSortedData] = useState([...testData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1));
+
+    let [newPost, setNewPost] = useState(false);
 
     return (
-        <View style={styles.container}>
-            <ScrollView>
-                <HeaderTravelDetail navigation={navigation} data={route.params} />
-                <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
-                    <View style={styles.contentContainer}>
-                        <FlatList
-                            scrollEnabled={false}
-                            style={{ marginTop: 50 }}
-                            data={sortedData}
-                            renderItem={({ item }) => (
-                                (item.type == "text") ?
-                                    <TextComponent item={item} />
-                                    :
-                                    (item.type == "vote") ?
-                                        <Vote item={item} />
+        <>
+            { newPost ? <NewPost setNewPost={setNewPost} data={route.params} /> : null }
+            <View style={styles.container}>
+                <ScrollView>
+                    <HeaderTravelDetail navigation={navigation} data={route.params} />
+
+                    <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
+                        <View style={styles.contentContainer}>
+                            <TouchableNativeFeedback
+                                onPress={() => setNewPost(true)}
+                            >
+                                <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
+                                    <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                            <FlatList
+                                scrollEnabled={false}
+                                style={{ marginTop: 20 }}
+                                data={sortedData}
+                                renderItem={({ item }) => (
+                                    (item.type == "text") ?
+                                        <TextComponent item={item} />
                                         :
-                                        (item.type == "payment") ?
-                                            <PaymentComponent item={item} />
+                                        (item.type == "vote") ?
+                                            <Vote item={item} />
                                             :
-                                            null
-                            )}
-                        />
+                                            (item.type == "payment") ?
+                                                <PaymentComponent item={item} />
+                                                :
+                                                null
+                                )}
+                            />
+                        </View>
                     </View>
-                </View>
-                <View style={{ height: 100 }}></View>
-            </ScrollView>
-        </View>
+                    <View style={{ height: 100 }}></View>
+                </ScrollView>
+            </View>
+        </>
     )
 }
 

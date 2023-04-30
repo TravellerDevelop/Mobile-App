@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
         right: 0,
         borderTopLeftRadius: 10,
         borderBottomLeftRadius: 10,
+        elevation: 3,
     },
     statusText: {
         color: "#FFF",

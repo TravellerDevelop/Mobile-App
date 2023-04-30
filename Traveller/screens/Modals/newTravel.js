@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, TouchableNativeFeedback } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { color, font, serverLink } from '../../global/globalVariable';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
