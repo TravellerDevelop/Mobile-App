@@ -9,8 +9,6 @@ import NewPost from './Modals/NewPost';
 import axios from 'axios';
 
 export default function TravelDetail({ navigation, route }) {
-    let [sortedData, setSortedData] = useState([]);
-
     let [newPost, setNewPost] = useState(false);
 
     let [postData, setPostData] = useState([]);

@@ -6,12 +6,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { color, font, paddingTopPage, userInfo } from "../global/globalVariable";
 import AnimatedLottieView from 'lottie-react-native';
 import { getData } from '../shared/data/localdata';
+import EnterTravel from '../screens/Modals/enterTravel';
 
 
 export default function MainHeader({ navigation }) {
     let [user, setUser] = useState(null);
     let [touch, setTouch] = useState(0);
     let [easterVisibility, setEasterVisibility] = useState(false);
+    let [enter, setEnter] = useState(false);
 
     // let user = userInfo();
     setInterval(() => { setTouch(0) }, 5000)
@@ -31,55 +33,58 @@ export default function MainHeader({ navigation }) {
     }
 
     return (
-        <LinearGradient
-            style={styles.header}
-            start={{ x: 0.5, y: 0.2 }}
-            colors={[color.primary, color.secondary]}
-        >
-            <Modal visible={easterVisibility} animation="slide">
-                <AnimatedLottieView source={require('../assets/animation/toucan-walk-cycle.json')} autoPlay loop />
-                <Text style={{ fontFamily: font.montserrat, fontSize: 18, textAlign: "center", marginTop: 50 }}>Hai clickato troppe volte, ora sei obbligato a guardare il tucano!</Text>
-            </Modal>
-            <View style={styles.rowHeader}>
-                <TouchableWithoutFeedback onPress={() => {
-                    setTouch(touch++);
-                    if (touch == 10) {
-                        setEasterVisibility(true);
-                        setTouch(0);
-                    }
-                }}>
-                    <Text style={styles.logo}>TRAVELLER</Text>
-                </TouchableWithoutFeedback>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => navigation.navigate("Notifications")} >
-                        <Badge label={
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
-                                <Text
-                                    style={{ color: 'white', fontFamily: "montserrat-regular" }}
-                                >3+</Text>
-                            </View>
+        <>
+            {enter ? <EnterTravel visibility={enter} setVisibility={setEnter} /> : null }
+            <LinearGradient
+                style={styles.header}
+                start={{ x: 0.5, y: 0.2 }}
+                colors={[color.primary, color.secondary]}
+            >
+                <Modal visible={easterVisibility} animation="slide">
+                    <AnimatedLottieView source={require('../assets/animation/toucan-walk-cycle.json')} autoPlay loop />
+                    <Text style={{ fontFamily: font.montserrat, fontSize: 18, textAlign: "center", marginTop: 50 }}>Hai clickato troppe volte, ora sei obbligato a guardare il tucano!</Text>
+                </Modal>
+                <View style={styles.rowHeader}>
+                    <TouchableWithoutFeedback onPress={() => {
+                        setTouch(touch++);
+                        if (touch == 10) {
+                            setEasterVisibility(true);
+                            setTouch(0);
                         }
-                            color="#490099" />
-                    </TouchableOpacity>
+                    }}>
+                        <Text style={styles.logo}>TRAVELLER</Text>
+                    </TouchableWithoutFeedback>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => navigation.navigate("Notifications")} >
+                            <Badge label={
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
+                                    <Text
+                                        style={{ color: 'white', fontFamily: "montserrat-regular" }}
+                                    >3+</Text>
+                                </View>
+                            }
+                                color="#490099" />
+                        </TouchableOpacity>
 
-                    <View style={styles.whiteRound} ></View>
-                    <TouchableOpacity onPress={() => navigation.navigate("Profile", navigation)}>
-                        <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
-                    </TouchableOpacity>
+                        <View style={styles.whiteRound} ></View>
+                        <TouchableOpacity onPress={() => navigation.navigate("Profile", navigation)}>
+                            <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-            <View>
-                <Text style={styles.headerTitle}>Buongiorno {(user != null && user != '[]' && user != false && user != '') ? user.name : ""}!</Text>
-                <Text style={styles.headerSubtitle}>Dove andiamo oggi? 🚀</Text>
-            </View>
+                <View>
+                    <Text style={styles.headerTitle}>Buongiorno {(user != null && user != '[]' && user != false && user != '') ? user.name : ""}!</Text>
+                    <Text style={styles.headerSubtitle}>Dove andiamo oggi? 🚀</Text>
+                </View>
 
-            <TouchableOpacity>
-                <View style={styles.headerButton}>
-                    <Text style={styles.headerText}>+ Unisciti ad un viaggio!</Text>
-                </View>
-            </TouchableOpacity>
-        </LinearGradient>
+                <TouchableOpacity onPress={() => setEnter(true)} >
+                    <View style={styles.headerButton}>
+                        <Text style={styles.headerText}>+ Unisciti ad un viaggio!</Text>
+                    </View>
+                </TouchableOpacity>
+            </LinearGradient>
+        </>
     )
 }
 

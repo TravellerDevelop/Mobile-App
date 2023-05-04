@@ -12,7 +12,7 @@ export default function Card({ navigation, data }) {
                     <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {data.creator}</Text>
                 </View>
                 <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
-                    <CardPartecipants data={data} />
+                    {/* <CardPartecipants  data={data} /> */}
                 </View>
             </View>
         </TouchableNativeFeedback>

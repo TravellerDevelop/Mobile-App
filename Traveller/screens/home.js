@@ -1,13 +1,11 @@
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
-import { color, serverLink, userInfo } from '../global/globalVariable';
+import { color, serverLink } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
-import { UserInfoStateProvider, UserInfo } from '../global/globalStates';
-import { createIconSetFromFontello } from '@expo/vector-icons';
 
 export default function Home({ navigation }) {
     let [userData, setUserData] = useState(false);
@@ -27,15 +25,9 @@ export default function Home({ navigation }) {
                 storeStringData("username", data.username);
                 axios.get(serverLink + "api/user/info?username=" + data.username)
                     .then(async (response) => {
-                        // await storeJsonData("user", response.data);
                         await setUserData(response.data)
-
                         globalData = response.data;
-
-                        console.log(response.data[0].username)
-
                         loadTravels(response.data[0].username);
-
                     })
                     .catch((error) => {
                         console.log(error);
@@ -82,7 +74,7 @@ export default function Home({ navigation }) {
                             </View>
                         }
                         <InteractiveCard updatecards={loadTravels} setUserState={setUserData} userState={userData} />
-                        <Text style={styles.subtitle}>I viaggi dei tuoi amici</Text>
+                        <Text style={styles.subtitle}>I viaggi in cui sei stato invitato</Text>
                         <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                             <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
                         </View>

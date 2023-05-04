@@ -107,7 +107,8 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                             participants: [],
                             visibility: visibility,
                             date: date,
-                            new_members_allowed: new_members_allowed
+                            new_members_allowed: new_members_allowed,
+                            code: generateCode()
                         })
                             .then(function (response) {
                                 if (response.status == 200) {
@@ -119,6 +120,16 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                             .catch(function (error) {
                                 console.log(error);
                             });
+
+                            function generateCode() {
+                                var result = '';
+                                var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                                var charactersLength = characters.length;
+                                for (var i = 0; i < 5; i++) {
+                                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                                }
+                                return result;
+                            }
                     }}>
                         <Text style={(isLoading) ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
                     </TouchableOpacity>
