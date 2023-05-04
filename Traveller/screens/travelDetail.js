@@ -1,27 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback } from 'react-native';
-import { font } from '../global/globalVariable';
+import { font, serverLink } from '../global/globalVariable';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import NewPost from './Modals/NewPost';
+import axios from 'axios';
 
 export default function TravelDetail({ navigation, route }) {
-    let [testData, setTestData] = useState([
-        { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12" },
-        { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12" },
-        { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12" },
-        { type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12" },
-    ])
-
-    let [sortedData, setSortedData] = useState([...testData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1));
+    let [sortedData, setSortedData] = useState([]);
 
     let [newPost, setNewPost] = useState(false);
 
+    let [postData, setPostData] = useState([]);
+
+    useEffect(() => {
+        loadPosts(route.params._id);
+    }, [])
+
+
+    function loadPosts(travelId) {
+        axios.get(serverLink + "api/post/take?travel=" + travelId)
+            .then(async (response) => {
+                if (response.status == 200) {
+                    await setPostData(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
+    function onAddData(data) {
+        setPostData([...postData, data]);
+    }
+
+
     return (
         <>
-            { newPost ? <NewPost setNewPost={setNewPost} data={route.params} /> : null }
+            {newPost ? <NewPost setNewPost={setNewPost} refresh={onAddData} data={route.params} /> : null}
             <View style={styles.container}>
                 <ScrollView>
                     <HeaderTravelDetail navigation={navigation} data={route.params} />
@@ -35,28 +53,37 @@ export default function TravelDetail({ navigation, route }) {
                                     <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
                                 </View>
                             </TouchableNativeFeedback>
-                            <FlatList
-                                scrollEnabled={false}
-                                style={{ marginTop: 20 }}
-                                data={sortedData}
-                                renderItem={({ item }) => (
-                                    (item.type == "text") ?
-                                        <TextComponent item={item} />
-                                        :
-                                        (item.type == "vote") ?
-                                            <Vote item={item} />
-                                            :
-                                            (item.type == "payment") ?
-                                                <PaymentComponent item={item} />
-                                                :
-                                                null
-                                )}
-                            />
+                            {
+                                (postData.length == 0) ?
+                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300}}>
+                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                    </View>
+                                    :
+                                    <FlatList
+                                        scrollEnabled={false}
+                                        style={{ marginTop: 20 }}
+                                        data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
+                                        renderItem={({ item }) => (
+                                            <>
+                                                {(item.type == "text") ?
+                                                    <TextComponent item={item} />
+                                                    :
+                                                    (item.type == "vote") ?
+                                                        <Vote item={item} />
+                                                        :
+                                                        (item.type == "payment") ?
+                                                            <PaymentComponent item={item} />
+                                                            :
+                                                            null}
+                                            </>
+                                        )}
+                                    />
+                            }
                         </View>
                     </View>
                     <View style={{ height: 100 }}></View>
-                </ScrollView>
-            </View>
+                </ScrollView >
+            </View >
         </>
     )
 }

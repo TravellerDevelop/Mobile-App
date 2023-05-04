@@ -1,14 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableNativeFeedback, Modal, ScrollView, TextInput } from "react-native";
-import { font, color } from "../../global/globalVariable";
+import { View, Text, StyleSheet, Image, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator } from "react-native";
+import { font, color, serverLink } from "../../global/globalVariable";
 import { Dropdown } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { getData } from "../../shared/data/localdata";
+import axios from "axios";
 
 let voteParams;
+let textParams;
 
-export default function NewPost({ setNewPost, data }) {
+
+/* 
+    Struttura dei post:
+    { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+    { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+    { type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+*/
+
+
+
+
+export default function NewPost({ setNewPost, data, refresh }) {
+    let [isLoading, setIsLoading] = useState(false);
+
     let PostType = [
         { label: "Testo", value: "text" },
         { label: "Sondaggio", value: "vote" },
@@ -16,25 +31,35 @@ export default function NewPost({ setNewPost, data }) {
     ]
 
 
+    let [question, setQuestion] = React.useState("");
 
+    useEffect(() => {
+        const test = async () => {
+            let aus = await getData("user")
 
-    const test = async () => {
-        let aus = await getData("user")
-        console.log(aus);
+            voteParams = {
+                question: "",
+                content: [
+                    "",
+                ],
+                votes: [[]],
+                pinned: false,
+                creator: aus.username,
+                travel: data._id,
+            }
 
-        voteParams = {
-            question: "",
-            content: [
-                "",
-            ],
-            pinned: false,
-            creator: aus.username,
+            textParams = {
+                content: "",
+                pinned: false,
+                creator: aus.username,
+                travel: data._id,
+            }
+
+            return aus;
         }
 
-        return aus;
-    }
-
-    test()
+        test()
+    }, [])
 
 
     let [answers, setAnswers] = useState([
@@ -63,8 +88,6 @@ export default function NewPost({ setNewPost, data }) {
     let [pinned, setPinned] = React.useState(false);
     let [paymentDestinator, setpaymentDestinator] = React.useState(false);
 
-
-
     return (
         <Modal visible={true} animationType="slide" >
             <Text style={styles.title} >Crea un nuovo post</Text>
@@ -81,7 +104,7 @@ export default function NewPost({ setNewPost, data }) {
                     labelField="label"
                     valueField="value"
                 />
-                {type == "text" ? <TextInput style={styles.input} placeholder="Testo del post" /> : null}
+                {type == "text" ? <TextInput style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
                 {type == "payments" ?
                     <>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -131,10 +154,10 @@ export default function NewPost({ setNewPost, data }) {
 
                 {type == "vote" ?
                     <>
-                        <TextInput style={styles.input} placeholder="Domanda" onChangeText={(value) => { voteParams.question = value }} />
+                        <TextInput style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
 
-                        
-                        <Text style={[styles.subtitle, {marginTop: 30}]}>Risposte:</Text>
+
+                        <Text style={[styles.subtitle, { marginTop: 30 }]}>Risposte:</Text>
                         <FlatList
                             data={answers}
                             scrollEnabled={false}
@@ -149,14 +172,13 @@ export default function NewPost({ setNewPost, data }) {
                         <TouchableNativeFeedback onPress={() => {
                             let aus = answers;
                             voteParams.content.push("");
+                            voteParams.votes.push([]);
                             console.log(voteParams.content)
                             answers.push({ key: answers.length + 1, question: "" });
                             setAusState({ key: answers.length + 1, question: "" })
-                            setAnswers(aus)
+                            setAnswers(aus);
                         }
                         } >
-
-
                             <View style={styles.button} >
                                 <Text style={styles.buttonText} >+ Aggiungi risposta</Text>
                             </View>
@@ -177,19 +199,44 @@ export default function NewPost({ setNewPost, data }) {
                 </View>
 
                 <TouchableNativeFeedback onPress={() => {
-                    // (type != "") ? setNewPost(false) : null
-                    if(type == "vote"){
+                    let param = []
+                    if (type == "vote") {
                         voteParams.pinned = pinned;
+                        voteParams.question = question;
                         console.log(voteParams)
+                        textParams.dateTime = new Date().toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        param = voteParams;
+                    }
+                    else if (type == "text") {
+                        textParams.dateTime = new Date().toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        textParams.pinned = pinned;
+                        console.log(textParams)
+                        param = textParams
                     }
 
+                    param.type = type;
 
+                    setIsLoading(true)
 
-
+                    if (param != []) {
+                        axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
+                            setIsLoading(false)
+                            refresh(param)
+                            setNewPost(false)
+                        }).catch((error) => {
+                            setIsLoading(false)
+                            console.log(error)
+                        })
+                    }
                 }} >
-                    <View style={[styles.button, (type == "") ? { backgroundColor: "lightgray" } : null]} >
-                        <Text style={styles.buttonText} >Crea</Text>
-                    </View>
+                    {
+                        isLoading ?
+                            <ActivityIndicator size="large" color="#4900FF" style={{ marginTop: 20 }} />
+                            :
+                            <View style={[styles.button, (type == "") ? { backgroundColor: "lightgray" } : null]} >
+                                <Text style={styles.buttonText} >Crea</Text>
+                            </View>
+                    }
                 </TouchableNativeFeedback>
             </ScrollView>
         </Modal>

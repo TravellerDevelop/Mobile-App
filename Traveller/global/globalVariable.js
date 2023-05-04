@@ -31,5 +31,5 @@ export const actualPage = "home";
 // In sviluppo cambiare il valore a 40
 export const paddingTopPage = 40;
 
-export const serverLink = "http://192.168.1.115:1337/"
+export const serverLink = "http://192.168.1.125:1337/"
 // export const serverLink = "https://traveller-ttze.onrender.com/"
