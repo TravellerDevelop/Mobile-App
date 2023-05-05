@@ -1,11 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { color, font, serverLink } from '../global/globalVariable';
-import { ScrollView, TextInput } from 'react-native-gesture-handler';
-import { Dropdown } from 'react-native-element-dropdown';
-import axios from 'axios';
-import { getStringData } from '../shared/data/localdata';
+import { color, font } from '../global/globalVariable';
 import NewTravel from '../screens/Modals/newTravel';
 
 export default function InteractiveCard({ userState, setUserState, updatecards }) {
@@ -41,11 +37,12 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: "transparent",
         height: 140,
-        width: "90%",
+        width: Dimensions.get("window").width - 20,
         borderRadius: 10,
         marginTop: 30,
         marginBottom: 30,
-        marginLeft: "5%",
+        marginLeft: 10,
+        marginRight: 10,
     },
     cardTitle: {
         color: "white",

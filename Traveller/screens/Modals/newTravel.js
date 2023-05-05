@@ -4,31 +4,33 @@ import { color, font, serverLink } from '../../global/globalVariable';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
+import { SegmentedButtons } from 'react-native-paper';
 import { getStringData } from '../../shared/data/localdata';
 
 
 export default function NewTravel({ userState, setUserState, setNewTravelVisibility, updatecards }) {
+    let [value, setValue] = React.useState("");
     let [creator, setCreator] = React.useState("");
     let [name, setName] = React.useState("");
     let [description, setDescription] = React.useState("");
     let [budget, setBudget] = React.useState("");
     let [participants, setParticipants] = React.useState([]);
-    let [visibility, setVisibility] = React.useState("");
+    let [visibility, setVisibility] = React.useState("1");
     let [date, setDate] = React.useState("");
-    let [new_members_allowed, setNewMembersAllowed] = React.useState("");
+    let [new_members_allowed, setNewMembersAllowed] = React.useState("1");
 
     let [isLoading, setIsLoading] = React.useState(false);
 
     const dataVisibility = [
         { label: 'Pubblico', value: '1' },
-        { label: 'Solo amici', value: '2' },
+        { label: 'Amici', value: '2' },
         { label: 'Privato', value: '3' },
     ];
 
     const newMembers = [
-        { label: 'Chiunque', value: '1' },
-        { label: 'Solo amici', value: '2' },
-        { label: 'Solo su invito', value: '3' },
+        { label: 'Tutti', value: '1' },
+        { label: 'Amici', value: '2' },
+        { label: 'Chiuso', value: '0' },
     ];
 
     React.useEffect(() => {
@@ -65,34 +67,24 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                             </View>
                         </View>
                     </View>
-                    <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30 }]}>Privacy e sicurezza</Text>
-                    <Dropdown
-                        placeholder='Visibilità'
-                        data={dataVisibility}
-                        style={{ borderBottomColor: "#4900FF", borderBottomWidth: 2, width: "100%", marginTop: 10 }}
-                        placeholderStyle={{ fontFamily: font.montserrat }}
-                        selectedTextStyle={{ fontFamily: font.montserrat }}
-                        inputSearchStyle={{ fontFamily: font.montserrat }}
-                        fontFamily={font.montserrat}
-                        onChange={(value) => { setVisibility(value["value"]) }}
-                        onChangeText={(value) => { console.log("Text: ", value) }}
-                        labelField="label"
-                        valueField="value"
-                    />
+                    
+                    <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
+                    <SegmentedButtons
+                        value={visibility}
+                        onValueChange={(value) => { setVisibility(value) }}
+                        buttons={dataVisibility}
+                    >
+                    </SegmentedButtons>
 
-                    <Dropdown
-                        placeholder='Nuovi membri'
-                        data={newMembers}
-                        style={{ borderBottomColor: "#4900FF", borderBottomWidth: 2, width: "100%", marginTop: 20 }}
-                        placeholderStyle={{ fontFamily: font.montserrat }}
-                        selectedTextStyle={{ fontFamily: font.montserrat }}
-                        inputSearchStyle={{ fontFamily: font.montserrat }}
-                        fontFamily={font.montserrat}
-                        onChange={(value) => { setNewMembersAllowed(value["value"]) }}
-                        onChangeText={(value) => { console.log("Text: ", value) }}
-                        labelField="label"
-                        valueField="value"
-                    />
+                    <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Nuovi membri ammessi:</Text>
+
+                    <SegmentedButtons
+                        buttons={newMembers}
+                        onValueChange={(value) => { setNewMembersAllowed(value) }}
+                        value={new_members_allowed}
+                    >
+                    </SegmentedButtons>
+
                     <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
                         await setCreator(getStringData("username"))
                         setIsLoading(true);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, TouchableOpacity } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { Dropdown } from "react-native-element-dropdown";
-import { Checkbox } from "react-native-paper";
+import { Checkbox, SegmentedButtons } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { getData } from "../../shared/data/localdata";
 import axios from "axios";
@@ -24,6 +24,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
         { label: "Testo", value: "text" },
         { label: "Sondaggio", value: "vote" },
         { label: "Pagamento", value: "payments" },
+        { label: "Biglietto", value: "ticket" },
     ]
 
 
@@ -89,21 +90,23 @@ export default function NewPost({ setNewPost, data, refresh }) {
             <TouchableOpacity style={{ position: "absolute", top: 20, right: 20 }} onPress={() => setNewPost(false)}>
                 <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
             </TouchableOpacity>
-            <Text style={[styles.title, {marginTop: 60}]} >Crea un nuovo post</Text>
+            <Text style={[styles.title, { marginTop: 60 }]} >Crea un nuovo post</Text>
             <ScrollView style={{ width: "100%", padding: 20 }} >
-                <Dropdown
-                    placeholder='Tipologia del post'
-                    data={PostType}
-                    style={{ borderBottomColor: "#4900FF", borderBottomWidth: 2, width: "100%", marginTop: 10 }}
-                    placeholderStyle={{ fontFamily: font.montserrat }}
-                    selectedTextStyle={{ fontFamily: font.montserrat }}
-                    inputSearchStyle={{ fontFamily: font.montserrat }}
-                    fontFamily={font.montserrat}
-                    onChange={(value) => { setType(value["value"]) }}
-                    labelField="label"
-                    valueField="value"
-                />
-                {type == "text" ? <TextInput  placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
+                <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text>
+                <ScrollView
+                    horizontal={true}
+                    style={{ paddingBottom: 10 }}
+                >
+                    <SegmentedButtons
+                        density="small"
+                        style={{ fontFamily: font.montserrat }}
+                        buttons={PostType}
+                        onValueChange={(value) => { setType(value) }}
+                        value={type}
+                    >
+                    </SegmentedButtons>
+                </ScrollView>
+                {type == "text" ? <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
                 {type == "payments" ?
                     <>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
