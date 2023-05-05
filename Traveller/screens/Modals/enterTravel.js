@@ -5,7 +5,7 @@ import axios from "axios";
 import { getData } from "../../shared/data/localdata";
 import { ActivityIndicator } from "react-native-paper";
 
-export default function EnterTravel({ visibility, setVisibility }) {
+export default function EnterTravel({ visibility, setVisibility, updateJoinTravels }) {
     let [code, setCode] = useState("");
     let [error, setError] = useState(false);
     let [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function EnterTravel({ visibility, setVisibility }) {
                 <Text style={styles.title}>Entra in un nuovo viaggio</Text>
                 <Text style={styles.text}>Inserisci il codice a 5 cifre che trovi nella home page del viaggio:</Text>
                 {error ? <Text style={{ color: "red", fontSize: 16, fontFamily: font.montserrat }}>{error}</Text> : null}
-                <TextInput style={styles.input} placeholder="Codice invito" maxLength={5} onChangeText={(value) => setCode(value)} />
+                <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Codice invito" maxLength={5} onChangeText={(value) => setCode(value)} />
                 <TouchableOpacity style={[{ borderRadius: 10, padding: 10, width: "80%" }, (code.length < 5) ? { backgroundColor: "lightGray" } : { backgroundColor: color.primary, }, (loading) ? { opacity: 0, height: 0 } : { opacity: 100 }]} onPress={async () => {
                     if (code.length == 5) {
                         let userData = await getData("user");
@@ -28,9 +28,12 @@ export default function EnterTravel({ visibility, setVisibility }) {
 
 
                         setLoading(true);
-                        axios.post(serverLink + "api/travel/join", param).then((response) => {
+                        axios.post(serverLink + "api/travel/join", param).then(async (response) => {
                             console.log(response.data)
                             if (response.status == 200) {
+                                let userData = await getData("user");
+                                updateJoinTravels(userData.username, userData._id);
+
                                 setVisibility(false);
                                 setLoading(false);
                             } else {

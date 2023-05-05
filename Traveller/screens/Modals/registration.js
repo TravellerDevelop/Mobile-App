@@ -18,11 +18,11 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
             <ScrollView>
                 <Text style={styles.title}>TRAVELLER</Text>
                 <View style={styles.container}>
-                    <TextInput placeholder="Nome" style={styles.input} onChangeText={(value) => { name_(value) }} />
-                    <TextInput placeholder="Cognome" style={styles.input} onChangeText={(value) => { surname_(value) }} />
-                    <TextInput placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
-                    <TextInput placeholder="Email" style={styles.input} onChangeText={(value) => { email_(value) }} />
-                    <TextInput secureTextEntry placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Nome" placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => { name_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Cognome" style={styles.input} onChangeText={(value) => { surname_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Email" style={styles.input} onChangeText={(value) => { email_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} secureTextEntry placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
                     <TouchableNativeFeedback onPress={() => {
                         (async () => {
                             const digest = await Crypto.digestStringAsync(

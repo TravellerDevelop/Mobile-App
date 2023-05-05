@@ -38,19 +38,17 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
     return (
         <Modal visible={true} animationType='slide'>
-            <TouchableNativeFeedback onPress={() => { setNewTravelVisibility(false) }} >
-                {/* <View style={{ width: 30, height: 30, position: "absolute", top: 20, left: 20 }}> */}
-                    <Image source={require('../../assets/image/icona-freccia-left.png')} style={{ width: 30, height: 30, tintColor: "#000", position: "absolute", top: 20, left: 20 }} />
-                {/* </View> */}
-            </TouchableNativeFeedback>
+            <TouchableOpacity style={{ position: "absolute", top: 20, right: 20 }} onPress={() => setNewTravelVisibility(false)}>
+                <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
+            </TouchableOpacity>
 
-            <Text style={[styles.title, { marginBottom: 30 }]}>Crea un nuovo viaggio!</Text>
+            <Text style={[styles.title, { marginBottom: 30, marginTop: 60 }]}>Crea un nuovo viaggio!</Text>
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", width: "100%" }}>
                 <ScrollView style={{ flex: 1, width: "80%" }}>
-                    <TextInput style={styles.input} placeholder="Nome del viaggio" onChangeText={(value) => { name_(value) }} />
-                    <TextInput style={styles.inputMultiline} placeholder="Descrizione (facoltativa)" multiline onChangeText={(value) => { description_(value) }} />
-                    <TextInput style={styles.input} placeholder="Budget (facoltativo)" onChangeText={(value) => { budget_(parseInt(value)) }} />
-                    <TextInput style={styles.input} placeholder="Aggiungi amico al viaggio" />
+                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Nome del viaggio" onChangeText={(value) => { name_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} placeholder="Descrizione (facoltativa)" multiline onChangeText={(value) => { description_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Budget (facoltativo)" onChangeText={(value) => { budget_(parseInt(value)) }} />
+                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Aggiungi amico al viaggio" />
                     <TouchableOpacity>
                         <View style={[styles.modalButton, { height: 35, marginTop: 0, borderRadius: 35, width: "50%", marginLeft: "25%" }]}>
                             <Text style={[styles.modalButtonText, { lineHeight: 35, fontSize: 16 }]}>Aggiungi</Text>

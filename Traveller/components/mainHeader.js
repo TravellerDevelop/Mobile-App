@@ -9,7 +9,7 @@ import { getData } from '../shared/data/localdata';
 import EnterTravel from '../screens/Modals/enterTravel';
 
 
-export default function MainHeader({ navigation }) {
+export default function MainHeader({ navigation, updateJoinTravels }) {
     let [user, setUser] = useState(null);
     let [touch, setTouch] = useState(0);
     let [easterVisibility, setEasterVisibility] = useState(false);
@@ -34,7 +34,7 @@ export default function MainHeader({ navigation }) {
 
     return (
         <>
-            {enter ? <EnterTravel visibility={enter} setVisibility={setEnter} /> : null }
+            {enter ? <EnterTravel visibility={enter} setVisibility={setEnter} updateJoinTravels={updateJoinTravels} /> : null }
             <LinearGradient
                 style={styles.header}
                 start={{ x: 0.5, y: 0.2 }}

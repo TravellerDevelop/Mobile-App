@@ -10,6 +10,7 @@ import { getData, getStringDataWithState, storeJsonData, storeStringData } from 
 export default function Home({ navigation }) {
     let [userData, setUserData] = useState(false);
     let [travels, setTravels] = useState(false);
+    let [joinedTravels, setJoinedTravels] = useState(false);
 
     let globalData = null;
 
@@ -28,6 +29,7 @@ export default function Home({ navigation }) {
                         await setUserData(response.data)
                         globalData = response.data;
                         loadTravels(response.data[0].username);
+                        loadJoinedTravels(response.data[0].username, response.data[0]._id)
                     })
                     .catch((error) => {
                         console.log(error);
@@ -44,8 +46,20 @@ export default function Home({ navigation }) {
         axios.get(serverLink + "api/user/travels?username=" + username)
             .then(async (response) => {
                 if (response.status == 200) {
-                    console.log(response.data)
                     await setTravels(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
+    loadJoinedTravels = (username, userid) => {
+        console.log("Loading joined travels   " + username + "   " + userid)
+        axios.get(serverLink + "api/travel/takeJoined?username=" + username + "&userid=" + userid)
+            .then(async (response) => {
+                if (response.status == 200) {
+                    await setJoinedTravels(response.data);
                 }
             })
             .catch((error) => {
@@ -56,7 +70,7 @@ export default function Home({ navigation }) {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <MainHeader navigation={navigation} />
+                <MainHeader navigation={navigation} updateJoinTravels={loadTravels} />
                 <View style={styles.blue}>
                     <View style={styles.content}>
                         <Text style={styles.title}>Home</Text>
@@ -75,9 +89,17 @@ export default function Home({ navigation }) {
                         }
                         <InteractiveCard updatecards={loadTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>I viaggi in cui sei stato invitato</Text>
-                        <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
-                            <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
-                        </View>
+                        {(joinedTravels != null && joinedTravels.length > 0) ?
+                            <FlatList
+                                data={joinedTravels}
+                                horizontal
+                                renderItem={({ item }) => <Card data={item} navigation={navigation} />}
+                            />
+                            :
+                            <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
+                            </View>
+                        }
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>

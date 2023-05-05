@@ -25,8 +25,6 @@ export default function Vote({ item }) {
 
             let i = 0
 
-            console.log(ausItem.votes);
-
             for (item of ausItem.votes) {
                 for (aus of item) {
                     if (aus == username) {
@@ -141,13 +139,8 @@ export default function Vote({ item }) {
 
                         aus[i].push(username);
 
-
-                        console.log(aus);
-
-                        console.log(item._id);
                         axios.post(serverLink + "api/post/updateVote", { id: item._id, vote: aus })
                             .then((res) => {
-                                console.log(res.data);
                                 setCheckDisabled(true);
                             })
                             .catch((err) => {

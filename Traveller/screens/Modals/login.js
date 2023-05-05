@@ -30,8 +30,8 @@ export default function LoginModal({ navigation, visibility, setVisibility }) {
                         </View>
                         <Text style={styles.undertitle} >Gira il mondo facilmente</Text>
                         {error != null ? <Text style={{ color: "red", fontSize: 15, textAlign: "center" }}>{error}</Text> : null}
-                        <TextInput placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
-                        <TextInput secureTextEntry={true} placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
+                        <TextInput placeholderTextColor={"gray"} placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
+                        <TextInput placeholderTextColor={"gray"} secureTextEntry={true} placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
                         {isLoading ? <ActivityIndicator size="large" color={color.secondary} /> : null }
                             <TouchableNativeFeedback onPress={() => {
                                 (async () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, TouchableOpacity } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { Dropdown } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
@@ -10,16 +10,12 @@ import axios from "axios";
 let voteParams;
 let textParams;
 
-
 /* 
     Struttura dei post:
     { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
     { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12", travel: "_id" },
     { type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
 */
-
-
-
 
 export default function NewPost({ setNewPost, data, refresh }) {
     let [isLoading, setIsLoading] = useState(false);
@@ -90,7 +86,10 @@ export default function NewPost({ setNewPost, data, refresh }) {
 
     return (
         <Modal visible={true} animationType="slide" >
-            <Text style={styles.title} >Crea un nuovo post</Text>
+            <TouchableOpacity style={{ position: "absolute", top: 20, right: 20 }} onPress={() => setNewPost(false)}>
+                <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
+            </TouchableOpacity>
+            <Text style={[styles.title, {marginTop: 60}]} >Crea un nuovo post</Text>
             <ScrollView style={{ width: "100%", padding: 20 }} >
                 <Dropdown
                     placeholder='Tipologia del post'
@@ -104,14 +103,14 @@ export default function NewPost({ setNewPost, data, refresh }) {
                     labelField="label"
                     valueField="value"
                 />
-                {type == "text" ? <TextInput style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
+                {type == "text" ? <TextInput  placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
                 {type == "payments" ?
                     <>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <TextInput style={[styles.input, { width: "90%" }]} inputMode="numeric" placeholder="Importo del pagamento" />
+                            <TextInput placeholderTextColor={"gray"} style={[styles.input, { width: "90%" }]} inputMode="numeric" placeholder="Importo del pagamento" />
                             <Text style={[styles.title, { marginLeft: 10 }]}>€</Text>
                         </View>
-                        <TextInput style={styles.inputMultiline} multiline={true} placeholder="Note del pagamento" />
+                        <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline={true} placeholder="Note del pagamento" />
                         <Dropdown
                             placeholder="Destinatari"
                             data={[{ label: "Tutti", value: "all" }, { label: "Personalizzato", value: "custom" }]}
@@ -154,7 +153,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
 
                 {type == "vote" ?
                     <>
-                        <TextInput style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
+                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
 
 
                         <Text style={[styles.subtitle, { marginTop: 30 }]}>Risposte:</Text>
@@ -163,7 +162,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
                             scrollEnabled={false}
                             extraData={ausState}
                             renderItem={({ item }) => (
-                                <TextInput style={styles.input} onChangeText={(value) => {
+                                <TextInput placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => {
                                     voteParams.content[item.key - 1] = value
                                 }} placeholder={"Risposta " + item.key} />
                             )}
