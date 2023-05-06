@@ -3,17 +3,19 @@ import { StyleSheet } from "react-native";
 import { font } from "../../global/globalVariable";
 export const ComponentStyles = StyleSheet.create({
     container: {
-        flex: 1,
+        // flex: 1,
         backgroundColor: "white",
     },
     contentContainer: {
-        flex: 1,
+
+        // flex: 1,
         backgroundColor: "#FFF",
         borderTopEndRadius: 20,
         borderTopLeftRadius: 20,
         minHeight: 100
     },
     card: {
+        minWidth: 250,
         backgroundColor: "#FFF",
         borderRadius: 10,
         margin: 10,

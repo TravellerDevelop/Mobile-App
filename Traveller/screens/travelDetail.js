@@ -7,9 +7,11 @@ import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import NewPost from './Modals/NewPost';
 import axios from 'axios';
+import LoadingPost from '../shared/loadingPost';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
+    let [postLoading, setPostLoading] = useState(true);
 
     let [postData, setPostData] = useState([]);
 
@@ -23,6 +25,7 @@ export default function TravelDetail({ navigation, route }) {
             .then(async (response) => {
                 if (response.status == 200) {
                     await setPostData(response.data);
+                    await setPostLoading(false);
                 }
             })
             .catch((error) => {
@@ -52,30 +55,37 @@ export default function TravelDetail({ navigation, route }) {
                                 </View>
                             </TouchableNativeFeedback>
                             {
-                                (postData.length == 0) ?
-                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300}}>
-                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                (postLoading) ?
+                                    <View>
+                                        <LoadingPost />
+                                        <LoadingPost />
+                                        <LoadingPost />
                                     </View>
                                     :
-                                    <FlatList
-                                        scrollEnabled={false}
-                                        style={{ marginTop: 20 }}
-                                        data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
-                                        renderItem={({ item }) => (
-                                            <>
-                                                {(item.type == "text") ?
-                                                    <TextComponent item={item} />
-                                                    :
-                                                    (item.type == "vote") ?
-                                                        <Vote item={item} />
+                                    (postData.length == 0) ?
+                                        < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
+                                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                        </View>
+                                        :
+                                        <FlatList
+                                            scrollEnabled={false}
+                                            style={{ marginTop: 20 }}
+                                            data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
+                                            renderItem={({ item }) => (
+                                                <>
+                                                    {(item.type == "text") ?
+                                                        <TextComponent item={item} home={false} />
                                                         :
-                                                        (item.type == "payment") ?
-                                                            <PaymentComponent item={item} />
+                                                        (item.type == "vote") ?
+                                                            <Vote item={item} home={false} />
                                                             :
-                                                            null}
-                                            </>
-                                        )}
-                                    />
+                                                            (item.type == "payment") ?
+                                                                <PaymentComponent item={item} home={false} />
+                                                                :
+                                                                null}
+                                                </>
+                                            )}
+                                        />
                             }
                         </View>
                     </View>

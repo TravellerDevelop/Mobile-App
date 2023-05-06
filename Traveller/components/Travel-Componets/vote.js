@@ -12,7 +12,7 @@ let totalVotes;
 let username = "";
 
 
-export default function Vote({ item }) {
+export default function Vote({ item, home }) {
     let [checkDisabled, setCheckDisabled] = React.useState(false);
 
     ausItem = item;
@@ -68,7 +68,7 @@ export default function Vote({ item }) {
 
     return (
         <View style={ComponentStyles.card}>
-            {(item.pinned) ?
+            {(item.pinned && !home) ?
                 <View style={ComponentStyles.pinned}>
                     <Image source={require("../../assets/image/pin.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "lightgray" }} />
                     <Text style={ComponentStyles.pinnedText}>Fissato in alto</Text>

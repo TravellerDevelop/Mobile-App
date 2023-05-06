@@ -35,7 +35,7 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
     React.useEffect(() => {
         setDate(new Date().toISOString().slice(0, 10));
-        setCreator(userState[0].username)
+        setCreator({ userid: userState[0]._id, username: userState[0].username, creator: true})
     }, []);
 
     return (
@@ -90,11 +90,12 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                         setIsLoading(true);
 
                         axios.post(serverLink + 'api/travel/create', {
-                            creator: creator,
                             name: name,
                             description: description,
                             budget: budget,
-                            participants: [],
+                            participants: [
+                                creator
+                            ],
                             visibility: visibility,
                             date: date,
                             new_members_allowed: new_members_allowed,

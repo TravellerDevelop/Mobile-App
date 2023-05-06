@@ -3,13 +3,23 @@ import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import CardPartecipants from "./cardPartecipants";
 import { color, font } from "../global/globalVariable";
 
-export default function Card({ navigation, data }) {
+export default function Card({ navigation, data }) {    
+
+    let creator = "";
+    let i = 0;
+    while(creator == "" && i < data.participants.length){
+        if(data.participants[i].creator === true){
+            creator = data.participants[i].username;
+        }
+        i++;
+    }
+
     return (
         <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
             <View style={styles.container}>
                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
                     <Text style={styles.cardTitle}>{data.name}</Text>
-                    <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {data.creator}</Text>
+                    <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {creator}</Text>
                 </View>
                 <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
                     {/* <CardPartecipants  data={data} /> */}
