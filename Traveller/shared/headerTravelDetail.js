@@ -4,6 +4,7 @@ import { color, font, paddingTopPage } from '../global/globalVariable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getData } from './data/localdata';
+import { Badge } from '@react-native-material/core';
 import EditTravel from '../screens/Modals/edittravel';
 import CardPartecipants from './cardPartecipants';
 
@@ -36,7 +37,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
                     <TouchableOpacity onPress={() => {
                         console.log("Press")
                         setEditVisibility(true)
-                        }} style={{zIndex: 100}}>
+                    }} style={{ zIndex: 100 }}>
                         <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: top, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
                             <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25 }} />
                         </View>
@@ -56,8 +57,17 @@ export default function HeaderTravelDetail({ navigation, data }) {
 
             <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
 
-            <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 100 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
-                {/* <CardPartecipants data={data} /> */}
+            <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 300 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
+                <Badge label={
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <MaterialCommunityIcons style={{ marginRight: 5 }} name='information-outline' color="white" />
+                        <Text
+                            style={{ color: 'white', fontFamily: font.montserrat }}
+                        >Informazioni sul viaggio</Text>
+                    </View>
+                }
+                
+                    color="#490099" />
             </TouchableOpacity>
         </LinearGradient>
     )

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback } from 'react-native';
+import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback, RefreshControl } from 'react-native';
 import { font, serverLink } from '../global/globalVariable';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 import TextComponent from '../components/Travel-Componets/textcomponent';
@@ -18,6 +18,14 @@ export default function TravelDetail({ navigation, route }) {
     useEffect(() => {
         loadPosts(route.params._id);
     }, [])
+
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        loadPosts(route.params._id);
+        setRefreshing(false);
+    };
 
 
     function loadPosts(travelId) {
@@ -42,7 +50,14 @@ export default function TravelDetail({ navigation, route }) {
         <>
             {newPost ? <NewPost setNewPost={setNewPost} refresh={onAddData} data={route.params} /> : null}
             <View style={styles.container}>
-                <ScrollView>
+                <ScrollView
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />
+                    }
+                >
                     <HeaderTravelDetail navigation={navigation} data={route.params} />
 
                     <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
@@ -62,11 +77,10 @@ export default function TravelDetail({ navigation, route }) {
                                         <LoadingPost />
                                     </View>
                                     :
-                                    (postData.length == 0) ?
-                                        < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
-                                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
-                                        </View>
-                                        :
+                                    null
+                            }
+                            {
+                                    (postData.length > 0 && postData != null && !postLoading) ?
                                         <FlatList
                                             scrollEnabled={false}
                                             style={{ marginTop: 20 }}
@@ -86,6 +100,16 @@ export default function TravelDetail({ navigation, route }) {
                                                 </>
                                             )}
                                         />
+                                        :
+                                        null
+                            }
+                            {
+                                (postData.length == 0 || postData == null && !postLoading)?
+                                        < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
+                                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                        </View>
+                                        :
+                                        null
                             }
                         </View>
                     </View>

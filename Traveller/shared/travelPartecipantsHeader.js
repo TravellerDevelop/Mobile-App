@@ -15,8 +15,9 @@ export default function TravelPartecipantsHeader({ navigation, route }) {
             >
                 <View style={styles.row}>
                     <MaterialCommunityIcons name="arrow-left" size={24} color="white" onPress={() => navigation.goBack()} />
-                    <Text style={styles.title}>{route.params.key}</Text>
+                    <Text style={styles.title}>{route.params.name}</Text>
                 </View>
+                <Text style={styles.subtitle}>Creato il {route.params.creation_date}</Text>
             </LinearGradient>
             <View style={styles.bg}>
                 <View style={styles.rounded}></View>
@@ -52,5 +53,13 @@ const styles = StyleSheet.create({
         width: "100%",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-    }
+    },
+    subtitle: {
+        fontSize: 15,
+        fontFamily: font.montserratLight,
+        marginLeft: 35,
+        marginTop: 10,
+        color: "white",
+        marginBottom: 10,
+    },
 })

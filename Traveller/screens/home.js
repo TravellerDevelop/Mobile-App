@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
@@ -20,6 +20,8 @@ export default function Home({ navigation }) {
 
     let [userData, setUserData] = useState(false);
     let [joinedTravels, setJoinedTravels] = useState(false);
+
+    const [refreshing, setRefreshing] = useState(false);
 
     let globalData = null;
 
@@ -50,6 +52,14 @@ export default function Home({ navigation }) {
         }
     }, []);
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        let data = await getData("user");
+        loadJoinedTravels(data.username, data._id);
+        takePost(data._id, data.username);
+        setRefreshing(false);
+    };
+
     function loadJoinedTravels(username, userid) {
         axios.get(serverLink + "api/travel/takeJoined?username=" + username + "&userid=" + userid)
             .then(async (response) => {
@@ -78,7 +88,14 @@ export default function Home({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <ScrollView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
                 <MainHeader navigation={navigation} updateJoinTravels={loadJoinedTravels} />
                 <View style={styles.blue}>
                     <View style={styles.content}>
@@ -92,20 +109,26 @@ export default function Home({ navigation }) {
                                     <LoadingCard />
                                 </ScrollView>
                                 :
-
-                                (joinedTravels != null && joinedTravels.length > 0) ?
-                                    <FlatList
-                                        data={joinedTravels}
-                                        horizontal
-                                        renderItem={({ item }) => <Card data={item} navigation={navigation} />}
-                                    />
-                                    :
-                                    <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
-                                        <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
-                                    </View>
+                                null
                         }
-
-
+                        {
+                            (joinedTravels != null && joinedTravels.length > 0 && !joinedTravelsLoading) ?
+                                <FlatList
+                                    data={joinedTravels}
+                                    horizontal
+                                    renderItem={({ item }) => <Card data={item} navigation={navigation} />}
+                                />
+                                :
+                                null
+                        }
+                        {
+                            (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
+                                <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                    <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
+                                </View>
+                                :
+                                null
+                        }
                         <InteractiveCard updatecards={loadJoinedTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>Gli ultimi post dai tuoi viaggi:</Text>
                         {
@@ -116,29 +139,36 @@ export default function Home({ navigation }) {
                                     <LoadingPost />
                                 </View>
                                 :
-                                (lastPosts == null || lastPosts.length == 0) ?
-                                    <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
-                                        <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun post trovato : /</Text>
-                                    </View>
-                                    :
-                                    <FlatList
-                                        scrollEnabled={false}
-                                        data={lastPosts}
-                                        renderItem={({ item }) => (
-                                            <>
-                                                {(item.type == "text") ?
-                                                    <TextComponent home={true} item={item} />
+                                null
+                        }
+                        {
+                            (lastPosts != null && lastPosts.length > 0 && !lastPostsLoading) ?
+                                <FlatList
+                                    scrollEnabled={false}
+                                    data={lastPosts}
+                                    renderItem={({ item }) => (
+                                        <>
+                                            {(item.type == "text") ?
+                                                <TextComponent home={true} item={item} />
+                                                :
+                                                (item.type == "vote") ?
+                                                    <Vote item={item} home={true} />
                                                     :
-                                                    (item.type == "vote") ?
-                                                        <Vote item={item} home={true} />
+                                                    (item.type == "payment") ?
+                                                        <PaymentComponent item={item} home={true} />
                                                         :
-                                                        (item.type == "payment") ?
-                                                            <PaymentComponent item={item} home={true} />
-                                                            :
-                                                            null}
-                                            </>
-                                        )}
-                                    />
+                                                        null}
+                                        </>
+                                    )}
+                                />
+                                :
+                                null
+                        }
+                        {(lastPosts == null || lastPosts.length == 0 && !lastPostsLoading) ?
+                            <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun post trovato : /</Text>
+                            </View>
+                            : null
                         }
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />

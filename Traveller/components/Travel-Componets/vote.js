@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { View, Text, FlatList, TouchableNativeFeedback, Image } from 'react-native';
+import { View, Text, FlatList, TouchableNativeFeedback, Image, StyleSheet } from 'react-native';
 import { RadioButton, ProgressBar } from 'react-native-paper';
 import { ComponentStyles } from './componentStyle';
 import { color, serverLink } from '../../global/globalVariable';
 import { getData } from '../../shared/data/localdata';
+import { font } from '../../global/globalVariable';
 import axios from 'axios';
 
 let percent = {}
@@ -14,6 +15,7 @@ let username = "";
 
 export default function Vote({ item, home }) {
     let [checkDisabled, setCheckDisabled] = React.useState(false);
+    let [numVote, setNumVote] = React.useState({});
 
     ausItem = item;
     
@@ -35,6 +37,13 @@ export default function Vote({ item, home }) {
 
                 i++
             }
+
+            let a = {};
+            for(let i = 0; i < ausItem.content.length; i++){
+                a[ausItem.content[i]] = ausItem.votes[i].length;
+            }
+
+            setNumVote(a);
 
             return aus;
         }
@@ -119,7 +128,8 @@ export default function Vote({ item, home }) {
                                         percent[ausItem.content[i]] = ((ausItem.votes[i].length + 1) / (totalVotes + 1));
                                     }}
                                 />
-                                <ProgressBar progress={percent[item]} color={"#4900FF"} style={{ width: 280, height: 10, borderRadius: 10 }} />
+                                <ProgressBar progress={percent[item]} color={"#4900FF"} style={{ width: 250, height: 10, borderRadius: 10 }} />
+                                <Text style={styles.numVote}>{numVote[item]}</Text>
                             </View>
                         </View>
                     )
@@ -164,3 +174,12 @@ export default function Vote({ item, home }) {
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    numVote: {
+        color: "gray",
+        fontSize: 15,
+        marginLeft: 15,
+        fontFamily: font.montserrat
+    }
+})
