@@ -1,16 +1,15 @@
 import React from "react";
-import { View, StyleSheet, Text, ScrollView, ScrollViewComponent } from "react-native";
+import { View, StyleSheet, Text, ScrollView, TextInput } from "react-native";
 import { color, paddingTopPage, font } from "../global/globalVariable";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
 import TicketsPreview from "../components/tickets/ticketsPreview";
-import { TextInput } from "@react-native-material/core";
 
 export default function Tickets() {
     return (
         <ScrollView style={styles.container}>
             <TicketsHeader />
             <View style={{ alignItems: "center", paddingBottom: 100, backgroundColor: "white" }}>
-                <TextInput label="Cerca biglietto" variant="standard" style={styles.input}
+                <TextInput placeholder="Cerca biglietto" style={styles.input}
                     inputStyle={{ fontFamily: font.montserrat }}
                 />
                 <TicketsPreview company="Ryanair" />
@@ -28,12 +27,14 @@ const styles = StyleSheet.create({
         backgroundColor: color.primary,
     },
     input: {
-        backgroundColor: "#FFF",
-        width: "90%",
-        fontFamily: font.montserrat,
-        height: 40,
-        borderRadius: 10,
+        width: 300,
         marginTop: 20,
-        marginBottom: 20,
-    }
+        fontFamily: font.montserrat,
+        width: "85%",
+        height: 40,
+        backgroundColor: "#F5F5F5",
+        borderRadius: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
+    },
 });
