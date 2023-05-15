@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { ComponentStyles } from './componentStyle';
+import { Badge } from '@react-native-material/core';
 
-export default function TextComponent({ item, home }) {
+export default function TextComponent({ item, home, travel }) {
     return (
         <View style={ComponentStyles.card}>
             {(item.pinned && !home) ? 
@@ -12,6 +13,12 @@ export default function TextComponent({ item, home }) {
                 </View>
                 : null
             }
+
+            {(home) ? 
+                <Badge label={travel} style={ComponentStyles.Badge} labelStyle={ComponentStyles.BadgeText} />
+                : null
+            }
+
             <View style={ComponentStyles.headerContainer}>
                 <View style={ComponentStyles.nameContainer}>
                     <Text style={ComponentStyles.nameText}>@{item.creator}</Text>

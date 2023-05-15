@@ -145,11 +145,11 @@ export default function Home({ navigation }) {
                             (lastPosts != null && lastPosts.length > 0 && !lastPostsLoading) ?
                                 <FlatList
                                     scrollEnabled={false}
-                                    data={lastPosts}
+                                    data={lastPosts[0]}
                                     renderItem={({ item }) => (
                                         <>
                                             {(item.type == "text") ?
-                                                <TextComponent home={true} item={item} />
+                                                <TextComponent home={true} item={item} travel={lastPosts[1][item.travel]} />
                                                 :
                                                 (item.type == "vote") ?
                                                     <Vote item={item} home={true} />

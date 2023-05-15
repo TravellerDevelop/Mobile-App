@@ -91,4 +91,22 @@ export const ComponentStyles = StyleSheet.create({
         fontSize: 12,
         fontFamily: font.montserrat,
     },
+    Badge: {
+        backgroundColor: "#4900FF",
+        borderRadius: 10,
+        elevation: 5,
+        color: "#FFF",
+        position: "absolute",
+        top: 10,
+        right: 10,
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    BadgeText: {
+        color: "#FFF",
+        fontSize: 13,
+        fontFamily: font.montserrat,
+        marginRight: 5,
+        marginLeft: 5,
+    },
 });
