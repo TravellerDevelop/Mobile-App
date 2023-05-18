@@ -6,6 +6,7 @@ import { color, serverLink } from '../../global/globalVariable';
 import { getData } from '../../shared/data/localdata';
 import { font } from '../../global/globalVariable';
 import axios from 'axios';
+import { Badge } from '@react-native-material/core';
 
 let percent = {}
 let ausItem;
@@ -13,12 +14,12 @@ let totalVotes;
 let username = "";
 
 
-export default function Vote({ item, home }) {
+export default function Vote({ item, home, travel }) {
     let [checkDisabled, setCheckDisabled] = React.useState(false);
     let [numVote, setNumVote] = React.useState({});
 
     ausItem = item;
-    
+
     useEffect(() => {
         const test = async () => {
             let aus = await getData("user")
@@ -39,7 +40,7 @@ export default function Vote({ item, home }) {
             }
 
             let a = {};
-            for(let i = 0; i < ausItem.content.length; i++){
+            for (let i = 0; i < ausItem.content.length; i++) {
                 a[ausItem.content[i]] = ausItem.votes[i].length;
             }
 
@@ -82,6 +83,11 @@ export default function Vote({ item, home }) {
                     <Image source={require("../../assets/image/pin.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "lightgray" }} />
                     <Text style={ComponentStyles.pinnedText}>Fissato in alto</Text>
                 </View>
+                : null
+            }
+
+            {(home) ?
+                <Badge label={travel} style={ComponentStyles.Badge} labelStyle={ComponentStyles.BadgeText} />
                 : null
             }
             <View style={ComponentStyles.headerContainer}>
@@ -161,13 +167,13 @@ export default function Vote({ item, home }) {
             >
                 {
                     (checkDisabled) ?
-                        <View style={[ComponentStyles.cardButton,  { backgroundColor: "green", flexDirection: "row", alignItems: "center", justifyContent: "center" }]}>
+                        <View style={[ComponentStyles.cardButton, { backgroundColor: "green", flexDirection: "row", alignItems: "center", justifyContent: "center" }]}>
                             <Image source={require("../../assets/image/icona-check.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "white" }} />
                             <Text style={ComponentStyles.cardButtonText} >Risposta inviata!</Text>
                         </View>
                         :
                         <View style={[ComponentStyles.cardButton, (checked != "") ? null : { backgroundColor: "lightgray" }]}>
-                            <Text style={ComponentStyles.cardButtonText} >{ "Invia risposta!" }</Text>
+                            <Text style={ComponentStyles.cardButtonText} >{"Invia risposta!"}</Text>
                         </View>
                 }
             </TouchableNativeFeedback>

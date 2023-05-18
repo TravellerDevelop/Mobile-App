@@ -18,7 +18,7 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
             <ScrollView>
                 <Text style={styles.title}>TRAVELLER</Text>
                 <View style={styles.container}>
-                    <TextInput placeholderTextColor={"gray"} placeholder="Nome" placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => { name_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Nome" style={styles.input} onChangeText={(value) => { name_(value) }} />
                     <TextInput placeholderTextColor={"gray"} placeholder="Cognome" style={styles.input} onChangeText={(value) => { surname_(value) }} />
                     <TextInput placeholderTextColor={"gray"} placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
                     <TextInput placeholderTextColor={"gray"} placeholder="Email" style={styles.input} onChangeText={(value) => { email_(value) }} />
@@ -40,6 +40,11 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
                                             navigation.navigate("Home");
                                             setVisibility(false);
                                             setLoginVisibility(false);
+                                        }
+                                        else {
+                                            if(response.status == 202){
+                                                alert("Username già in uso");
+                                            }
                                         }
                                     })
                                     .catch((error) => {

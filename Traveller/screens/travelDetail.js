@@ -8,10 +8,11 @@ import PaymentComponent from '../components/Travel-Componets/payments';
 import NewPost from './Modals/NewPost';
 import axios from 'axios';
 import LoadingPost from '../shared/loadingPost';
+import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
-    let [postLoading, setPostLoading] = useState(true);
+    let [postLoading, setPostLoading] = useState(false);
 
     let [postData, setPostData] = useState([]);
 
@@ -69,7 +70,15 @@ export default function TravelDetail({ navigation, route }) {
                                     <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
                                 </View>
                             </TouchableNativeFeedback>
+
                             {
+                                (route.params.budget != null && route.params.budget != "") ?
+                                    <BudgetIndicator budget={parseFloat(route.params.budget)} spent={150} />
+                                    :
+                                    null
+                            }
+
+                            {/* {
                                 (postLoading) ?
                                     <View>
                                         <LoadingPost />
@@ -78,38 +87,38 @@ export default function TravelDetail({ navigation, route }) {
                                     </View>
                                     :
                                     null
-                            }
+                            } */}
                             {
-                                    (postData.length > 0 && postData != null && !postLoading) ?
-                                        <FlatList
-                                            scrollEnabled={false}
-                                            style={{ marginTop: 20 }}
-                                            data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
-                                            renderItem={({ item }) => (
-                                                <>
-                                                    {(item.type == "text") ?
-                                                        <TextComponent item={item} home={false} />
+                                (postData.length > 0 && postData != null && !postLoading) ?
+                                    <FlatList
+                                        scrollEnabled={false}
+                                        style={{ marginTop: 20 }}
+                                        data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
+                                        renderItem={({ item }) => (
+                                            <>
+                                                {(item.type == "text") ?
+                                                    <TextComponent item={item} home={false} />
+                                                    :
+                                                    (item.type == "vote") ?
+                                                        <Vote item={item} home={false} />
                                                         :
-                                                        (item.type == "vote") ?
-                                                            <Vote item={item} home={false} />
+                                                        (item.type == "payments") ?
+                                                            <PaymentComponent navigation={navigation} item={item} home={false} />
                                                             :
-                                                            (item.type == "payment") ?
-                                                                <PaymentComponent item={item} home={false} />
-                                                                :
-                                                                null}
-                                                </>
-                                            )}
-                                        />
-                                        :
-                                        null
+                                                            null}
+                                            </>
+                                        )}
+                                    />
+                                    :
+                                    null
                             }
                             {
-                                (postData.length == 0 || postData == null && !postLoading)?
-                                        < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
-                                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
-                                        </View>
-                                        :
-                                        null
+                                (postData.length == 0 || postData == null && !postLoading) ?
+                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
+                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                    </View>
+                                    :
+                                    null
                             }
                         </View>
                     </View>

@@ -7,6 +7,7 @@ import { font } from '../global/globalVariable'
 import TravelDetail from '../screens/travelDetail'
 import TravelPartecipants from '../screens/travelPartecipants'
 import Profile from '../screens/profile'
+import PaymentInfo from '../screens/paymentsInfo'
 
 const Stack = createStackNavigator()
 
@@ -48,6 +49,13 @@ export default function Navigator() {
             headerShown: false,
           }}
         />
+
+        <Stack.Screen name='PaymentInfo' component={PaymentInfo} 
+          options={{
+            headerShown: false,
+          }}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

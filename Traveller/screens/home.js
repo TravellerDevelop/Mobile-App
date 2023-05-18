@@ -6,17 +6,17 @@ import InteractiveCard from '../components/interactiveCard';
 import { color, serverLink } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
-import LoadingCard from '../shared/loadingCard';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
-import LoadingPost from '../shared/loadingPost.js';
+// import LoadingCard from '../shared/loadingCard';
+// import LoadingPost from '../shared/loadingPost.js';
 
 export default function Home({ navigation }) {
-    let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
+    let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(false);
 
     let [lastPosts, setLastPosts] = useState(false);
-    let [lastPostsLoading, setLastPostsLoading] = useState(true);
+    let [lastPostsLoading, setLastPostsLoading] = useState(false);
 
     let [userData, setUserData] = useState(false);
     let [joinedTravels, setJoinedTravels] = useState(false);
@@ -101,7 +101,7 @@ export default function Home({ navigation }) {
                     <View style={styles.content}>
                         <Text style={styles.title}>Home</Text>
                         <Text style={styles.subtitle}>I tuoi prossimi viaggi:</Text>
-                        {
+                        {/* {
                             joinedTravelsLoading ?
                                 <ScrollView horizontal>
                                     <LoadingCard />
@@ -110,9 +110,9 @@ export default function Home({ navigation }) {
                                 </ScrollView>
                                 :
                                 null
-                        }
+                        } */}
                         {
-                            (joinedTravels != null && joinedTravels.length > 0 && !joinedTravelsLoading) ?
+                            (joinedTravels != null && joinedTravels.length > 0) ?
                                 <FlatList
                                     data={joinedTravels}
                                     horizontal
@@ -122,7 +122,8 @@ export default function Home({ navigation }) {
                                 null
                         }
                         {
-                            (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
+                            (joinedTravels == null || joinedTravels.length == 0) ?
+                            // (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
                                 <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                                     <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
                                 </View>
@@ -131,7 +132,7 @@ export default function Home({ navigation }) {
                         }
                         <InteractiveCard updatecards={loadJoinedTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>Gli ultimi post dai tuoi viaggi:</Text>
-                        {
+                        {/* {
                             lastPostsLoading ?
                                 <View>
                                     <LoadingPost />
@@ -140,9 +141,9 @@ export default function Home({ navigation }) {
                                 </View>
                                 :
                                 null
-                        }
+                        } */}
                         {
-                            (lastPosts != null && lastPosts.length > 0 && !lastPostsLoading) ?
+                            (lastPosts != null && lastPosts.length > 0) ?
                                 <FlatList
                                     scrollEnabled={false}
                                     data={lastPosts[0]}
@@ -152,10 +153,10 @@ export default function Home({ navigation }) {
                                                 <TextComponent home={true} item={item} travel={lastPosts[1][item.travel]} />
                                                 :
                                                 (item.type == "vote") ?
-                                                    <Vote item={item} home={true} />
+                                                    <Vote item={item} home={true} travel={lastPosts[1][item.travel]}/>
                                                     :
                                                     (item.type == "payment") ?
-                                                        <PaymentComponent item={item} home={true} />
+                                                        <PaymentComponent item={item} home={true} travel={lastPosts[1][item.travel]}/>
                                                         :
                                                         null}
                                         </>
@@ -164,7 +165,7 @@ export default function Home({ navigation }) {
                                 :
                                 null
                         }
-                        {(lastPosts == null || lastPosts.length == 0 && !lastPostsLoading) ?
+                        {(lastPosts == null || lastPosts.length == 0) ?
                             <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                                 <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun post trovato : /</Text>
                             </View>
