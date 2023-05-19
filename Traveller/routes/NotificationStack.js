@@ -6,7 +6,7 @@ import Notifications from '../screens/notifications'
 import { font } from '../global/globalVariable'
 import TravelDetail from '../screens/travelDetail'
 import TravelPartecipants from '../screens/travelPartecipants'
-import Profile from '../screens/profile'
+import MyProfile from '../screens/profile'
 import PaymentInfo from '../screens/paymentsInfo'
 
 const Stack = createStackNavigator()
@@ -44,7 +44,7 @@ export default function Navigator() {
           }}
         />
 
-        <Stack.Screen name='Profile' component={Profile}
+        <Stack.Screen name='Profile' component={MyProfile}
           options={{
             headerShown: false,
           }}

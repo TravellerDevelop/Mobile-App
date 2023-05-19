@@ -68,7 +68,7 @@ export default function MainHeader({ navigation, updateJoinTravels }) {
                         </TouchableOpacity>
 
                         <View style={styles.whiteRound} ></View>
-                        <TouchableOpacity onPress={() => navigation.navigate("Profile", navigation)}>
+                        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
                             <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
                         </TouchableOpacity>
                     </View>

@@ -1,53 +1,102 @@
 import React from "react";
 import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
-import { font, color, paddingTopPage } from "../global/globalVariable";
+import { font, color, paddingTopPage, serverLink } from "../global/globalVariable";
 import { Avatar } from "@react-native-material/core";
 import AnimatedLottieView from "lottie-react-native";
+import { getData } from "../shared/data/localdata";
+import axios from "axios";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
+import Card from "../shared/card";
 
-export default function Profile({ navigation }) {
+export default function MyProfile({ navigation, params }) {
+    let [user, setUser] = React.useState({});
+    let [ntravel, setNtravel] = React.useState("--");
+    let [myTravel, setMyTravel] = React.useState([{}]);
+
+    async function getUserData() {
+        let data = await getData("user");
+        axios.get(serverLink + "api/user/takeTravelsNum?username=" + data.username)
+            .then((response) => {
+                setNtravel(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+        setUser(data);
+
+        axios.get(serverLink + "api/travel/takeByCreator?username=" + data.username)
+            .then((response) => {
+                setMyTravel(response.data);
+                console.log(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
+    React.useEffect(() => {
+        getUserData();
+    }, [])
+
     return (
-        <View style={styles.container}>
-            <TouchableNativeFeedback onPress={ () => {navigation.goBack()} }>
-                <Image source={require("../assets/image/icona-freccia-left.png")} style={styles.back} />
-            </TouchableNativeFeedback>
-            <View style={styles.content}>
-                <View style={styles.avatarview}>
-                    <Avatar label="Pietro Bossolasco" autoColor size={100} labelStyle={{ fontFamily: font.montserrat, fontSize: 50 }} style={styles.avatar} />
-                </View>
-                <Text style={styles.name}>Pietro Bossolasco</Text>
-                <Text style={styles.nickname}>@Bosso</Text>
-                <View style={styles.row}>
-                    <TouchableNativeFeedback>
-                        <View style={styles.column}>
-                            <Text style={styles.subtext} >12</Text>
-                            <Text style={styles.subtext}>Viaggi</Text>
-                        </View>
-                    </TouchableNativeFeedback>
-                    <TouchableNativeFeedback>
-                        <View style={styles.column}>
-                            <Text style={styles.subtext}>132</Text>
-                            <Text style={styles.subtext}>Follower</Text>
-                        </View>
-                    </TouchableNativeFeedback>
-                    <TouchableNativeFeedback>
-                        <View style={styles.column}>
-                            <Text style={styles.subtext}>412</Text>
-                            <Text style={styles.subtext}>Seguiti</Text>
-                        </View>
-                    </TouchableNativeFeedback>
-                </View>
-                <TouchableNativeFeedback>
-                    <View style={styles.button}>
-                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
-                    </View>
+        <ScrollView style={{ flex: 1 }}>
+            <View style={styles.container}>
+                <TouchableNativeFeedback onPress={() => { navigation.goBack() }}>
+                    <Image source={require("../assets/image/icona-freccia-left.png")} style={styles.back} />
                 </TouchableNativeFeedback>
+                <View style={styles.content}>
+                    <View style={styles.avatarview}>
+                        <Avatar label={user.name + " " + user.surname} autoColor size={100} labelStyle={{ fontFamily: font.montserrat, fontSize: 50 }} style={styles.avatar} />
+                    </View>
+                    <Text style={styles.name}>{user.name} {user.surname}</Text>
+                    <Text style={styles.nickname}>@{user.username}</Text>
+                    <View style={styles.row}>
+                        <TouchableNativeFeedback>
+                            <View style={styles.column}>
+                                <Text style={styles.subtext} >{ntravel}</Text>
+                                <Text style={styles.subtext}>Viaggi</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback>
+                            <View style={styles.column}>
+                                <Text style={styles.subtext}>--</Text>
+                                <Text style={styles.subtext}>Follower</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback>
+                            <View style={styles.column}>
+                                <Text style={styles.subtext}>--</Text>
+                                <Text style={styles.subtext}>Seguiti</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                    </View>
+                    <TouchableNativeFeedback>
+                        <View style={styles.button}>
+                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
+                        </View>
+                    </TouchableNativeFeedback>
 
-                <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
-                    <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
-                    <Text style={styles.err}>Ancora nessun viaggio : /</Text>
+                    {
+                        (ntravel == 0) ?
+                            <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
+                                <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
+                                <Text style={styles.err}>Ancora nessun viaggio : /</Text>
+                            </View>
+                            :
+                            <View>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left" }}>I viaggi creati da te:</Text>
+                                <FlatList
+                                    scrollEnabled={false}
+                                    data={myTravel}
+                                    renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
+                                />
+                            </View>
+                    }
+
+
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }
 
