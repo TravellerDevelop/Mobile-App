@@ -49,11 +49,7 @@ export default function TravelDetail({ navigation, route }) {
     }
 
     function onAddData(data) {
-        console.log("------------------")
-        console.log("Data", data)
-        console.log("------------------")
         data.dateTime = new Date(data.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
-
         setPostData([...postData, data]);
     }
 

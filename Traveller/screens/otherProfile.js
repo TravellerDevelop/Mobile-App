@@ -1,16 +1,15 @@
 import React from "react";
-import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView, RefreshControl } from "react-native";
-import { font, color, paddingTopPage, serverLink } from "../global/globalVariable";
+import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView } from "react-native";
 import { Avatar } from "@react-native-material/core";
-import AnimatedLottieView from "lottie-react-native";
-import { getData } from "../shared/data/localdata";
+import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
 import axios from "axios";
-import Card from "../shared/card";
+import { getData } from "../shared/data/localdata";
 
-export default function MyProfile({ navigation, route }) {
+export default function OtherProfile({ navigation, route }) {
+    let [myData, setMyData] = React.useState({});
     let [user, setUser] = React.useState({});
     let [ntravel, setNtravel] = React.useState("--");
-    let [myTravel, setMyTravel] = React.useState([]);
+    let [requestStatus, setRequestStatus] = React.useState(false);
 
     let [followed, setFollowed] = React.useState("--");
     let [followers, setFollowers] = React.useState("--");
@@ -18,26 +17,45 @@ export default function MyProfile({ navigation, route }) {
     let [refreshing, setRefreshing] = React.useState(false);
 
     async function getUserData() {
-        let data = await getData("user");
-        axios.get(serverLink + "api/user/takeTravelsNum?username=" + data.username)
+        setMyData(await getData("user"));
+    }
+
+    React.useEffect(() => {
+        getUserData();
+
+        axios.get(serverLink + "api/user/takeUserById?id=" + route.params.userid)
             .then((response) => {
-                setNtravel(response.data);
+                setUser(response.data[0]);
+
+                axios.get(serverLink + "api/user/takeTravelsNum?username=" + response.data[0].username)
+                    .then((response) => {
+                        setNtravel(response.data);
+
+                        axios.get(serverLink + "api/follow/takeFromTo?from=" + myData._id + "&to=" + route.params.userid)
+                            .then((response) => {
+                                if (response.data.length > 0) {
+                                    if (response.data[0].accepted === false)
+                                        setRequestStatus("Sent");
+                                    else
+                                        setRequestStatus("Followed");
+                                }
+                                else if (response.data.length == 0) {
+                                    setRequestStatus("Not sent");
+                                }
+
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            })
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
             })
             .catch((error) => {
                 console.log(error);
             })
-        setUser(data);
-
-        axios.get(serverLink + "api/travel/takeByCreator?username=" + data.username)
-            .then((response) => {
-                setMyTravel(response.data);
-                console.log(response.data);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
-
-        axios.get(serverLink + "api/follow/takeFollowers?to=" + data._id)
+        axios.get(serverLink + "api/follow/takeFollowers?to=" + route.params.userid)
             .then((response) => {
                 setFollowers(response.data.length);
             })
@@ -45,34 +63,18 @@ export default function MyProfile({ navigation, route }) {
                 console.log(error);
             })
 
-        axios.get(serverLink + "api/follow/takeFollowings?from=" + data._id)
+        axios.get(serverLink + "api/follow/takeFollowings?from=" + route.params.userid)
             .then((response) => {
                 setFollowed(response.data.length);
             })
             .catch((error) => {
                 console.log(error);
             })
-    }
-    
-    React.useEffect(() => {
-        getUserData();
+
     }, [])
-    
-    const onRefresh = async () => {
-        setRefreshing(true);
-        getUserData();
-        setRefreshing(false);
-    }
 
     return (
-        <ScrollView
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                />
-            }
-        >
+        <ScrollView>
             <View style={styles.container}>
 
                 <TouchableNativeFeedback onPress={() => { navigation.goBack() }}>
@@ -104,38 +106,46 @@ export default function MyProfile({ navigation, route }) {
                             </View>
                         </TouchableNativeFeedback>
                     </View>
-                    <TouchableNativeFeedback>
+                    <TouchableNativeFeedback onPress={
+                        () => {
+                            if (requestStatus == "Sent" || requestStatus == "Followed") {
+                                axios.post(serverLink + "api/follow/delete", { from: myData._id, to: user._id })
+                                    .then((response) => {
+                                        setRequestStatus("Not sent");
+                                    })
+                                    .catch((error) => {
+                                        console.log(error);
+                                    })
+                            }
+                            else if (requestStatus == "Not sent") {
+                                axios.post(serverLink + "api/follow/create", { from: myData._id, to: user._id })
+                                    .then((response) => {
+                                        setRequestStatus("Sent");
+                                    })
+                                    .catch((error) => {
+                                        console.log(error);
+                                    })
+                            }
+                        }
+                    }>
                         <View style={styles.button}>
-                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
+                            {
+                                (requestStatus == "Sent") ?
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Richiesta inviata</Text>
+                                    : (requestStatus == "Followed") ?
+                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Segui già</Text>
+                                        : (requestStatus == "Not sent") ?
+                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Inizia a seguire</Text>
+                                            : null
+                            }
                         </View>
                     </TouchableNativeFeedback>
-
-                    {
-                        (ntravel == 0) ?
-                            <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
-                                <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
-                                <Text style={styles.err}>Ancora nessun viaggio : /</Text>
-                            </View>
-                            :
-                            <View style={{ width: "100%" }}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
-                                {
-                                    (myTravel.length > 0) ?
-                                        <FlatList
-                                            scrollEnabled={false}
-                                            data={myTravel}
-                                            renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
-                                        />
-                                        :
-                                        null
-                                }
-                            </View>
-                    }
                 </View >
             </View>
         </ScrollView>
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {

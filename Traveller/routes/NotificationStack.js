@@ -8,6 +8,7 @@ import TravelDetail from '../screens/travelDetail'
 import TravelPartecipants from '../screens/travelPartecipants'
 import MyProfile from '../screens/profile'
 import PaymentInfo from '../screens/paymentsInfo'
+import OtherProfile from '../screens/otherProfile'
 
 const Stack = createStackNavigator()
 
@@ -33,6 +34,12 @@ export default function Navigator() {
         />
 
         <Stack.Screen name='TravelDetail' component={TravelDetail}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='OtherProfile' component={OtherProfile}
           options={{
             headerShown: false,
           }}

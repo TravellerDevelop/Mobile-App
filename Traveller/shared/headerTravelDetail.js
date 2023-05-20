@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: "white",
-        fontFamily: font.montserrat,
+        fontFamily: font.montserratBold,
         fontSize: 25,
         marginLeft: 10,
     },

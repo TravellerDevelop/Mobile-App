@@ -3,10 +3,11 @@ import { StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback, Mod
 import { Avatar, Badge } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { color, font, paddingTopPage, userInfo } from "../global/globalVariable";
+import { color, font, paddingTopPage, serverLink, userInfo } from "../global/globalVariable";
 import AnimatedLottieView from 'lottie-react-native';
 import { getData } from '../shared/data/localdata';
 import EnterTravel from '../screens/Modals/enterTravel';
+import axios from 'axios';
 
 
 export default function MainHeader({ navigation, updateJoinTravels }) {
@@ -14,27 +15,34 @@ export default function MainHeader({ navigation, updateJoinTravels }) {
     let [touch, setTouch] = useState(0);
     let [easterVisibility, setEasterVisibility] = useState(false);
     let [enter, setEnter] = useState(false);
+    let [notification, setNotification] = useState(0);
+    let [friendRequest, setFriendRequest] = useState([]);
 
-    // let user = userInfo();
     setInterval(() => { setTouch(0) }, 5000)
 
     useEffect(() => {
         userData();
+
     }, []);
 
     async function userData() {
-        setUser(await getData("user"));
-        console.log("user")
-        console.log(user)
+        let aus = await getData("user");
 
-        console.log("--------------------")
-        console.log(await getData("user").name)
-        console.log("--------------------")
+        setUser(aus);
+
+        axios.get(serverLink + "api/follow/takeFollowersRequest?to=" + aus._id)
+            .then((response) => {
+                setFriendRequest(response.data);
+                setNotification(response.data.length);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
     }
 
     return (
         <>
-            {enter ? <EnterTravel visibility={enter} setVisibility={setEnter} updateJoinTravels={updateJoinTravels} /> : null }
+            {enter ? <EnterTravel visibility={enter} setVisibility={setEnter} updateJoinTravels={updateJoinTravels} /> : null}
             <LinearGradient
                 style={styles.header}
                 start={{ x: 0.5, y: 0.2 }}
@@ -55,13 +63,13 @@ export default function MainHeader({ navigation, updateJoinTravels }) {
                         <Text style={styles.logo}>TRAVELLER</Text>
                     </TouchableWithoutFeedback>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TouchableOpacity onPress={() => navigation.navigate("Notifications")} >
+                        <TouchableOpacity onPress={() => navigation.navigate("Notifications", { notification: friendRequest })} >
                             <Badge label={
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
                                     <Text
-                                        style={{ color: 'white', fontFamily: "montserrat-regular" }}
-                                    >3+</Text>
+                                        style={{ color: 'white', fontFamily: "montserrat-regular", marginRight: 5 }}
+                                    >{notification}</Text>
                                 </View>
                             }
                                 color="#490099" />

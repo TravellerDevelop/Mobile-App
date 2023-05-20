@@ -4,13 +4,29 @@ import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback, Image } from
 import { color, font, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 import axios from "axios";
+import { getData } from "../shared/data/localdata";
 
 export default function TravelPartecipants({ navigation, route }) {
     let num = route.params.participants.length;
     let [usersData, setUsersData] = useState([]);
+    let [myData, setMyData] = useState({});
 
+    async function getUserData() {
+        let data = await getData("user");
+        setMyData(data);
+    }
+
+    let [creator, setCreator] = React.useState({});
 
     useEffect(() => {
+
+        for (let item of route.params.participants) {
+            if (item.creator == true) {
+                setCreator(item);
+                console.log(creator)
+            }
+        }
+
         axios.get(serverLink + "api/travel/takeParticipants?travel=" + route.params.code)
             .then((response) => {
                 if (response.status == 200) {
@@ -20,10 +36,10 @@ export default function TravelPartecipants({ navigation, route }) {
             .catch((error) => {
                 console.log(error);
             })
+
+        getUserData();
     }, [])
 
-
-    console.log(route.params)
     return (
         <View style={{ flex: 1 }}>
             <TravelPartecipantsHeader navigation={navigation} route={route} />
@@ -35,15 +51,28 @@ export default function TravelPartecipants({ navigation, route }) {
                 <FlatList
                     data={usersData}
                     renderItem={({ item }) => (
-                        <TouchableNativeFeedback>
+                        <TouchableNativeFeedback
+                            onPress={() => {
+                                if (item._id != myData._id)
+                                    navigation.navigate("OtherProfile", { userid: item._id })
+                            }}
+                        >
                             <View style={styles.avatarContainer}>
                                 <View style={styles.borderAvatarContainer}>
                                     <Avatar autoColor size={40} label={item.name + " " + item.surname} />
                                 </View>
                                 <View>
                                     <Text style={styles.text}>{item.name} {item.surname}</Text>
-                                    <Text style={[styles.subtext, {marginBottom: 0, marginTop: 0, marginLeft: 10}]}>@{item.username}</Text>
+                                    <Text style={[styles.subtext, { marginBottom: 0, marginTop: 0, marginLeft: 10 }]}>@{item.username}</Text>
                                 </View>
+                                {
+                                    (creator.userid == item._id) ?
+                                        <View style={styles.flag}>
+                                            <Text style={styles.flagText}>Creatore</Text>
+                                        </View>
+                                        :
+                                        null
+                                }
                             </View>
                         </TouchableNativeFeedback>
                     )}
@@ -104,7 +133,7 @@ const styles = StyleSheet.create({
     text: {
         marginLeft: 10,
         fontSize: 20,
-        fontFamily: font.montserrat,
+        fontFamily: font.montserratBold,
     },
     description: {
         marginLeft: 20,
@@ -136,4 +165,20 @@ const styles = StyleSheet.create({
         fontFamily: font.montserrat,
         fontSize: 20,
     },
+    flag: {
+        backgroundColor: "red",
+        height: 25,
+        padding: 5,
+        paddingLeft: 10,
+        position: "absolute",
+        top: 5,
+        right: 0,
+        borderTopLeftRadius: 12.5,
+        borderBottomLeftRadius: 12.5,
+    },
+    flagText: {
+        color: "white",
+        fontFamily: font.montserratBold,
+        fontSize: 13,
+    }
 });

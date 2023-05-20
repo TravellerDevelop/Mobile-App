@@ -52,8 +52,6 @@ export default function TextComponent({ item, home, travel, loadPosts }) {
 
                                     axios.post(serverLink + "api/post/updatePinPost", { param : item })
                                         .then((response) => {
-                                            console.log(response.data);
-                                            console.log("Updated")
                                             setShowMenu(false);
                                             loadPosts(item.travel)
                                         })
@@ -75,13 +73,13 @@ export default function TextComponent({ item, home, travel, loadPosts }) {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log("Ciao3");
                                     axios.post(serverLink + "api/post/deletePost", { id : item._id })
                                         .then((response) => {
-                                            console.log(response.data);
-                                            console.log("Deleted")
                                             setShowMenu(false);
                                             loadPosts(item.travel)
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
                                         })
                                 }}>
 
