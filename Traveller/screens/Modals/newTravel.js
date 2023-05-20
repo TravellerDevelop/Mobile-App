@@ -5,7 +5,7 @@ import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
 import { SegmentedButtons } from 'react-native-paper';
-import { getStringData } from '../../shared/data/localdata';
+import { getStringData, getData } from '../../shared/data/localdata';
 
 
 export default function NewTravel({ userState, setUserState, setNewTravelVisibility, updatecards }) {
@@ -32,11 +32,17 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
         { label: 'Amici', value: '2' },
         { label: 'Chiuso', value: '0' },
     ];
+    
+    async function getUserData() {
+        let aus = await getData("user");
+        setCreator({ userid: aus._id, username: aus.username, creator: true})
+    }    
 
     React.useEffect(() => {
         setDate(new Date().toISOString().slice(0, 10));
-        setCreator({ userid: userState[0]._id, username: userState[0].username, creator: true})
+        getUserData();
     }, []);
+    
 
     return (
         <Modal visible={true} animationType='slide'>
@@ -86,8 +92,10 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                     </SegmentedButtons>
 
                     <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
-                        await setCreator(getStringData("username"))
+                        // await setCreator(getStringData("username"))
                         setIsLoading(true);
+
+                        console.log("Creator", creator);
 
                         axios.post(serverLink + 'api/travel/create', {
                             name: name,

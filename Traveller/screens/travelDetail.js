@@ -30,10 +30,16 @@ export default function TravelDetail({ navigation, route }) {
 
 
     function loadPosts(travelId) {
+        setPostData([]);
         axios.get(serverLink + "api/post/take?travel=" + travelId)
             .then(async (response) => {
                 if (response.status == 200) {
-                    await setPostData(response.data);
+                    let aus = response.data;
+
+                    for (let item of aus) {
+                        item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                    }
+                    await setPostData(aus);
                     await setPostLoading(false);
                 }
             })
@@ -43,6 +49,11 @@ export default function TravelDetail({ navigation, route }) {
     }
 
     function onAddData(data) {
+        console.log("------------------")
+        console.log("Data", data)
+        console.log("------------------")
+        data.dateTime = new Date(data.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+
         setPostData([...postData, data]);
     }
 
@@ -97,7 +108,7 @@ export default function TravelDetail({ navigation, route }) {
                                         renderItem={({ item }) => (
                                             <>
                                                 {(item.type == "text") ?
-                                                    <TextComponent item={item} home={false} />
+                                                    <TextComponent item={item} home={false} loadPosts={loadPosts} />
                                                     :
                                                     (item.type == "vote") ?
                                                         <Vote item={item} home={false} />

@@ -12,6 +12,14 @@ export default function HeaderTravelDetail({ navigation, data }) {
     let top = paddingTopPage - 20;
     let [username, setUsername] = React.useState()
 
+    let creator = "";
+
+    for (let item of data.participants) {
+        if (item.creator) {   
+            creator = item.username;
+        }
+    }
+
     useEffect(() => {
         const test = async () => {
             let aus = await getData("user")
@@ -32,10 +40,9 @@ export default function HeaderTravelDetail({ navigation, data }) {
         >
 
             {
-                data.creator == username ? <>
+                creator == username ? <>
                     {editVisibility ? <EditTravel visible={editVisibility} setVisible={setEditVisibility} item={data} /> : null}
                     <TouchableOpacity onPress={() => {
-                        console.log("Press")
                         setEditVisibility(true)
                     }} style={{ zIndex: 100 }}>
                         <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: top, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
@@ -53,7 +60,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
                 </TouchableNativeFeedback>
                 <Text style={styles.title}>{data.name}</Text>
             </View>
-            <Text style={styles.subtitle}>Creato da {data.creator}</Text>
+            <Text style={styles.subtitle}>Creato da {creator}</Text>
 
             <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
 
@@ -66,7 +73,6 @@ export default function HeaderTravelDetail({ navigation, data }) {
                         >Informazioni sul viaggio</Text>
                     </View>
                 }
-                
                     color="#490099" />
             </TouchableOpacity>
         </LinearGradient>

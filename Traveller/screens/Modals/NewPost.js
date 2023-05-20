@@ -278,17 +278,17 @@ export default function NewPost({ setNewPost, data, refresh }) {
                         voteParams.pinned = pinned;
                         voteParams.question = question;
                         console.log(voteParams)
-                        textParams.dateTime = new Date().toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        // voteParams.dateTime = new Date();
                         param = voteParams;
                     }
                     else if (type == "text") {
-                        textParams.dateTime = new Date().toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        // textParams.dateTime = new Date().toString();
                         textParams.pinned = pinned;
                         console.log(textParams)
                         param = textParams
                     }
                     else if (type == "payments") {
-                        paymentParams.dateTime = new Date().toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        // paymentParams.dateTime = new Date().toString();
                         paymentParams.pinned = pinned;
 
                         if (paymentDestinator == "custom") {

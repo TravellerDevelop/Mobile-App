@@ -8,10 +8,10 @@ import axios from "axios";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import Card from "../shared/card";
 
-export default function MyProfile({ navigation, params }) {
+export default function MyProfile({ navigation, route }) {
     let [user, setUser] = React.useState({});
     let [ntravel, setNtravel] = React.useState("--");
-    let [myTravel, setMyTravel] = React.useState([{}]);
+    let [myTravel, setMyTravel] = React.useState([]);
 
     async function getUserData() {
         let data = await getData("user");
@@ -39,8 +39,9 @@ export default function MyProfile({ navigation, params }) {
     }, [])
 
     return (
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView>
             <View style={styles.container}>
+
                 <TouchableNativeFeedback onPress={() => { navigation.goBack() }}>
                     <Image source={require("../assets/image/icona-freccia-left.png")} style={styles.back} />
                 </TouchableNativeFeedback>
@@ -83,18 +84,21 @@ export default function MyProfile({ navigation, params }) {
                                 <Text style={styles.err}>Ancora nessun viaggio : /</Text>
                             </View>
                             :
-                            <View>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left" }}>I viaggi creati da te:</Text>
-                                <FlatList
-                                    scrollEnabled={false}
-                                    data={myTravel}
-                                    renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
-                                />
+                            <View style={{width: "100%"}}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
+                                {
+                                    (myTravel.length > 0) ?
+                                        <FlatList
+                                            scrollEnabled={false}
+                                            data={myTravel}
+                                            renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
+                                        />
+                                        :
+                                        null
+                                }
                             </View>
                     }
-
-
-                </View>
+                </View >
             </View>
         </ScrollView>
     )
@@ -109,10 +113,11 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        marginTop: 60,
+        marginTop: 100,
         width: "100%",
         backgroundColor: "#FFF",
         borderTopLeftRadius: 15,
+        paddingBottom: 80,
         borderTopRightRadius: 15,
         alignItems: "center",
         justifyContent: "center",

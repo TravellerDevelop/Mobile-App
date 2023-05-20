@@ -77,6 +77,7 @@ export default function Home({ navigation }) {
         axios.get(serverLink + "api/post/takeLastsByUsername?userid=" + userid + "&username=" + username)
             .then(async (response) => {
                 if (response.status == 200) {
+                    for (let item of response.data[0]) { item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" }) }
                     await setLastPosts(response.data);
                     await setLastPostsLoading(false);
                 }

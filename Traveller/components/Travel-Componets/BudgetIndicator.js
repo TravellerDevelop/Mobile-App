@@ -20,17 +20,18 @@ export default function BudgetIndicator({ budget, spent }) {
                 <ProgressBar progress={percent} color={(spent < budget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, minWidth: "60%" }} />
                 <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.montserrat }}>{budget}€</Text>
             </View>
-            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget) + "€ : /"}</Text>
+            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget) + "€ 😥"}</Text>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     card: {
-        width: "90%",
         backgroundColor: "#FFF",
         borderRadius: 10,
-        margin: "5%",
+        margin: 10,
+        marginTop: 20,
+        marginBottom: 0,
         padding: 10,
         elevation: 5,
     },

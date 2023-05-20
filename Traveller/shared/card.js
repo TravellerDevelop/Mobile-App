@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import CardPartecipants from "./cardPartecipants";
 import { color, font } from "../global/globalVariable";
 
-export default function Card({ navigation, data, vertical }) {
 
+export default function Card({ navigation, data, vertical }) {
     let creator = "";
+
     let i = 0;
     while (creator == "" && i < data.participants.length) {
         if (data.participants[i].creator === true) {
@@ -64,7 +65,11 @@ const styles = StyleSheet.create({
         height: 140,
         width: "90%",
         borderRadius: 10,
-        margin: 10,
+        marginTop: 10,
+        marginBottom: 10,
+        marginTop: 10,
+        marginLeft: "5%",
+        marginRight: "5%",
         padding: 10,
         shadowColor: "#000",
         shadowOffset: {
