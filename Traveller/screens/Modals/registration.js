@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView } from "react-native";
+import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView, ActivityIndicator } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 import axios from "axios";
@@ -13,6 +13,8 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
     let [email, setEmail] = React.useState("");
     let [password, setPassword] = React.useState("");
 
+    let [loading, setLoading] = React.useState(false);
+
     return (
         <Modal visible={visibility} animationType="slide" >
             <ScrollView>
@@ -25,24 +27,33 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
                     <TextInput placeholderTextColor={"gray"} secureTextEntry placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
                     <TouchableNativeFeedback onPress={() => {
                         (async () => {
+                            if (loading) return;
+
+                            setLoading(true);
                             const digest = await Crypto.digestStringAsync(
                                 Crypto.CryptoDigestAlgorithm.SHA256,
                                 password
                             );
-                            console.log('Digest: ', digest);
-                            console.log(name, surname, username, email, digest)
+
                             if (name != "" && surname != "" && username != "" && email != "" && password != "" && password.length >= 8 && email.includes("@") && email.includes(".")) {
                                 axios.post(serverLink + "api/user/register", { name: name, surname: surname, username: username, email: email, password: digest })
                                     .then((response) => {
                                         if (response.status == 200) {
-                                            storeStringData("openLogin", "true");
-                                            storeJsonData("user", { name: name, surname: surname, username: username, email: email, password: password });
-                                            navigation.navigate("Home");
-                                            setVisibility(false);
-                                            setLoginVisibility(false);
+                                            axios.get(serverLink + "api/user/info?username=" + username)
+                                            .then((response) => {
+                                                    console.log(response.data)
+                                                    storeStringData("openLogin", "true");
+                                                    storeJsonData("user", response.data);
+                                                    navigation.navigate("Home");
+                                                    setVisibility(false);
+                                                    setLoginVisibility(false);
+                                                })
+                                                .catch((error) => {
+                                                    console.log(error);
+                                                })
                                         }
                                         else {
-                                            if(response.status == 202){
+                                            if (response.status == 202) {
                                                 alert("Username già in uso");
                                             }
                                         }
@@ -56,9 +67,14 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
                             }
                         })();
                     }}>
-                        <View style={styles.button}>
-                            <Text style={styles.buttonText}>Registrati</Text>
-                        </View>
+                        {
+                            loading ?
+                            <ActivityIndicator size="large" color={color.secondary} style={{ marginTop: 20, marginBottom: 20 }} />
+                            :
+                            <View style={styles.button}>
+                                <Text style={styles.buttonText}>Registrati</Text>
+                            </View>
+                        }
                     </TouchableNativeFeedback>
                     <TouchableWithoutFeedback onPress={() => {
                         setVisibility(false);

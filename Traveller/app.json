@@ -27,6 +27,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "51a2596b-2325-4af9-95fa-b2a4eb4f7558"

@@ -35,7 +35,9 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
     
     async function getUserData() {
         let aus = await getData("user");
+        console.log(aus)
         setCreator({ userid: aus._id, username: aus.username, creator: true})
+        console.log("Creator", creator)
     }    
 
     React.useEffect(() => {

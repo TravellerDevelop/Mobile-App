@@ -1,63 +1,163 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image } from "react-native";
+import { Camera, CameraType } from 'expo-camera';
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions } from "react-native";
 import { color, font } from "../../global/globalVariable.js";
 import { LinearGradient } from "expo-linear-gradient";
 import { Badge } from "@react-native-material/core";
-
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function TicketsHeader() {
 
+    const [type, setType] = useState(CameraType.back);
+    const [permission, requestPermission] = Camera.useCameraPermissions();
+
     const [modalVisible, setModalVisible] = useState(false);
+    const [qrVisible, setQrVisible] = useState(false);
+
+    const [scanned, setScaned] = useState(false);
+    const [data, setData] = useState(null);
+
+    const [date, setDate] = useState(new Date());
+    const [showPicker, setShowPicker] = useState(false);
+
+    const toggleDatePicker = () => {
+        setShowPicker(!showPicker);
+    }
+
+    const onChangeDate = (event, selectedDate) => {
+        if(type == "set"){
+            const currentDate = selectedDate;
+            setDate(currentDate);
+        }
+        else{
+            toggleDatePicker();
+        }
+    };
+
+    // if (!permission.granted)
+    // requestPermission();
+
+    if (!permission)
+        requestPermission();
+
+    function toggleCameraType() {
+        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
+    }
 
     return (
-        <LinearGradient
-            style={styles.container}
-            start={{ x: 0.5, y: 0.2 }}
-            colors={[color.primary, color.secondary]}
-        >
-            <Text style={{ fontFamily: font.montserratBold, fontSize: 25, color: "white", marginLeft: 20 }}>Tickets</Text>
-            <Text style={styles.paragraph}>Aggiungi tutti i tuoi biglietti per averceli sempre dietro! (Anche disponibili offline!) 🎫 🎟️</Text>
-            <TouchableOpacity style={[styles.add, { height: 30 }]} onPress={() => setModalVisible(true)} >
-                <Badge label={"+ Aggiungi biglietto"} color="#FFF" labelStyle={styles.label} />
-            </TouchableOpacity>
-            <Modal visible={modalVisible} animationType='slide' >
-                <View style={modalstyles.container}>
-                    <Text style={modalstyles.title}>Nuovo biglietto</Text>
+        <>
+            {
+                qrVisible ?
+                    <Modal visible={qrVisible} animationType='slide' >
+                        <View style={modalstyles.container}>
+                            <Text style={modalstyles.title}>Scannerizza il Qr Code</Text>
+                            {
+                                scanned ?
+                                    <View>
+                                        <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text>
+                                        {
+                                            showPicker ?
+                                            <DateTimePicker
+                                                mode="datetime"
+                                                value={date}
+                                                display="default" 
+                                                onChange={onChangeDate}
+                                                />
+                                            :
+                                            <TouchableNativeFeedback onPress={() => setShowPicker(true)}>
+                                                <View style={modalstyles.button}>
+                                                    <Text style={modalstyles.buttonText}>
+                                                        Seleziona data e ora
+                                                    </Text>
+                                                </View>
+                                            </TouchableNativeFeedback>
+                                        }
+                                    </View>
+                                    :
+                                    <Camera style={styles.camera} type={type}
+                                        barCodeScannerSettings={{
+                                            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+                                        }}
 
-                    <TouchableNativeFeedback >
-                        <View style={modalstyles.card}>
-                            <View style={modalstyles.row}>
-                                <Image style={modalstyles.image} source={require("../../assets/image/icona-qr-code.png")} />
-                                <Text style={modalstyles.subtitle}>Scannerizza il Qr Code</Text>
+                                        onBarCodeScanned={({ type, data }) => {
+                                            console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
+                                            setData([type, data]);
+                                            setScaned(true);
+                                        }}
+                                    >
+                                    </Camera>
+
+                            }
+                            <TouchableNativeFeedback onPress={() => {
+                                setScaned(false)
+                                setData(null)
+                                setQrVisible(false)
+                            }}>
+                                <View style={modalstyles.button}>
+                                    <Text style={modalstyles.buttonText}>
+                                        ← Torna indietro
+                                    </Text>
+                                </View>
+                            </TouchableNativeFeedback >
+                        </View>
+                    </Modal>
+                    : null
+            }
+
+            <LinearGradient
+                style={styles.container}
+                start={{ x: 0.5, y: 0.2 }}
+                colors={[color.primary, color.secondary]}
+            >
+                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, color: "white", marginLeft: 20 }}>Tickets</Text>
+                <Text style={styles.paragraph}>Aggiungi tutti i tuoi biglietti per averceli sempre dietro! (Anche disponibili offline!) 🎫 🎟️</Text>
+                <TouchableOpacity style={[styles.add, { height: 30 }]} onPress={() => setModalVisible(true)} >
+                    <Badge label={"+ Aggiungi biglietto"} color="#FFF" labelStyle={styles.label} />
+                </TouchableOpacity>
+                <Modal visible={modalVisible} animationType='slide' >
+                    <View style={modalstyles.container}>
+                        <Text style={modalstyles.title}>Nuovo biglietto</Text>
+
+                        <TouchableNativeFeedback
+                            onPress={() => {
+                                setQrVisible(true);
+                            }}
+                        >
+                            <View style={modalstyles.card}>
+                                <View style={modalstyles.row}>
+                                    <Image style={modalstyles.image} source={require("../../assets/image/icona-qr-code.png")} />
+                                    <Text style={modalstyles.subtitle}>Scannerizza il Qr Code</Text>
+                                </View>
+                                <Text style={modalstyles.paragraph}>
+                                    Scannerizza con il tuo dispositivo il Qr Code presente sul biglietto, oppure importalo direttamente dalla tua galleria! 📸 📸
+                                </Text>
                             </View>
-                            <Text style={modalstyles.paragraph}>
-                                Scannerizza con il tuo dispositivo il Qr Code presente sul biglietto, oppure importalo direttamente dalla tua galleria! 📸 📸
-                            </Text>
-                        </View>
-                    </TouchableNativeFeedback>
+                        </TouchableNativeFeedback>
 
-                    <TouchableNativeFeedback>
-                        <View style={modalstyles.card}>
-                            <View style={modalstyles.row}>
-                                <Image style={modalstyles.image} source={require("../../assets/image/icona-edit.png")} />
-                                <Text style={modalstyles.subtitle}>Inserisci manualmente</Text>
+                        <TouchableNativeFeedback>
+                            <View style={modalstyles.card}>
+                                <View style={modalstyles.row}>
+                                    <Image style={modalstyles.image} source={require("../../assets/image/icona-edit.png")} />
+                                    <Text style={modalstyles.subtitle}>Inserisci manualmente</Text>
+                                </View>
+                                <Text style={modalstyles.paragraph}>
+                                    Inserisci manualmente i dati del biglietto, come il numero di volo, la compagnia aerea, la data e l'ora di partenza e arrivo. 📝 📝
+                                </Text>
                             </View>
-                            <Text style={modalstyles.paragraph}>
-                                Inserisci manualmente i dati del biglietto, come il numero di volo, la compagnia aerea, la data e l'ora di partenza e arrivo. 📝 📝
-                            </Text>
-                        </View>
-                    </TouchableNativeFeedback>
+                        </TouchableNativeFeedback>
 
-                    <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
-                        <View style={modalstyles.button}>
-                            <Text style={modalstyles.buttonText}>
-                                ← Torna indietro
-                            </Text>
-                        </View>
-                    </TouchableNativeFeedback >
-                </View>
-            </Modal>
-        </LinearGradient>
+                        <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
+                            <View style={modalstyles.button}>
+                                <Text style={modalstyles.buttonText}>
+                                    ← Torna indietro
+                                </Text>
+                            </View>
+                        </TouchableNativeFeedback >
+                    </View>
+                </Modal>
+            </LinearGradient>
+        </>
     )
 }
 
@@ -90,6 +190,11 @@ const styles = StyleSheet.create({
         marginLeft: 20,
         marginRight: 20,
         marginTop: 10,
+    },
+    camera: {
+        aspectRatio: 1 / 1,
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').width,
     },
 
 });

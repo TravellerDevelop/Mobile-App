@@ -18,6 +18,7 @@ export default function OtherProfile({ navigation, route }) {
 
     async function getUserData() {
         setMyData(await getData("user"));
+        console.log(myData)
     }
 
     React.useEffect(() => {
@@ -117,7 +118,8 @@ export default function OtherProfile({ navigation, route }) {
                                         console.log(error);
                                     })
                             }
-                            else if (requestStatus == "Not sent") {
+                            else if (requestStatus == "Not sent" && myData != {} ) {
+                                console.log(myData)
                                 axios.post(serverLink + "api/follow/create", { from: myData._id, to: user._id })
                                     .then((response) => {
                                         setRequestStatus("Sent");
