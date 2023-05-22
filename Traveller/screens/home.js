@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
-import { color, serverLink } from '../global/globalVariable';
+import { color, serverLink, font } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
+import { Avatar } from '@react-native-material/core';
 // import LoadingCard from '../shared/loadingCard';
 // import LoadingPost from '../shared/loadingPost.js';
 
@@ -23,6 +24,9 @@ export default function Home({ navigation }) {
 
     const [refreshing, setRefreshing] = useState(false);
 
+    const [serchData, setSerchData] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+
     let globalData = null;
 
     useEffect(() => {
@@ -31,7 +35,6 @@ export default function Home({ navigation }) {
         async function verifyUserData() {
             let data = await getData("user");
             await getStringDataWithState("user", userData, setUserData);
-
 
             if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
                 storeStringData("username", data.username);
@@ -100,7 +103,84 @@ export default function Home({ navigation }) {
                 <MainHeader navigation={navigation} updateJoinTravels={loadJoinedTravels} />
                 <View style={styles.blue}>
                     <View style={styles.content}>
-                        <Text style={styles.title}>Home</Text>
+                        <TextInput placeholder="Cerca un account" style={(serchData.length == 0) ? styles.input : styles.inputResult}
+                            inputStyle={{ fontFamily: font.montserrat }}
+                            onSubmitEditing={(event) => {
+                                setSerchData([]);
+                                if (event.nativeEvent.text == "" || event.nativeEvent.text.length == 0) setSerchData([])
+                                else {
+                                    setSearchLoading(true);
+                                    axios.get(serverLink + "api/user/search?username=" + event.nativeEvent.text)
+                                        .then((response) => {
+                                            if (response.status == 200) {
+                                                setSerchData(response.data);
+                                                console.log(response.data);
+                                                setSearchLoading(false);
+                                            }
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        })
+                                }
+                            }}
+
+                            onChangeText={(text) => {
+                                console.log("change", text)
+                                setSerchData([]);
+
+                                if (text == "" || text.length == 0 || text == null || text == undefined)
+                                    setSerchData([])
+                                else {
+                                    setSearchLoading(true);
+                                    axios.get(serverLink + "api/user/search?username=" + text)
+                                        .then((response) => {
+                                            if (response.status == 200) {
+                                                setSerchData(response.data);
+                                                console.log(response.data);
+                                                setSearchLoading(false);
+                                            }
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        })
+                                }
+                            }}
+                        />
+
+                        {
+                            (serchData.length == 0 && !searchLoading) ?
+                                null
+                                :
+                                (!searchLoading && serchData.length > 0) ?
+                                    <View style={{ marginBottom: 10, borderBottomRightRadius: 10, borderBottomLeftRadius: 10 }}>
+                                        <FlatList
+                                            scrollEnabled={false}
+                                            data={serchData}
+                                            renderItem={({ item }) =>
+                                                <TouchableOpacity onPress={() => {
+                                                    navigation.navigate("OtherProfile", { userid: item._id })
+                                                }}>
+                                                    <View style={styles.usercard}>
+                                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                                            <Avatar autoColor label={item.name + " " + item.surname} labelStyle={{ fontFamily: font.montserrat, fontSize: 18 }} style={{ width: 40, height: 40, borderRadius: 50, marginRight: 10 }} />
+                                                            <View>
+                                                                <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>{item.name} {item.surname}</Text>
+                                                                <Text style={{ fontFamily: font.montserrat, fontSize: 15 }}>@{item.username}</Text>
+                                                            </View>
+                                                        </View>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            }
+                                        />
+                                    </View>
+                                    :
+                                    (searchLoading) ? <ActivityIndicator size="large" color={color.secondary} />
+                                        :
+                                        <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                            <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun utente trovato : /</Text>
+                                        </View>
+                        }
+
                         <Text style={styles.subtitle}>I tuoi prossimi viaggi:</Text>
                         {/* {
                             joinedTravelsLoading ?
@@ -124,7 +204,7 @@ export default function Home({ navigation }) {
                         }
                         {
                             (joinedTravels == null || joinedTravels.length == 0) ?
-                            // (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
+                                // (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
                                 <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                                     <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
                                 </View>
@@ -154,10 +234,10 @@ export default function Home({ navigation }) {
                                                 <TextComponent home={true} item={item} travel={lastPosts[1][item.travel]} />
                                                 :
                                                 (item.type == "vote") ?
-                                                    <Vote item={item} home={true} travel={lastPosts[1][item.travel]}/>
+                                                    <Vote item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                     :
                                                     (item.type == "payments") ?
-                                                        <PaymentComponent item={item} home={true} travel={lastPosts[1][item.travel]}/>
+                                                        <PaymentComponent item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                         :
                                                         null}
                                         </>
@@ -211,5 +291,38 @@ const styles = StyleSheet.create({
         borderTopEndRadius: 20,
         borderTopStartRadius: 20,
         paddingTop: 20,
+    },
+    input: {
+        width: Dimensions.get("window").width - 20,
+        fontFamily: font.montserrat,
+        height: 40,
+        backgroundColor: "#F5F5F5",
+        marginBottom: 20,
+        borderRadius: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginLeft: 10
+    },
+    inputResult: {
+        width: Dimensions.get("window").width - 20,
+        fontFamily: font.montserrat,
+        height: 40,
+        backgroundColor: "#F5F5F5",
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginLeft: 10,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+    },
+    usercard: {
+        width: Dimensions.get("window").width - 20,
+        height: 60,
+        backgroundColor: "#F5F5F5",
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginLeft: 10,
+        paddingTop: 10,
+        borderTopColor: "lightgray",
+        borderTopWidth: 1,
     }
 });
