@@ -108,4 +108,13 @@ export const ComponentStyles = StyleSheet.create({
         marginRight: 5,
         marginLeft: 5,
     },
+    editContent: {
+        position: "absolute",
+        bottom: 0,
+        backgroundColor: "white",
+        width: "100%",
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        padding: 20,
+    }
 });

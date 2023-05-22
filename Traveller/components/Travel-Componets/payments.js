@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Image, TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableWithoutFeedback, Modal, TouchableOpacity } from "react-native";
 import { ComponentStyles } from "./componentStyle";
 import { font } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
@@ -7,6 +7,13 @@ import { Badge } from '@react-native-material/core';
 
 export default function PaymentComponent({ navigation, item, home, travel }) {
     let [info, setInfo] = React.useState([]);
+
+    let [userData, setUserData] = React.useState(false);
+    let [showMenu, setShowMenu] = React.useState(false);
+
+    async function getUserData() {
+        setUserData(await getData("user"));
+    }
 
     useEffect(() => {
         const test = async () => {
@@ -19,6 +26,8 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
                 }
             }
         }
+
+        getUserData();
         test();
 
     }, []);
@@ -27,10 +36,83 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
         (info != []) ?
             <TouchableWithoutFeedback onPress={
                 () => {
-                    navigation.navigate("PaymentInfo", { item: item })
+                    if (!home) {
+                        navigation.navigate("PaymentInfo", { item: item })
+                    }
                 }
             } >
                 <View style={ComponentStyles.card}>
+
+                    <Modal transparent visible={showMenu} animationType='slide' >
+                        <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+                            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
+                                <View style={ComponentStyles.editContent}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            item.pinned = !item.pinned;
+
+                                            axios.post(serverLink + "api/post/updatePinPost", { param: item })
+                                                .then((response) => {
+                                                    setShowMenu(false);
+                                                    loadPosts(item.travel)
+                                                })
+                                                .catch((error) => {
+                                                    console.log(error);
+                                                })
+                                        }}>
+                                        <View
+                                            style={{ borderBottomWidth: 1, borderBottomColor: "lightgray", paddingBottom: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
+                                        >
+                                            <Image source={require("../../assets/image/pin.png")} style={{ width: 22, height: 22, tintColor: "lightgray", marginRight: 10 }} />
+                                            {
+                                                (item.pinned) ?
+                                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Rimuovi pin</Text>
+                                                    :
+                                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Aggiungi pin</Text>
+                                            }
+                                        </View>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            axios.post(serverLink + "api/post/deletePost", { id: item._id })
+                                                .then((response) => {
+                                                    setShowMenu(false);
+                                                    loadPosts(item.travel)
+                                                })
+                                                .catch((error) => {
+                                                    console.log(error);
+                                                })
+                                        }}>
+
+                                        <View
+                                            style={{ paddingTop: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
+                                        >
+                                            <Image source={require("../../assets/image/icona-cestino.png")} style={{ width: 22, height: 22, tintColor: "red", marginRight: 10 }} />
+                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "red" }}>Elimina post</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </Modal>
+
+                    {
+                        ((item.creator == userData.username) && !home) ?
+                            <View
+                                style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}
+                            >
+                                <TouchableOpacity
+                                    style={{ position: "absolute", top: 5, right: 5, zIndex: 100 }}
+                                    onPress={() => {
+                                        showMenu ? setShowMenu(false) : setShowMenu(true);
+                                    }}>
+                                    <Image source={require("../../assets/image/icona-more-cerchio.png")} style={{ width: 20, height: 20, tintColor: "lightgray" }} />
+                                </TouchableOpacity>
+                            </View>
+                            : null
+
+                    }
+
                     {(item.pinned && !home) ?
                         <View style={ComponentStyles.pinned}>
                             <Image source={require("../../assets/image/pin.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "lightgray" }} />
@@ -61,7 +143,12 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
                     <View>
                         <Text style={ComponentStyles.contentText}>Ti ha inviato una richiesta di:</Text>
                         <Text style={[ComponentStyles.contentText, { fontSize: 25, fontFamily: font.montserratBold }]}>{item.amount}€</Text>
-                        <Text style={[ComponentStyles.contentText, { fontSize: 12, marginTop: 10, color: "gray" }]} >Clicca per maggiori informazioni</Text>
+                        {
+                            (home) ?
+                                null
+                                :
+                                <Text style={[ComponentStyles.contentText, { fontSize: 12, marginTop: 10, color: "gray" }]} >Clicca per maggiori informazioni</Text>
+                        }
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -77,7 +164,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         position: "absolute",
-        top: 10,
+        top: 35,
         right: 0,
         borderTopLeftRadius: 10,
         borderBottomLeftRadius: 10,

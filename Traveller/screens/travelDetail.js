@@ -107,7 +107,7 @@ export default function TravelDetail({ navigation, route }) {
                                                     <TextComponent item={item} home={false} loadPosts={loadPosts} />
                                                     :
                                                     (item.type == "vote") ?
-                                                        <Vote item={item} home={false} />
+                                                        <Vote item={item} home={false} loadPosts={loadPosts} />
                                                         :
                                                         (item.type == "payments") ?
                                                             <PaymentComponent navigation={navigation} item={item} home={false} />

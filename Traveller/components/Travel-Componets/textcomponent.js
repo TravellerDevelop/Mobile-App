@@ -24,7 +24,7 @@ export default function TextComponent({ item, home, travel, loadPosts }) {
             <Modal transparent visible={showMenu} animationType='slide' >
                 <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
                     <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
-                        <View style={style.content}>
+                        <View style={ComponentStyles.editContent}>
                             <TouchableOpacity
                                 onPress={() => {
                                     item.pinned = !item.pinned;
@@ -113,15 +113,3 @@ export default function TextComponent({ item, home, travel, loadPosts }) {
         </View>
     )
 }
-
-const style = StyleSheet.create({
-    content: {
-        position: "absolute",
-        bottom: 0,
-        backgroundColor: "white",
-        width: "100%",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        padding: 20,
-    }
-})

@@ -156,7 +156,7 @@ export default function Home({ navigation }) {
                                                 (item.type == "vote") ?
                                                     <Vote item={item} home={true} travel={lastPosts[1][item.travel]}/>
                                                     :
-                                                    (item.type == "payment") ?
+                                                    (item.type == "payments") ?
                                                         <PaymentComponent item={item} home={true} travel={lastPosts[1][item.travel]}/>
                                                         :
                                                         null}
