@@ -11,11 +11,15 @@ let companies = {
 let col = "#FFF"
 let img;
 
-export default function TicketsPreview({ company }) {
-    if (company === "Ryanair") {
+export default function TicketsPreview({ item }) {
+    console.log("Item passato\n", item);
+
+    let company = "Ciao";
+
+    if (item.company.name === "Ryanair") {
         col = companies.Ryanair;
         img = require("../../assets/image/airlines/ryanair.png");
-    } else if (company === "EasyJet") {
+    } else if (item.company.name === "EasyJet") {
         col = companies.EasyJet;
         img = require("../../assets/image/airlines/EasyJet.png");
     }
@@ -30,10 +34,10 @@ export default function TicketsPreview({ company }) {
                 <View style={[styles.container, { backgroundColor: col }]} >
                     <View style={styles.left}></View>
                     <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
-                    <Text style={styles.name}>BOSSOLASCO PIETRO</Text>
-                    <Text style={styles.nrFlight}>Numero di volo: FR0464</Text>
-                    <Text style={styles.destination}>From STN to TRN</Text>
-                    <Text style={styles.date}>12-03-2024 12:32</Text>
+                    <Text style={styles.name}>{item.surname} {item.name}</Text>
+                    <Text style={styles.nrFlight}>Numero di volo: {item.flightNumber}</Text>
+                    <Text style={styles.destination}>From {item.from.iata} to {item.to.iata}</Text>
+                    <Text style={styles.date}>{new Date(item.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
                     <View style={styles.right}></View>
                 </View>
             </TouchableNativeFeedback>

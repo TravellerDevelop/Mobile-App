@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Camera, CameraType } from 'expo-camera';
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions } from "react-native";
-import { color, font } from "../../global/globalVariable.js";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
+import { color, font, serverLink } from "../../global/globalVariable.js";
 import { LinearGradient } from "expo-linear-gradient";
 import { Badge } from "@react-native-material/core";
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from "axios";
+import { getData } from "../data/localdata.js";
 
 export default function TicketsHeader() {
 
@@ -21,22 +23,35 @@ export default function TicketsHeader() {
     const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
 
+    let [dateOfTicket, setDateOfTicket] = useState("");
+
+    const [ticketTitle, setTicketTitle] = useState("");
+
     const toggleDatePicker = () => {
         setShowPicker(!showPicker);
     }
 
-    const onChangeDate = (event, selectedDate) => {
-        if(type == "set"){
+    const onChangeDate = ({ type }, selectedDate) => {
+        if (type == "set") {
             const currentDate = selectedDate;
             setDate(currentDate);
+
+            if (Platform.OS == "android") {
+                toggleDatePicker()
+                console.log(currentDate.toDateString());
+                setDateOfTicket(currentDate.toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" }));
+            }
         }
-        else{
+        else {
             toggleDatePicker();
         }
     };
 
-    // if (!permission.granted)
-    // requestPermission();
+    const confirmIOSDate = () => {
+        setDateOfTicket(date.toLocaleString("it-IT", { timeZone: "Europe/Andorra" }));
+        toggleDatePicker();
+    }
+
 
     if (!permission)
         requestPermission();
@@ -51,28 +66,86 @@ export default function TicketsHeader() {
                 qrVisible ?
                     <Modal visible={qrVisible} animationType='slide' >
                         <View style={modalstyles.container}>
-                            <Text style={modalstyles.title}>Scannerizza il Qr Code</Text>
+                            <Text style={modalstyles.title}>{(!scanned) ? "Scannerizza il Qr Code" : "Nuovo biglietto"}</Text>
                             {
                                 scanned ?
                                     <View>
-                                        <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text>
+                                        {/* <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text> */}
                                         {
                                             showPicker ?
-                                            <DateTimePicker
-                                                mode="datetime"
-                                                value={date}
-                                                display="default" 
-                                                onChange={onChangeDate}
+                                                <DateTimePicker
+                                                    mode="date"
+                                                    value={date}
+                                                    display="default"
+                                                    onChange={onChangeDate}
+                                                    minimumDate={new Date()}
+                                                    style={
+                                                        styles.datePicker
+                                                    }
                                                 />
-                                            :
-                                            <TouchableNativeFeedback onPress={() => setShowPicker(true)}>
-                                                <View style={modalstyles.button}>
-                                                    <Text style={modalstyles.buttonText}>
-                                                        Seleziona data e ora
-                                                    </Text>
-                                                </View>
-                                            </TouchableNativeFeedback>
+                                                :
+                                                null
                                         }
+
+
+                                        {
+                                            showPicker && Platform.OS == "ios" && (
+                                                <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                                                    <TouchableOpacity onPress={() => { toggleDatePicker() }} >
+                                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: color.primary }}>Annulla</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={() => { confirmIOSDate() }} >
+                                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: color.primary }}>Conferma</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            )
+                                        }
+
+                                        <TextInput style={styles.input} placeholder="Titolo biglietto" placeholderTextColor="black"
+                                            onChangeText={(text) => { setTicketTitle(text) }}
+                                        />
+
+                                        <Pressable
+                                            onPress={() => { toggleDatePicker() }}
+                                        >
+                                            <TextInput style={styles.input}
+                                                placeholder="Data del biglietto"
+                                                placeholderTextColor="black"
+                                                value={dateOfTicket}
+                                                onChangeText={setDateOfTicket}
+                                                onPressIn={toggleDatePicker}
+                                                editable={false}
+                                            />
+                                        </Pressable>
+
+                                        <TouchableNativeFeedback
+                                            onPress={async () => {
+                                                verifyTicketsData(data);
+                                            }}
+                                        >
+                                            <View
+                                                style={{
+                                                    width: (Dimensions.get("window").width / 100) * 40,
+                                                    height: 40,
+                                                    marginLeft: (Dimensions.get("window").width / 100) * 30,
+                                                    backgroundColor: "#F5F5F5",
+                                                    borderRadius: 10,
+                                                    paddingLeft: 10,
+                                                    paddingRight: 10,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        fontFamily: font.montserrat,
+                                                        fontSize: 20,
+                                                        color: color.primary,
+                                                        textAlign: "center",
+                                                        lineHeight: 40,
+                                                    }}
+
+                                                >Carica biglietto</Text>
+                                            </View>
+                                        </TouchableNativeFeedback>
                                     </View>
                                     :
                                     <Camera style={styles.camera} type={type}
@@ -147,6 +220,7 @@ export default function TicketsHeader() {
                             </View>
                         </TouchableNativeFeedback>
 
+
                         <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
                             <View style={modalstyles.button}>
                                 <Text style={modalstyles.buttonText}>
@@ -159,7 +233,80 @@ export default function TicketsHeader() {
             </LinearGradient>
         </>
     )
+
+    function verifyTicketsData(data) {
+        let splittedData = data[1].split(" ");
+    
+        splittedData = splittedData.filter(function (el) {
+            return el != '';
+        });
+    
+        let out = {
+            name: "",
+            surname: "",
+            from: {},
+            to: {},
+            company: {},
+            flightNumber: "",
+            aircraft: "",
+            qrdata: data[1],
+            qrtype: data[0],
+        }
+    
+        let aus = "";
+    
+        aus = splittedData[0].substring(2, splittedData[0].length).split("/");
+    
+        const options = {
+            method: 'GET',
+            url: 'https://aerodatabox.p.rapidapi.com/flights/number/' + splittedData[2].substring(6, splittedData[2].length) + splittedData[3],
+            headers: {
+                'X-RapidAPI-Key': '02a9adf0c7mshb0be85718ea39a3p175bc5jsnb2ceb4c0b3fd',
+                'X-RapidAPI-Host': 'aerodatabox.p.rapidapi.com'
+            }
+        };
+    
+        if (splittedData[2].substring(6, splittedData[2].length) == "FR" || splittedData[2].substring(6, splittedData[2].length) == "VY" || splittedData[2].substring(6, splittedData[2].length) == "KL" || splittedData[2].substring(6, splittedData[2].length) == "AZ") {
+            axios.request(options)
+                .then(async function (response) {
+                    let flightInfo = response.data;
+    
+                    out.surname = aus[0];
+                    out.name = aus[1];
+                    out.company = { name: flightInfo[0].airline.name, iata: flightInfo[0].airline.iata, icao: flightInfo[0].airline.icao }
+                    out.from = { iata: flightInfo[0].departure.airport.iata, name: flightInfo[0].departure.airport.name }
+                    out.to = { iata: flightInfo[0].arrival.airport.iata, name: flightInfo[0].arrival.airport.name }
+                    out.flightNumber = flightInfo[0].number;
+                    out.aircraft = flightInfo[0].aircraft.model
+    
+                    out.title = ticketTitle;
+                    out.date = date;
+                    out.creator = await getData("user")._id;
+    
+                    axios.post(serverLink + "api/tickets/create", { data: out })
+                        .then(function (response) {
+                            setQrVisible(false);
+                            setModalVisible(false);
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                        })
+    
+                    return out;
+                }).catch(function (error) {
+                    console.error(error);
+    
+                    return "Errore nella richiesta";
+                });
+        }
+        else {
+            return "Linea aerea non supportata";
+        }
+    }
 }
+
+
+
 
 const styles = StyleSheet.create({
     container: {
@@ -196,7 +343,22 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').width,
     },
-
+    input: {
+        width: Dimensions.get("window").width - 22,
+        fontFamily: font.montserrat,
+        height: 40,
+        backgroundColor: "#F5F5F5",
+        marginBottom: 20,
+        borderRadius: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginLeft: 10
+    },
+    datePicker: {
+        width: Dimensions.get("window").width - 20,
+        height: 40,
+        marginBottom: 20,
+    }
 });
 
 
