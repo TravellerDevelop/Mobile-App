@@ -15,9 +15,9 @@ import { Avatar } from '@react-native-material/core';
 
 export default function Home({ navigation }) {
     let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(false);
+    let [lastPostsLoading, setLastPostsLoading] = useState(false);
 
     let [lastPosts, setLastPosts] = useState(false);
-    let [lastPostsLoading, setLastPostsLoading] = useState(false);
 
     let [userData, setUserData] = useState(false);
     let [joinedTravels, setJoinedTravels] = useState(false);
@@ -41,6 +41,7 @@ export default function Home({ navigation }) {
                 axios.get(serverLink + "api/user/info?username=" + data.username)
                     .then(async (response) => {
                         await setUserData(response.data)
+                        console.log(userData)
                         globalData = response.data;
                         await loadJoinedTravels(response.data[0].username, response.data[0]._id)
                         await takePost(response.data[0]._id, response.data[0].username)
@@ -86,7 +87,7 @@ export default function Home({ navigation }) {
                 }
             })
             .catch((error) => {
-                console.log(error);
+                console.log("Last Post", error);
             })
     }
 
@@ -107,14 +108,14 @@ export default function Home({ navigation }) {
                             inputStyle={{ fontFamily: font.montserrat }}
                             onSubmitEditing={(event) => {
                                 setSerchData([]);
-                                if (event.nativeEvent.text == "" || event.nativeEvent.text.length == 0) setSerchData([])
+                                if (event.nativeEvent.text == "" || event.nativeEvent.text.length < 3)
+                                    setSerchData([])
                                 else {
                                     setSearchLoading(true);
                                     axios.get(serverLink + "api/user/search?username=" + event.nativeEvent.text)
                                         .then((response) => {
                                             if (response.status == 200) {
                                                 setSerchData(response.data);
-                                                console.log(response.data);
                                                 setSearchLoading(false);
                                             }
                                         })
@@ -125,10 +126,9 @@ export default function Home({ navigation }) {
                             }}
 
                             onChangeText={(text) => {
-                                console.log("change", text)
                                 setSerchData([]);
 
-                                if (text == "" || text.length == 0 || text == null || text == undefined)
+                                if (text == "" || text.length < 3 || text == null || text == undefined)
                                     setSerchData([])
                                 else {
                                     setSearchLoading(true);
@@ -136,7 +136,6 @@ export default function Home({ navigation }) {
                                         .then((response) => {
                                             if (response.status == 200) {
                                                 setSerchData(response.data);
-                                                console.log(response.data);
                                                 setSearchLoading(false);
                                             }
                                         })
@@ -157,19 +156,26 @@ export default function Home({ navigation }) {
                                             scrollEnabled={false}
                                             data={serchData}
                                             renderItem={({ item }) =>
-                                                <TouchableOpacity onPress={() => {
-                                                    navigation.navigate("OtherProfile", { userid: item._id })
-                                                }}>
-                                                    <View style={styles.usercard}>
-                                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                                            <Avatar autoColor label={item.name + " " + item.surname} labelStyle={{ fontFamily: font.montserrat, fontSize: 18 }} style={{ width: 40, height: 40, borderRadius: 50, marginRight: 10 }} />
-                                                            <View>
-                                                                <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>{item.name} {item.surname}</Text>
-                                                                <Text style={{ fontFamily: font.montserrat, fontSize: 15 }}>@{item.username}</Text>
-                                                            </View>
-                                                        </View>
-                                                    </View>
-                                                </TouchableOpacity>
+                                                <>
+                                                    {
+                                                        (userData[0]._id != item._id) ?
+                                                            <TouchableOpacity onPress={() => {
+                                                                navigation.navigate("OtherProfile", { userid: item._id })
+                                                            }}>
+                                                                <View style={styles.usercard}>
+                                                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                                                        <Avatar autoColor label={item.name + " " + item.surname} labelStyle={{ fontFamily: font.montserrat, fontSize: 18 }} style={{ width: 40, height: 40, borderRadius: 50, marginRight: 10 }} />
+                                                                        <View>
+                                                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>{item.name} {item.surname}</Text>
+                                                                            <Text style={{ fontFamily: font.montserrat, fontSize: 15 }}>@{item.username}</Text>
+                                                                        </View>
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                            :
+                                                            null
+                                                    }
+                                                </>
                                             }
                                         />
                                     </View>

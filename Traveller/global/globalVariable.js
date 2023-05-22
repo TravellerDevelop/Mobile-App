@@ -14,5 +14,5 @@ export const font = {
 // In sviluppo cambiare il valore a 40
 export const paddingTopPage = 15;
 
-export const serverLink = "http://10.88.255.60:1337/"
+export const serverLink = "http://192.168.1.125:1337/"
 // export const serverLink = "https://traveller-ttze.onrender.com/"
