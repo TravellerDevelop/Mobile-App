@@ -9,7 +9,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from "axios";
 import { getData } from "../data/localdata.js";
 
-export default function TicketsHeader() {
+export default function TicketsHeader({ update }) {
 
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
@@ -48,7 +48,7 @@ export default function TicketsHeader() {
     };
 
     const confirmIOSDate = () => {
-        setDateOfTicket(date.toLocaleString("it-IT", { timeZone: "Europe/Andorra" }));
+        setDateOfTicket(date.toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" }));
         toggleDatePicker();
     }
 
@@ -281,10 +281,12 @@ export default function TicketsHeader() {
     
                     out.title = ticketTitle;
                     out.date = date;
-                    out.creator = await getData("user")._id;
+                    let aus = await getData("user");
+                    out.creator = aus._id;
     
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(function (response) {
+                            // update()
                             setQrVisible(false);
                             setModalVisible(false);
                         })

@@ -12,7 +12,7 @@ export default function TicketModal({ data, visibility, setVisibility }) {
         <Modal visible={visibility} animationType="slide" >
             <View style={modalstyles.container}>
                 <QrCodeModal
-                    data={qrValue}
+                    data={data.qrdata}
                     visibility={qrVisibility}
                     setVisibility={setQrVisibility}
                 />
@@ -20,24 +20,20 @@ export default function TicketModal({ data, visibility, setVisibility }) {
                     <TouchableOpacity onPress={() => setVisibility(false)} >
                         <Image source={require("../../assets/image/icona-freccia-left.png")} style={{ height: 25, width: 25 }} resizeMode="contain" />
                     </TouchableOpacity>
-                    <Text style={{ color: "#FFF", fontSize: 20, fontFamily: font.montserrat, marginLeft: 20 }}>Dettagli biglietto</Text>
+                    <Text style={{ color: "#FFF", fontSize: 20, fontFamily: font.montserrat, marginLeft: 20 }}>{data.title}</Text>
                 </View>
-                <Text style={modalstyles.name}>BOSSOLASCO PIETRO</Text>
-                <Text style={modalstyles.destination} >Da London Stansted Airport a Torino Caselle</Text>
+                <Text style={modalstyles.name}>{data.surname} {data.name}</Text>
+                <Text style={modalstyles.destination} >Da{data.from.name.split(',')[1]} a{data.to.name.split(',')[1]}</Text>
+                <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
+                <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>
                 <View style={modalstyles.row}>
-                    <Text style={modalstyles.position}>Posto: 28A</Text>
-                    <Text style={modalstyles.position}>Nr. volo: FR0464</Text>
-                </View>
-                <Text style={modalstyles.time}>Durata volo: 1h 32m</Text>
-                <View style={modalstyles.row}>
-                    <Text style={modalstyles.position}>12-03-2024</Text>
-                    <Text style={modalstyles.position}>12:32</Text>
+                    <Text style={modalstyles.position}>Data: {new Date(data.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
                 </View>
                 <TouchableOpacity style={modalstyles.qrcode} onPress={() => {
                     setQrVisibility(true)
                 }}  >
                     <QRCode
-                        value={qrValue}
+                        value={data.qrdata}
                         size={180}
                     />
                 </TouchableOpacity>

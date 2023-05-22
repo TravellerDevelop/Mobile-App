@@ -28,7 +28,7 @@ export default function TicketsPreview({ item }) {
 
     return (
         <>
-            <TicketModal visibility={modalVisibility} data={company} setVisibility={setModalVisibility} />
+            <TicketModal visibility={modalVisibility} data={item} setVisibility={setModalVisibility} />
 
             <TouchableNativeFeedback onPress={() => setModalVisibility(true)} >
                 <View style={[styles.container, { backgroundColor: col }]} >

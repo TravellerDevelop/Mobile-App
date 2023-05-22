@@ -29,7 +29,7 @@ export default function Tickets() {
 
     return (
         <ScrollView style={styles.container}>
-            <TicketsHeader />
+            <TicketsHeader update={takeInfo} />
             <View style={{ alignItems: "center", paddingBottom: 100, backgroundColor: "white" }}>
                 <TextInput placeholder="Cerca biglietto" style={styles.input}
                     inputStyle={{ fontFamily: font.montserrat }}
