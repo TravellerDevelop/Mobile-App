@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Camera, CameraType } from 'expo-camera';
 import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
 import { color, font, serverLink } from "../../global/globalVariable.js";
@@ -26,6 +26,8 @@ export default function TicketsHeader({ update }) {
     let [dateOfTicket, setDateOfTicket] = useState("");
 
     const [ticketTitle, setTicketTitle] = useState("");
+
+    const [userInfo, setUserInfo] = useState({});
 
     const toggleDatePicker = () => {
         setShowPicker(!showPicker);
@@ -59,6 +61,15 @@ export default function TicketsHeader({ update }) {
     function toggleCameraType() {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
     }
+
+    async function getUserData(){
+        let aus = await getData("user");
+        setUserInfo(aus);
+    }
+
+    useEffect(() => {
+        getUserData();
+    }, [])
 
     return (
         <>
@@ -236,11 +247,11 @@ export default function TicketsHeader({ update }) {
 
     function verifyTicketsData(data) {
         let splittedData = data[1].split(" ");
-    
+
         splittedData = splittedData.filter(function (el) {
             return el != '';
         });
-    
+
         let out = {
             name: "",
             surname: "",
@@ -252,11 +263,11 @@ export default function TicketsHeader({ update }) {
             qrdata: data[1],
             qrtype: data[0],
         }
-    
+
         let aus = "";
-    
+
         aus = splittedData[0].substring(2, splittedData[0].length).split("/");
-    
+
         const options = {
             method: 'GET',
             url: 'https://aerodatabox.p.rapidapi.com/flights/number/' + splittedData[2].substring(6, splittedData[2].length) + splittedData[3],
@@ -265,12 +276,12 @@ export default function TicketsHeader({ update }) {
                 'X-RapidAPI-Host': 'aerodatabox.p.rapidapi.com'
             }
         };
-    
+
         if (splittedData[2].substring(6, splittedData[2].length) == "FR" || splittedData[2].substring(6, splittedData[2].length) == "VY" || splittedData[2].substring(6, splittedData[2].length) == "KL" || splittedData[2].substring(6, splittedData[2].length) == "AZ") {
             axios.request(options)
                 .then(async function (response) {
                     let flightInfo = response.data;
-    
+
                     out.surname = aus[0];
                     out.name = aus[1];
                     out.company = { name: flightInfo[0].airline.name, iata: flightInfo[0].airline.iata, icao: flightInfo[0].airline.icao }
@@ -278,26 +289,27 @@ export default function TicketsHeader({ update }) {
                     out.to = { iata: flightInfo[0].arrival.airport.iata, name: flightInfo[0].arrival.airport.name }
                     out.flightNumber = flightInfo[0].number;
                     out.aircraft = flightInfo[0].aircraft.model
-    
+
                     out.title = ticketTitle;
-                    out.date = date;
-                    let aus = await getData("user");
-                    out.creator = aus._id;
-    
+                    out.date = new Date(date);
+                    out.creator = userInfo._id;
+
+                    console.log(out);
+
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(function (response) {
-                            // update()
+                            update();
                             setQrVisible(false);
                             setModalVisible(false);
                         })
                         .catch(function (error) {
                             console.error(error);
                         })
-    
+
                     return out;
                 }).catch(function (error) {
                     console.error(error);
-    
+
                     return "Errore nella richiesta";
                 });
         }
@@ -306,9 +318,6 @@ export default function TicketsHeader({ update }) {
         }
     }
 }
-
-
-
 
 const styles = StyleSheet.create({
     container: {

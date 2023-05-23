@@ -6,6 +6,10 @@ import TicketModal from "../../screens/Modals/ticketModal";
 let companies = {
     "Ryanair": "#2B4779",
     "EasyJet": "#FF561F",
+    "Alitalia": "#009FE3",
+    "Ita" : "#009FE3",
+    "Vueling": "#F5B912",
+    "KLM": "#00A1DE",
 }
 
 let col = "#FFF"
@@ -22,6 +26,15 @@ export default function TicketsPreview({ item }) {
     } else if (item.company.name === "EasyJet") {
         col = companies.EasyJet;
         img = require("../../assets/image/airlines/EasyJet.png");
+    } else if (item.company.name === "Alitalia" || item.company.name === "Ita") {
+        col = companies.Alitalia;
+        img = require("../../assets/image/airlines/ita.png");
+    } else if (item.company.name === "Vueling") {
+        col = companies.Vueling;
+        img = require("../../assets/image/airlines/vueling.png");
+    } else if (item.company.name === "KLM") {
+        col = companies.KLM;
+        img = require("../../assets/image/airlines/klm.png");
     }
 
     let [modalVisibility, setModalVisibility] = useState(false);
