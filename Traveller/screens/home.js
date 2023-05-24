@@ -10,9 +10,6 @@ import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import { Avatar } from '@react-native-material/core';
-import LoadingPost from '../shared/loadingPost';
-import LoadingCard from '../shared/loadingCard';
-// import LoadingPost from '../shared/loadingPost.js';
 
 export default function Home({ navigation }) {
     let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -34,15 +31,14 @@ export default function Home({ navigation }) {
         verifyUserData();
 
         async function verifyUserData() {
-            let data = await getData("user");
-            await getStringDataWithState("user", userData, setUserData);
-
+            let data = await getData("user");            
+            await setUserData(await data);
+            
             if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
                 storeStringData("username", data.username);
                 axios.get(serverLink + "api/user/info?username=" + data.username)
                     .then(async (response) => {
                         await setUserData(response.data)
-                        console.log(userData)
                         globalData = response.data;
                         await loadJoinedTravels(response.data[0].username, response.data[0]._id)
                         await takePost(response.data[0]._id, response.data[0].username)
@@ -53,6 +49,7 @@ export default function Home({ navigation }) {
             }
             else {
                 storeJsonData("user", '');
+                storeStringData('openLogin', "false");
             }
         }
     }, []);

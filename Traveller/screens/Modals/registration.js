@@ -16,7 +16,7 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
     let [loading, setLoading] = React.useState(false);
 
     return (
-        <Modal visible={visibility} animationType="slide" >
+        <Modal visible={visibility} animationType="none" >
             <ScrollView>
                 <Text style={styles.title}>TRAVELLER</Text>
                 <View style={styles.container}>
@@ -40,29 +40,31 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
                                     .then((response) => {
                                         if (response.status == 200) {
                                             axios.get(serverLink + "api/user/info?username=" + username)
-                                            .then((response) => {
-                                                    console.log(response.data)
+                                            .then(async (response) => {
                                                     storeStringData("openLogin", "true");
-                                                    storeJsonData("user", response.data);
-                                                    navigation.navigate("Home");
+                                                    await storeJsonData("user", response.data[0]);
                                                     setVisibility(false);
                                                     setLoginVisibility(false);
+                                                    navigation.navigate("Home");
                                                 })
                                                 .catch((error) => {
-                                                    console.log(error);
+                                                    console.log("Errore nel recupero dati: ", error);
                                                 })
                                         }
                                         else {
                                             if (response.status == 202) {
+                                                setLoading(false);
                                                 alert("Username già in uso");
                                             }
                                         }
                                     })
                                     .catch((error) => {
-                                        console.log(error);
+                                        setLoading(false);
+                                        console.log("Errore nell'invio dati:", error);
                                     })
                             }
                             else {
+                                setLoading(false);
                                 alert("Inserisci tutti i campi correttamente");
                             }
                         })();

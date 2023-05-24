@@ -21,7 +21,7 @@ export default function LoginModal({ navigation, visibility, setVisibility }) {
         <>
             {signup ? <Signup visibility={signup} navigation={navigation} setVisibility={setSignup} loginVisibility={visibility} setLoginVisibility={setVisibility} /> : null}
 
-            <Modal visible={visibility} animationType={"slide"} >
+            <Modal visible={visibility} animationType={"none"} >
                 <ScrollView>
                     <Text style={styles.title}>TRAVELLER</Text>
                     <View style={styles.container}>
