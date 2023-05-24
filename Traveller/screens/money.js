@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { StyleSheet, View, Text, Dimensions, ScrollView, RefreshControl } from "react-native";
 import { font, color, serverLink } from "../global/globalVariable";
 import { getData } from "../shared/data/localdata";
+import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
 
 export default function Money() {
@@ -60,7 +61,6 @@ export default function Money() {
     return (
         <>
             <ScrollView
-
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -68,10 +68,9 @@ export default function Money() {
                     />
                 }
             >
+                <MoneyHeader />
 
                 <View style={styles.container}>
-                    <Text style={styles.title}>Gestione finanze</Text>
-
                     <View style={styles.topCard}>
                         <View style={styles.row}>
                             <View style={styles.minicard}>

@@ -48,8 +48,6 @@ export default function NewPost({ setNewPost, data, refresh }) {
 
             setUser(aus);
 
-            console.log(data.participants)
-
             voteParams = {
                 question: "",
                 content: [
@@ -250,7 +248,6 @@ export default function NewPost({ setNewPost, data, refresh }) {
                             let aus = answers;
                             voteParams.content.push("");
                             voteParams.votes.push([]);
-                            console.log(voteParams.content)
                             answers.push({ key: answers.length + 1, question: "" });
                             setAusState({ key: answers.length + 1, question: "" })
                             setAnswers(aus);
@@ -280,14 +277,12 @@ export default function NewPost({ setNewPost, data, refresh }) {
                     if (type == "vote") {
                         voteParams.pinned = pinned;
                         voteParams.question = question;
-                        console.log(voteParams)
                         // voteParams.dateTime = new Date();
                         param = voteParams;
                     }
                     else if (type == "text") {
                         // textParams.dateTime = new Date().toString();
                         textParams.pinned = pinned;
-                        console.log(textParams)
                         param = textParams
                     }
                     else if (type == "payments") {
@@ -320,7 +315,6 @@ export default function NewPost({ setNewPost, data, refresh }) {
                         paymentParams.description = paymentDescription;
 
                         param = paymentParams
-                        console.log(paymentParams)
                     }
 
                     param.type = type;

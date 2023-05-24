@@ -9,10 +9,11 @@ import NewPost from './Modals/NewPost';
 import axios from 'axios';
 import LoadingPost from '../shared/loadingPost';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
+import { ActivityIndicator } from 'react-native-paper';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
-    let [postLoading, setPostLoading] = useState(false);
+    let [postLoading, setPostLoading] = useState(true);
 
     let [postData, setPostData] = useState([]);
 
@@ -23,6 +24,7 @@ export default function TravelDetail({ navigation, route }) {
     const [refreshing, setRefreshing] = useState(false);
 
     const onRefresh = async () => {
+        setPostLoading(true);
         setRefreshing(true);
         loadPosts(route.params._id);
         setRefreshing(false);
@@ -39,6 +41,7 @@ export default function TravelDetail({ navigation, route }) {
                     for (let item of aus) {
                         item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
                     }
+
                     await setPostData(aus);
                     await setPostLoading(false);
                 }
@@ -85,16 +88,14 @@ export default function TravelDetail({ navigation, route }) {
                                     null
                             }
 
-                            {/* {
-                                (postLoading) ?
-                                    <View>
-                                        <LoadingPost />
-                                        <LoadingPost />
-                                        <LoadingPost />
+                            {
+                                (postLoading) && (
+                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
+                                        <ActivityIndicator size="large" color="#4900FF" />
                                     </View>
-                                    :
-                                    null
-                            } */}
+                                )
+                            }
+
                             {
                                 (postData.length > 0 && postData != null && !postLoading) ?
                                     <FlatList
@@ -120,7 +121,7 @@ export default function TravelDetail({ navigation, route }) {
                                     null
                             }
                             {
-                                (postData.length == 0 || postData == null && !postLoading) ?
+                                ((postData.length == 0 || postData == null) && !postLoading) ?
                                     < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
                                         <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
                                     </View>

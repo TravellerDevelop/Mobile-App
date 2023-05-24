@@ -15,7 +15,7 @@ let companies = {
 let col = "#FFF"
 let img;
 
-export default function TicketsPreview({ item }) {
+export default function TicketsPreview({ item, takeInfo }) {
     let company = "Ciao";
 
     if (item.company.name === "Ryanair") {
@@ -39,7 +39,7 @@ export default function TicketsPreview({ item }) {
 
     return (
         <>
-            <TicketModal visibility={modalVisibility} data={item} setVisibility={setModalVisibility} />
+            <TicketModal visibility={modalVisibility} data={item} setVisibility={setModalVisibility} takeInfo={takeInfo} />
 
             <TouchableNativeFeedback onPress={() => setModalVisibility(true)} >
                 <View style={[styles.container, { backgroundColor: col }]} >

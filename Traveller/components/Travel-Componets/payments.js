@@ -34,7 +34,6 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
             for (let i of item.destinator) {
                 if (i.userid == aus._id) {
                     setInfo(i);
-                    console.log(i);
                 }
             }
         }

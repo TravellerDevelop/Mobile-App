@@ -1,16 +1,29 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image } from "react-native";
-import { font, color } from "../../global/globalVariable";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableWithoutFeedback, Image } from "react-native";
+import { font, color, serverLink } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
 import QrCodeModal from "./qrCodeModal";
+import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
+import axios from "axios";
 
-export default function TicketModal({ data, visibility, setVisibility }) {
+export default function TicketModal({ data, visibility, setVisibility, takeInfo }) {
     let [qrVisibility, setQrVisibility] = useState(false);
-    let qrValue = "M1BOSSOLASCO/PIETRO    IF5ESD STNTRNFR 0464 263Y016D0060 148>5181W 2263BFR 00000000000002A0000000000000 2                          N"
+    let [showMenu, setShowMenu] = React.useState(true);
 
     return (
         <Modal visible={visibility} animationType="slide" >
             <View style={modalstyles.container}>
+                <View
+                    style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}
+                >
+                    <TouchableOpacity
+                        style={{ position: "absolute", top: 10, right: 10, zIndex: 100 }}
+                        onPress={() => {
+                            showMenu ? setShowMenu(false) : setShowMenu(true);
+                        }}>
+                        <Image source={require("../../assets/image/icona-more-cerchio.png")} style={{ width: 30, height: 30, tintColor: "white" }} />
+                    </TouchableOpacity>
+                </View>
                 <QrCodeModal
                     data={data.qrdata}
                     visibility={qrVisibility}
@@ -38,6 +51,43 @@ export default function TicketModal({ data, visibility, setVisibility }) {
                     />
                 </TouchableOpacity>
             </View>
+
+
+            <Modal transparent visible={showMenu} animationType='slide' >
+
+                <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+                    <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
+                        <View style={ComponentStyles.editContent}>
+                            <TouchableOpacity>
+                                <View style={{ borderBottomWidth: 1, borderBottomColor: "lightgray", paddingBottom: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }} >
+                                    <Image source={require("../../assets/image/icona-condividi.png")} style={{ width: 22, height: 22, tintColor: "black", marginRight: 10 }} />
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}>Condividi il biglietto</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    axios.post(serverLink + "api/tickets/delete", { id: data._id })
+                                        .then((response) => {
+                                            takeInfo();
+                                            setShowMenu(false);
+                                            setVisibility(false);
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                        })
+                                }}>
+
+                                <View
+                                    style={{ paddingTop: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
+                                >
+                                    <Image source={require("../../assets/image/icona-cestino.png")} style={{ width: 22, height: 22, tintColor: "red", marginRight: 10 }} />
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "red" }}>Elimina biglietto</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </Modal>
     )
 }

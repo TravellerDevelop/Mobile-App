@@ -40,7 +40,6 @@ export default function TicketsHeader({ update }) {
 
             if (Platform.OS == "android") {
                 toggleDatePicker()
-                console.log(currentDate.toDateString());
                 setDateOfTicket(currentDate.toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" }));
             }
         }
@@ -165,7 +164,6 @@ export default function TicketsHeader({ update }) {
                                         }}
 
                                         onBarCodeScanned={({ type, data }) => {
-                                            console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
                                             setData([type, data]);
                                             setScaned(true);
                                         }}
@@ -293,8 +291,6 @@ export default function TicketsHeader({ update }) {
                     out.title = ticketTitle;
                     out.date = new Date(date);
                     out.creator = userInfo._id;
-
-                    console.log(out);
 
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(function (response) {

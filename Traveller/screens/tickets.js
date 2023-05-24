@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, ScrollView, TextInput, RefreshControl, Dimensions } from "react-native";
+import { View, StyleSheet, Text, ScrollView, TextInput, RefreshControl, Dimensions, ActivityIndicator } from "react-native";
 import { color, paddingTopPage, font, serverLink } from "../global/globalVariable";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
 import TicketsPreview from "../components/tickets/ticketsPreview";
@@ -10,16 +10,18 @@ import { FlatList } from "react-native-gesture-handler";
 export default function Tickets() {
     let [data, setData] = useState([]);
     let [personalData, setPersonalData] = useState(null);
+    let [isLoading, setIsLoading] = useState(true);
 
     async function takeInfo() {
+        setIsLoading(true);
         personalData = await getData("user");
-
         axios.get(serverLink + "api/tickets/take?userid=" + personalData._id)
             .then(res => {
                 setData(res.data);
-                console.log(res.data);
+                setIsLoading(false);
             }).catch(err => {
                 console.log(err);
+                setIsLoading(false);
             })
     }
 
@@ -39,14 +41,17 @@ export default function Tickets() {
                 />
 
                 {
-                    data.length > 0 ?
+                    (data.length > 0 && !isLoading) ?
                         <FlatList
                             scrollEnabled={false}
                             data={data}
-                            renderItem={({ item }) => <TicketsPreview item={item} />}
+                            renderItem={({ item }) => <TicketsPreview item={item} takeInfo={takeInfo} />}
                         />
                         :
-                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, marginTop: 20, textAlign: "center", marginLeft: 20, marginRight: 20 }}>Non hai ancora acquistato nessun biglietto</Text>
+                        (isLoading) ?
+                            <ActivityIndicator size="large" color={color.primary} style={{ marginTop: (Dimensions.get("window").height / 4) }} />
+                            :
+                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, marginTop: 20, textAlign: "center", marginLeft: 20, marginRight: 20 }}>Non hai ancora acquistato nessun biglietto</Text>
                 }
             </View>
         </ScrollView>
