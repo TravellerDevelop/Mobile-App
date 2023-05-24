@@ -10,12 +10,13 @@ import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import { Avatar } from '@react-native-material/core';
-// import LoadingCard from '../shared/loadingCard';
+import LoadingPost from '../shared/loadingPost';
+import LoadingCard from '../shared/loadingCard';
 // import LoadingPost from '../shared/loadingPost.js';
 
 export default function Home({ navigation }) {
-    let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(false);
-    let [lastPostsLoading, setLastPostsLoading] = useState(false);
+    let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
+    let [lastPostsLoading, setLastPostsLoading] = useState(true);
 
     let [lastPosts, setLastPosts] = useState(false);
 
@@ -188,22 +189,19 @@ export default function Home({ navigation }) {
                         }
 
                         <Text style={styles.subtitle}>I tuoi prossimi viaggi:</Text>
-                        {/* {
-                            joinedTravelsLoading ?
-                                <ScrollView horizontal>
-                                    <LoadingCard />
-                                    <LoadingCard />
-                                    <LoadingCard />
-                                </ScrollView>
-                                :
-                                null
-                        } */}
+                        {
+                            (joinedTravelsLoading) && (
+                                <View style={{height: 140, width: "100%", justifyContent: "center", alignItems: "center"}}>
+                                    <ActivityIndicator size="large" color={color.secondary} />
+                                </View>
+                            )
+                        }
                         {
                             (joinedTravels != null && joinedTravels.length > 0) ?
                                 <FlatList
                                     data={joinedTravels}
                                     horizontal
-                                    renderItem={({ item }) => <Card data={item} navigation={navigation} />}
+                                    renderItem={({ item }) => <Card isLoading={joinedTravelsLoading} data={item} navigation={navigation} />}
                                 />
                                 :
                                 null
@@ -219,16 +217,13 @@ export default function Home({ navigation }) {
                         }
                         <InteractiveCard updatecards={loadJoinedTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>Gli ultimi post dai tuoi viaggi:</Text>
-                        {/* {
-                            lastPostsLoading ?
-                                <View>
-                                    <LoadingPost />
-                                    <LoadingPost />
-                                    <LoadingPost />
+                        {
+                            (lastPostsLoading) && (
+                                <View style={{height: 140, width: "100%", justifyContent: "center", alignItems: "center"}}>
+                                    <ActivityIndicator size="large" color={color.secondary} />
                                 </View>
-                                :
-                                null
-                        } */}
+                            )
+                        }
                         {
                             (lastPosts != null && lastPosts.length > 0) ?
                                 <FlatList
@@ -237,13 +232,13 @@ export default function Home({ navigation }) {
                                     renderItem={({ item }) => (
                                         <>
                                             {(item.type == "text") ?
-                                                <TextComponent home={true} item={item} travel={lastPosts[1][item.travel]} />
+                                                <TextComponent isLoading={lastPostsLoading} home={true} item={item} travel={lastPosts[1][item.travel]} />
                                                 :
                                                 (item.type == "vote") ?
-                                                    <Vote item={item} home={true} travel={lastPosts[1][item.travel]} />
+                                                    <Vote isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                     :
                                                     (item.type == "payments") ?
-                                                        <PaymentComponent item={item} home={true} travel={lastPosts[1][item.travel]} />
+                                                        <PaymentComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                         :
                                                         null}
                                         </>

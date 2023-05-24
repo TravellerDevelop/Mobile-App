@@ -10,16 +10,17 @@ import axios from "axios";
 let voteParams;
 let textParams;
 let paymentParams;
-let user;
 
 /* 
-    Struttura dei post:
-    { type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
-    { type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12", travel: "_id" },
-    { type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+Struttura dei post:
+{ type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+{ type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12", travel: "_id" },
+{ type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
 */
 
 export default function NewPost({ setNewPost, data, refresh }) {
+    let [user, setUser] = useState({});
+
     let [isLoading, setIsLoading] = useState(false);
 
     let PostType = [
@@ -28,7 +29,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
         { label: "Pagamento", value: "payments" },
         { label: "Biglietto", value: "ticket" },
     ]
-    
+
     // Payment
     let [checked, setChecked] = useState(false);
     let [paymentType, setPaymentType] = useState("normal");
@@ -45,7 +46,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
         const test = async () => {
             let aus = await getData("user")
 
-            user = aus;
+            setUser(aus);
 
             console.log(data.participants)
 
@@ -175,19 +176,21 @@ export default function NewPost({ setNewPost, data, refresh }) {
                                     data={checked}
                                     scrollEnabled={false}
                                     renderItem={({ item, index }) => (
-                                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
-                                            <Text>{item.selected}</Text>
-                                            <Checkbox
-                                                status={item.selected ? 'checked' : 'unchecked'}
-                                                onPress={() => {
-                                                    const tempArr = [...checked];
-                                                    tempArr.splice(index, 1, { ...item, selected: !item.selected });
-                                                    setChecked(tempArr);
-                                                }}
-                                                color="#4900FF"
-                                            />
-                                            <Text style={styles.subtitle}>{item.username}</Text>
-                                        </View>
+                                        (item.userid != user._id) && (
+                                            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
+                                                <Text>{item.selected}</Text>
+                                                <Checkbox
+                                                    status={item.selected ? 'checked' : 'unchecked'}
+                                                    onPress={() => {
+                                                        const tempArr = [...checked];
+                                                        tempArr.splice(index, 1, { ...item, selected: !item.selected });
+                                                        setChecked(tempArr);
+                                                    }}
+                                                    color="#4900FF"
+                                                />
+                                                <Text style={styles.subtitle}>{item.username}</Text>
+                                            </View>
+                                        )
                                     )}
                                 />
                             </>
@@ -199,8 +202,8 @@ export default function NewPost({ setNewPost, data, refresh }) {
                                     : null
                         }
 
-                        <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text>
-
+                        {/* <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text> */}
+{/* 
                         <SegmentedButtons
                             style={{ fontFamily: font.montserrat }}
                             buttons={[{ label: "Normale", value: "normal" }, { label: "non contato", value: "notCounted" }]}
@@ -215,13 +218,13 @@ export default function NewPost({ setNewPost, data, refresh }) {
                                 <>
                                     <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Il totale pagato dagli altri verrà contato nel tuo budget e il pagamento non verrà accreditato a te</Text>
                                 </>
-                                : 
+                                :
                                 paymentType == "notCounted" ?
                                     <>
                                         <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Il totale pagato dagli altri non verrà contato nel tuo budget</Text>
                                     </>
                                     : null
-                        }
+                        } */}
                     </>
                     : null}
 
@@ -295,21 +298,23 @@ export default function NewPost({ setNewPost, data, refresh }) {
                             paymentParams.destinator = []
                             checked.forEach(element => {
                                 if (element.selected) {
-                                    paymentParams.destinator.push({ userid : element.userid, payed : false})
+                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
                                 }
                             });
                         }
                         else if (paymentDestinator == "all") {
                             paymentParams.destinator = []
                             participants.forEach(element => {
-                                paymentParams.destinator.push({ userid : element.userid, payed : false})
+                                if (element.userid != user._id) {
+                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
+                                }
                             });
                         }
                         else if (paymentDestinator == "me") {
                             paymentParams.destinator = []
-                            paymentParams.destinator.push({ userid : user._id, payed : false})
+                            paymentParams.destinator.push({ userid: user._id, payed: false, personal: true })
                         }
-                        
+
                         paymentParams.paymentType = paymentType;
                         paymentParams.amount = amount;
                         paymentParams.description = paymentDescription;

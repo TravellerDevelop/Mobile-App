@@ -1,23 +1,35 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Image, TouchableWithoutFeedback, Modal, TouchableOpacity } from "react-native";
 import { ComponentStyles } from "./componentStyle";
-import { font } from "../../global/globalVariable";
+import { font, serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
 import { Badge } from '@react-native-material/core';
+import axios from "axios";
 
-export default function PaymentComponent({ navigation, item, home, travel }) {
+export default function PaymentComponent({ navigation, item, home, travel, isLoading, loadPosts }) {
     let [info, setInfo] = React.useState([]);
 
     let [userData, setUserData] = React.useState(false);
     let [showMenu, setShowMenu] = React.useState(false);
+
+    let [isCreator, setIsCreator] = React.useState(false);
+    let [isPersonal, setIsPersonal] = React.useState(false);
 
     async function getUserData() {
         setUserData(await getData("user"));
     }
 
     useEffect(() => {
+
         const test = async () => {
             let aus = await getData("user")
+
+            if (aus.username == item.creator && (item.destinator.length != 1)) {
+                setIsCreator(true);
+            }
+            else if(item.destinator.length == 1 && item.destinator[0].personal === true){
+                setIsPersonal(true);
+            }
 
             for (let i of item.destinator) {
                 if (i.userid == aus._id) {
@@ -41,7 +53,7 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
                     }
                 }
             } >
-                <View style={ComponentStyles.card}>
+                <View style={(!isLoading) ? ComponentStyles.card : { display: "none" }}>
 
                     <Modal transparent visible={showMenu} animationType='slide' >
                         <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
@@ -126,14 +138,26 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
                         : null
                     }
 
-                    {(info.payed) ?
-                        <View style={[styles.status, { backgroundColor: "green" }]}>
-                            <Text style={styles.statusText}>Pagato</Text>
-                        </View>
-                        :
-                        <View style={styles.status}>
-                            <Text style={styles.statusText}>Non pagato</Text>
-                        </View>}
+                    {
+                        (info.payed && !isCreator) ?
+                            <View style={[styles.status, { backgroundColor: "green" }]}>
+                                <Text style={styles.statusText}>Pagato</Text>
+                            </View>
+                            :
+                            <View style={styles.status}>
+                                <Text style={styles.statusText}>Non pagato</Text>
+                            </View>
+                    }
+
+                    {
+                        (isCreator) && (
+                            <View style={[styles.status, { backgroundColor: "#4900FF" }]}>
+                                <Text style={styles.statusText}>Creato da te</Text>
+                            </View>
+                        )
+                    }
+
+
                     <View style={ComponentStyles.headerContainer}>
                         <View style={ComponentStyles.nameContainer}>
                             <Text style={ComponentStyles.nameText}>@{item.creator}</Text>
@@ -141,7 +165,7 @@ export default function PaymentComponent({ navigation, item, home, travel }) {
                         <Text style={ComponentStyles.datetimeText}>{item.dateTime}</Text>
                     </View>
                     <View>
-                        <Text style={ComponentStyles.contentText}>Ti ha inviato una richiesta di:</Text>
+                        <Text style={ComponentStyles.contentText}>{ (!isPersonal) ? "Ti ha inviato una richiesta di:" : "Pagamento personale di:"}</Text>
                         <Text style={[ComponentStyles.contentText, { fontSize: 25, fontFamily: font.montserratBold }]}>{item.amount}€</Text>
                         {
                             (home) ?

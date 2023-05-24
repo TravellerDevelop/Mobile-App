@@ -1,18 +1,16 @@
 import React from "react";
 import ContentLoader, { Rect, Circle, Path } from "react-content-loader/native"
 import { color } from "../global/globalVariable";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Dimensions } from "react-native";
 
 export default function LoadingPost() {
     return (
         <View style={styles.container}>
             <ContentLoader
                 speed={2}
-                width="100%"
+                width={Dimensions.get("window").width - 20}
                 height={120}
                 viewBox="0 0 400 150"
-                backgroundColor="#f3f3f3"
-                foregroundColor="lightgray"
             >
                 <Circle cx="30" cy="30" r="30" />
                 <Rect x="80" y="10" rx="7.5" ry="7.5" width="210" height="15" />

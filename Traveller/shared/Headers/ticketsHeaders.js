@@ -299,6 +299,8 @@ export default function TicketsHeader({ update }) {
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(function (response) {
                             update();
+                            setScaned(false);
+                            setData(null);
                             setQrVisible(false);
                             setModalVisible(false);
                         })

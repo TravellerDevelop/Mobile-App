@@ -16,8 +16,6 @@ let col = "#FFF"
 let img;
 
 export default function TicketsPreview({ item }) {
-    console.log("Item passato\n", item);
-
     let company = "Ciao";
 
     if (item.company.name === "Ryanair") {

@@ -6,7 +6,7 @@ import { getData } from '../../shared/data/localdata';
 import { font, serverLink } from '../../global/globalVariable';
 import axios from 'axios';
 
-export default function TextComponent({ item, home, travel, loadPosts }) {
+export default function TextComponent({ item, home, travel, loadPosts, isLoading }) {
 
     let [userData, setUserData] = React.useState(false);
     let [showMenu, setShowMenu] = React.useState(false);
@@ -20,7 +20,7 @@ export default function TextComponent({ item, home, travel, loadPosts }) {
     }, [])
 
     return (
-        <View style={ComponentStyles.card}>
+        <View style={(!isLoading) ? ComponentStyles.card : {display: "none"}}  >
             <Modal transparent visible={showMenu} animationType='slide' >
                 <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
                     <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, ScrollView, TextInput } from "react-native";
+import { View, StyleSheet, Text, ScrollView, TextInput, RefreshControl, Dimensions } from "react-native";
 import { color, paddingTopPage, font, serverLink } from "../global/globalVariable";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
 import TicketsPreview from "../components/tickets/ticketsPreview";
@@ -28,9 +28,12 @@ export default function Tickets() {
     }, []);
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={false} onRefresh={takeInfo} />}
+        >
             <TicketsHeader update={takeInfo} />
-            <View style={{ alignItems: "center", paddingBottom: 100, backgroundColor: "white" }}>
+            <View style={{ alignItems: "center", paddingBottom: 100, backgroundColor: "white", minHeight: Dimensions.get("window").height }}>
                 <TextInput placeholder="Cerca biglietto" style={styles.input}
                     inputStyle={{ fontFamily: font.montserrat }}
                 />
@@ -43,7 +46,7 @@ export default function Tickets() {
                             renderItem={({ item }) => <TicketsPreview item={item} />}
                         />
                         :
-                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, marginTop: 20 }}>Non hai ancora acquistato nessun biglietto</Text>
+                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, marginTop: 20, textAlign: "center", marginLeft: 20, marginRight: 20 }}>Non hai ancora acquistato nessun biglietto</Text>
                 }
             </View>
         </ScrollView>

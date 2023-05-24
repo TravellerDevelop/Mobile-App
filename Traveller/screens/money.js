@@ -1,22 +1,78 @@
-import React, {useContext, useEffect} from "react";
-import { StyleSheet, View, Text } from "react-native";
-import { font } from "../global/globalVariable";
-import { GlobalStateProvider } from "../global/globalStates";
+import React, { useContext, useEffect } from "react";
+import { StyleSheet, View, Text, Dimensions, ScrollView, RefreshControl } from "react-native";
+import { font, color, serverLink } from "../global/globalVariable";
+import { getData } from "../shared/data/localdata";
+import axios from "axios";
 
 export default function Money() {
-    // let [userData, setUserData] = useContext(GlobalStateProvider);
+    const data=[ {value:50}, {value:80}, {value:90}, {value:70} ]
 
-    // useEffect(() => {
-    //     console.log(userData)
-    // }, [])
+    let [lastYear, setLastYear] = React.useState("--");
+
+    useEffect(() => {
+        takeUserData();
+    }, [])
+
+    async function takeUserData(){
+        let aus = await getData("user");
+
+        axios.get(serverLink + "api/post/takeTotalExpenses?userid=" + aus._id)
+            .then((response) => {
+                if (response.status == 200) {
+                    setLastYear(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
+    let [refreshing, setRefreshing] = React.useState(false);
+
+    onRefresh = () => {
+        setRefreshing(true);
+        takeUserData();
+        setRefreshing(false);
+    }
 
     return (
         <>
-            <View style={styles.container}>
-                <View style={styles.row}>
-                    <Text style={styles.title}>Ies</Text>
+            <ScrollView
+
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
+
+                <View style={styles.container}>
+                    <Text style={styles.title}>Gestione finanze</Text>
+
+                    <View style={styles.topCard}>
+                        <View style={styles.row}>
+                            <View style={styles.minicard}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
+                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                            </View>
+                            <View style={styles.minicard}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
+                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                            </View>
+                        </View>
+                        <View style={styles.row}>
+                            <View style={styles.minicard}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
+                            </View>
+                            <View style={styles.minicard}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
+                            </View>
+                        </View>
+                    </View>
+
                 </View>
-            </View>
+            </ScrollView>
         </>
     )
 }
@@ -35,9 +91,21 @@ let styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        color: "white",
+        color: "black",
+        textAlign: "center",
         fontFamily: font.montserrat,
         fontSize: 25,
         marginLeft: 10
+    },
+    minicard: {
+        width: 150,
+        height: 150,
+        backgroundColor: "white",
+        elevation: 5,
+        borderRadius: 20,
+        marginRight: 10,
+        marginTop: 10,
+        marginBottom: 10,
+        marginLeft: 10,
     },
 });

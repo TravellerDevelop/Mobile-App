@@ -5,8 +5,8 @@ import { ComponentStyles } from './componentStyle';
 import { color, serverLink } from '../../global/globalVariable';
 import { getData } from '../../shared/data/localdata';
 import { font } from '../../global/globalVariable';
-import axios from 'axios';
 import { Badge } from '@react-native-material/core';
+import axios from 'axios';
 
 let percent = {}
 let ausItem;
@@ -14,7 +14,7 @@ let totalVotes;
 let username = "";
 
 
-export default function Vote({ item, home, travel, loadPosts }) {
+export default function Vote({ item, home, travel, loadPosts, isLoading }) {
     let [checkDisabled, setCheckDisabled] = React.useState(false);
     let [numVote, setNumVote] = React.useState({});
 
@@ -85,7 +85,7 @@ export default function Vote({ item, home, travel, loadPosts }) {
     }
 
     return (
-        <View style={ComponentStyles.card}>
+        <View style={(!isLoading) ? ComponentStyles.card : {display: "none"}}>
 
             <Modal transparent visible={showMenu} animationType='slide' >
                 <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>

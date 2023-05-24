@@ -4,7 +4,7 @@ import CardPartecipants from "./cardPartecipants";
 import { color, font } from "../global/globalVariable";
 
 
-export default function Card({ navigation, data, vertical }) {
+export default function Card({ navigation, data, vertical, isLoading }) {
     let creator = "";
 
     let i = 0;
@@ -18,7 +18,7 @@ export default function Card({ navigation, data, vertical }) {
     return (
         <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
             {(!vertical) ?
-                <View style={styles.container}>
+                <View style={(!isLoading) ? styles.container : {display: "none"}} >
                     <View style={{ position: 'absolute', top: 10, left: 10 }}>
                         <Text style={styles.cardTitle}>{data.name}</Text>
                         <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {creator}</Text>
