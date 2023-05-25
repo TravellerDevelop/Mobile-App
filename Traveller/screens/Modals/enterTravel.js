@@ -24,8 +24,6 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
                     if (code.length == 5) {
                         let userData = await getData("user");
                         let param = { userid: userData._id, code: code, username: userData.username }
-                        console.log(userData)
-
 
                         setLoading(true);
                         axios.post(serverLink + "api/travel/join", param).then(async (response) => {
@@ -33,18 +31,23 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
                             if (response.status == 200) {
                                 let userData = await getData("user");
                                 updateJoinTravels(userData.username, userData._id);
-
                                 setVisibility(false);
                                 setLoading(false);
                             } else {
-                                setError(response.data);
+                                if (response.data.hasOwnProperty('message'))
+                                    setError(response.data.message)
+                                else
+                                    setError(response.data);
                                 setLoading(false);
                             }
                         })
-                        .catch((error) => {
-                            setError(error);
-                            setLoading(false);
-                        })
+                            .catch((error) => {
+                                if (error.hasOwnProperty('message'))
+                                    setError(error.message)
+                                else
+                                    setError(error);
+                                setLoading(false);
+                            })
                     }
                 }}>
                     <Text style={{ color: "white", textAlign: "center", fontSize: 18, fontFamily: font.montserrat }}>Entra</Text>

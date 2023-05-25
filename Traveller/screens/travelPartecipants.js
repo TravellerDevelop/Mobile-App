@@ -19,7 +19,6 @@ export default function TravelPartecipants({ navigation, route }) {
     let [creator, setCreator] = React.useState({});
 
     useEffect(() => {
-
         for (let item of route.params.participants) {
             if (item.creator == true) {
                 setCreator(item);
@@ -77,7 +76,21 @@ export default function TravelPartecipants({ navigation, route }) {
                     )}
                 />
             </View>
-            <TouchableNativeFeedback>
+            <TouchableNativeFeedback
+                onPress={
+                    () => {
+                        axios.post(serverLink + "api/travel/leave", { userid: myData._id, travel: route.params._id })
+                            .then((response) => {
+                                if (response.status == 200) {
+                                    navigation.navigate("Home");
+                                }
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            })
+                    }
+                }
+            >
                 <View style={styles.leave}>
                     <Image source={require("../assets/image/icona-logout-white.png")} style={{ width: 30, height: 30, marginRight: 10 }} />
                     <Text style={styles.leaveText}>Abbandona viaggio</Text>
@@ -165,12 +178,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     flag: {
-        backgroundColor: "red",
+        backgroundColor: "#4900FF",
         height: 25,
         padding: 5,
         paddingLeft: 10,
         position: "absolute",
-        top: 5,
+        bottom: 5,
         right: 0,
         borderTopLeftRadius: 12.5,
         borderBottomLeftRadius: 12.5,

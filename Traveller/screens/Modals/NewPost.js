@@ -27,7 +27,6 @@ export default function NewPost({ setNewPost, data, refresh }) {
         { label: "Testo", value: "text" },
         { label: "Sondaggio", value: "vote" },
         { label: "Pagamento", value: "payments" },
-        { label: "Biglietto", value: "ticket" },
     ]
 
     // Payment

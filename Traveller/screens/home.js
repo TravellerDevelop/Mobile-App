@@ -25,8 +25,6 @@ export default function Home({ navigation }) {
     const [serchData, setSerchData] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
 
-    let globalData = null;
-
     useEffect(() => {
         verifyUserData();
 

@@ -4,6 +4,7 @@ import { Avatar } from "@react-native-material/core";
 import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
+import AnimatedLottieView from "lottie-react-native";
 
 export default function OtherProfile({ navigation, route }) {
     let [myData, setMyData] = React.useState({});
@@ -118,7 +119,7 @@ export default function OtherProfile({ navigation, route }) {
                                         console.log(error);
                                     })
                             }
-                            else if (requestStatus == "Not sent" && myData != {} ) {
+                            else if (requestStatus == "Not sent" && myData != {}) {
                                 console.log(myData)
                                 axios.post(serverLink + "api/follow/create", { from: myData._id, to: user._id })
                                     .then((response) => {
@@ -142,6 +143,10 @@ export default function OtherProfile({ navigation, route }) {
                             }
                         </View>
                     </TouchableNativeFeedback>
+                    <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
+                        <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
+                        <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
+                    </View>
                 </View >
             </View>
         </ScrollView>

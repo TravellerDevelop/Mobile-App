@@ -5,6 +5,7 @@ import { getData } from "../shared/data/localdata";
 import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
 import { BarChart } from "react-native-chart-kit";
+import { ActivityIndicator } from "@react-native-material/core";
 
 export default function Money() {
     let [lastYear, setLastYear] = React.useState("-- ");
@@ -12,6 +13,7 @@ export default function Money() {
     let [totalToGet, setTotalToGet] = React.useState("-- ");
     let [payedGroupByTravel, setPayedGroupByTravel] = React.useState([]);
     let [barChartData, setBarChartData] = React.useState({});
+    let [chartDataLoading, setChartDataLoading] = React.useState(true);
 
     useEffect(() => {
         takeUserData();
@@ -70,6 +72,8 @@ export default function Money() {
                             }
                         ]
                     })
+
+                    setChartDataLoading(false);
                 }
             })
             .catch((error) => {
@@ -121,30 +125,34 @@ export default function Money() {
                         </View>
                     </View>
 
-
-                    <View style={styles.bottomCard}>
-                        <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
-                        <BarChart
-                            data={barChartData}
-                            width={Dimensions.get("window").width - 20}
-                            height={220}
-                            yAxisLabel="€"
-                            chartConfig={{
-                                backgroundColor: "#FFF",
-                                backgroundGradientFrom: "#FFF",
-                                backgroundGradientTo: "#FFF",
-                                decimalPlaces: 0,
-                                color: (opacity = 1) => `rgba(73, 0, 255, ${opacity})`,
-                                style: {
-                                    borderRadius: 16,
-                                },
-                            }}
-                            style={{
-                                marginVertical: 8,
-                                borderRadius: 16,
-                            }}
-                        />
-                    </View>
+                    {
+                        (chartDataLoading == false) ?
+                            <View style={styles.bottomCard}>
+                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                                <BarChart
+                                    data={barChartData}
+                                    width={Dimensions.get("window").width - 20}
+                                    height={220}
+                                    yAxisLabel="€"
+                                    chartConfig={{
+                                        backgroundColor: "#FFF",
+                                        backgroundGradientFrom: "#FFF",
+                                        backgroundGradientTo: "#FFF",
+                                        decimalPlaces: 0,
+                                        color: (opacity = 1) => `rgba(73, 0, 255, ${opacity})`,
+                                        style: {
+                                            borderRadius: 16,
+                                        },
+                                    }}
+                                    style={{
+                                        marginVertical: 8,
+                                        borderRadius: 16,
+                                    }}
+                                />
+                            </View>
+                        :
+                        <ActivityIndicator size={50} color={color.primary} style={{ marginTop: 50 }} />
+                    }
                 </View>
             </ScrollView>
         </>

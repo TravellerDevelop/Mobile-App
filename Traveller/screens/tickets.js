@@ -9,8 +9,15 @@ import { FlatList } from "react-native-gesture-handler";
 
 export default function Tickets() {
     let [data, setData] = useState([]);
+    let [ausTicket, setAusTicket] = useState([]);
+    let [extraData, setExtraData] = useState(false);
+    let [search, setSearch] = useState("");
     let [personalData, setPersonalData] = useState(null);
     let [isLoading, setIsLoading] = useState(true);
+
+    const extraDataToggle = () => {
+        setExtraData(!extraData);
+    }
 
     async function takeInfo() {
         setIsLoading(true);
@@ -18,6 +25,7 @@ export default function Tickets() {
         axios.get(serverLink + "api/tickets/take?userid=" + personalData._id)
             .then(res => {
                 setData(res.data);
+                setAusTicket(res.data);
                 setIsLoading(false);
             }).catch(err => {
                 console.log(err);
@@ -37,6 +45,21 @@ export default function Tickets() {
             <TicketsHeader update={takeInfo} />
             <View style={{ alignItems: "center", paddingBottom: 100, backgroundColor: "white", minHeight: Dimensions.get("window").height }}>
                 <TextInput placeholder="Cerca biglietto" style={styles.input}
+                    onChangeText={(value) => {
+                        setSearch(value);
+
+                        if (value.length > 0) {
+                            let aus = data.filter((item) => {
+                                return item.title.toLowerCase().includes(value.toLowerCase());
+                            });
+                            setAusTicket(aus);
+                            extraDataToggle();
+                        }
+                        else {
+                            setAusTicket(data);
+                            extraDataToggle();
+                        }
+                    }}
                     inputStyle={{ fontFamily: font.montserrat }}
                 />
 
@@ -44,7 +67,8 @@ export default function Tickets() {
                     (data.length > 0 && !isLoading) ?
                         <FlatList
                             scrollEnabled={false}
-                            data={data}
+                            data={ausTicket}
+                            extraData={extraData}
                             renderItem={({ item }) => <TicketsPreview item={item} takeInfo={takeInfo} />}
                         />
                         :

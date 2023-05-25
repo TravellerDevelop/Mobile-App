@@ -114,7 +114,7 @@ export default function MyProfile({ navigation, route }) {
                         (ntravel == 0) ?
                             <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
                                 <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
-                                <Text style={styles.err}>Ancora nessun viaggio : /</Text>
+                                <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
                             </View>
                             :
                             <View style={{ width: "100%" }}>
