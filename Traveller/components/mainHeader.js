@@ -10,7 +10,7 @@ import EnterTravel from '../screens/Modals/enterTravel';
 import axios from 'axios';
 
 
-export default function MainHeader({ navigation, updateJoinTravels }) {
+export default function MainHeader({ navigation, updateJoinTravels, refresh }) {
     let [user, setUser] = useState(null);
     let [touch, setTouch] = useState(0);
     let [easterVisibility, setEasterVisibility] = useState(false);
@@ -38,6 +38,10 @@ export default function MainHeader({ navigation, updateJoinTravels }) {
             .catch((error) => {
                 console.log(error);
             })
+    }
+
+    if(refresh){
+        userData();
     }
 
     return (

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
-import { color, serverLink, font } from '../global/globalVariable';
+import { color, serverLink, font, appVersion } from '../global/globalVariable';
 import axios from 'axios';
-import { getData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
+import { getData, storeJsonData, storeStringData } from '../shared/data/localdata';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
@@ -29,6 +29,32 @@ export default function Home({ navigation }) {
 
     useEffect(() => {
         verifyUserData();
+
+        axios.get(serverLink + "api/takeVersion")
+            .then((response) => {
+                if (response.status == 200) {
+                    if (response.data[0].AppVersion.toString() != appVersion.toString()) {
+                        console.log(response.data[0].AppVersion)
+                        console.log(appVersion)
+                        Alert.alert(
+                            "Aggiornamento disponibile",
+                            "È disponibile un aggiornamento per l'applicazione (" + response.data[0].AppVersion + ") , vuoi aggiornare?",
+                            [
+                                {
+                                    text: "No",
+                                    onPress: () => console.log("Cancel Pressed"),
+                                    style: "cancel"
+                                },
+                                { text: "Si", onPress: () => { Linking.openURL("https://traveller-ttze.onrender.com/") } }
+                            ],
+                            { cancelable: false }
+                        );
+                    }
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
 
         async function verifyUserData() {
             let data = await getData("user");            
@@ -99,7 +125,7 @@ export default function Home({ navigation }) {
                     />
                 }
             >
-                <MainHeader navigation={navigation} updateJoinTravels={loadJoinedTravels} />
+                <MainHeader navigation={navigation} updateJoinTravels={loadJoinedTravels} refresh={refreshing} />
                 <View style={styles.blue}>
                     <View style={styles.content}>
                         <TextInput placeholder="Cerca un account" style={(serchData.length == 0) ? styles.input : styles.inputResult}

@@ -13,17 +13,17 @@ export default function PaymentInfo({ navigation, route }) {
     let [editVisibility, setEditVisibility] = React.useState(false);
     let [checked, setChecked] = React.useState(false);
 
+    let [extraData, setExtraData] = React.useState(false);
+
+    const toggleExtraData = () => {
+        setExtraData(!extraData);
+    };
+
     async function getUserData() {
         let data = await getData("user");
         setMyData(data);
-    }
 
-
-    useEffect(() => {
         let ids = [];
-
-        getUserData();
-
         items.destinator.forEach((item) => {
             ids.push(item.userid);
         })
@@ -45,17 +45,24 @@ export default function PaymentInfo({ navigation, route }) {
                 }
 
                 await setAus(items);
-                console.log(aus);
+                toggleExtraData();
             })
             .catch((error) => {
                 console.log(error);
             })
+    }
+
+
+    useEffect(() => {
+
+        getUserData();
+
     }, [])
 
     return (
         <View style={styles.container}>
             <Modal visible={editVisibility} animationType="slide">
-                <View style={{ flex: 1, backgroundColor: "white" }}>
+                <View style={{ flex: 1, backgroundColor: "white", marginTop: 20 }}>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <TouchableNativeFeedback onPress={() => setEditVisibility(false)}>
                             <Image source={require("../assets/image/icona-freccia-left.png")} style={{ width: 25, height: 25, marginLeft: 20, tintColor: "#000" }} />
@@ -132,8 +139,10 @@ export default function PaymentInfo({ navigation, route }) {
                 <Text style={{ fontSize: 20, fontFamily: font.montserrat, marginLeft: 20 }}>{items.description}</Text>
             </View>
             <Text style={{ fontSize: 20, fontFamily: font.montserratBold, marginLeft: 20, marginTop: 20 }}>Destinatari:</Text>
+
             <FlatList
                 data={aus.destinator}
+                extraData={extraData}
                 renderItem={({ item }) => (
                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 10 }}>
                         <Text style={{ marginLeft: 10, fontSize: 18, fontFamily: font.montserrat }}>{item.nameShow}</Text>

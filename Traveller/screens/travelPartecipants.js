@@ -23,7 +23,6 @@ export default function TravelPartecipants({ navigation, route }) {
         for (let item of route.params.participants) {
             if (item.creator == true) {
                 setCreator(item);
-                console.log(creator)
             }
         }
 

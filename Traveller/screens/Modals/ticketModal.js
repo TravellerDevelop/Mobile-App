@@ -1,14 +1,41 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableWithoutFeedback, Image } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableWithoutFeedback, Image, FlatList, Dimensions } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
 import QrCodeModal from "./qrCodeModal";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
 import axios from "axios";
+import { getData } from "../../shared/data/localdata";
+import { Avatar } from "@react-native-material/core";
 
 export default function TicketModal({ data, visibility, setVisibility, takeInfo }) {
     let [qrVisibility, setQrVisibility] = useState(false);
     let [showMenu, setShowMenu] = React.useState(true);
+    let [showShare, setShowShare] = React.useState(false);
+
+    let [friends, setFriends] = useState([]);
+
+    React.useEffect(() => {
+        uData();
+
+        async function uData() {
+            let aus = await getData("user");
+
+            axios.get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)
+                .then((response) => {
+                    if (response.status == 200) {
+                        for(let item of response.data){
+                            item.sent = false;
+                        }
+
+                        setFriends(response.data);
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+        }
+    }, [])
 
     return (
         <Modal visible={visibility} animationType="slide" >
@@ -52,13 +79,63 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                 </TouchableOpacity>
             </View>
 
+            <Modal transparent visible={showShare} animationType='slide' >
+                <TouchableWithoutFeedback onPress={() => setShowShare(false)}>
+                    <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }} >
+                        <View style={modalstyles.shareContent}>
+                            <FlatList
+                                data={friends}
+                                keyExtractor={(item) => item._id}
+                                renderItem={({ item }) => (
+                                    <View style={{ flexDirection: "row", justifyContent: "flex-start", alignItems: "center", width: Dimensions.get("window").width - 40, height: 50, borderBottomWidth: 1, borderBottomColor: "lightgray" }}>
+                                        <Avatar
+                                            size={40}
+                                            autoColor
+                                            labelStyle={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}
+                                            label={item.name + " " + item.surname}
+                                            style={{ marginRight: 10 }}
+                                        />
+
+                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}>{item.name} {item.surname}</Text>
+
+                                        <TouchableOpacity style={{ position: "absolute", right: 10}}
+                                            onPress={async () => {
+                                                let aus = await getData("user");
+
+                                                axios.post(serverLink + "api/tickets/share", { userid: item._id, content: data, createBy: aus.username })
+                                                    .then((response) => {
+                                                        item.sent = true;
+                                                        setShowShare(false);
+                                                    })
+                                                    .catch((error) => {
+                                                        console.log(error);
+                                                    })
+                                            }}
+                                        >
+                                            <View style={(!item.sent) ? { borderRadius: 10, borderWidth: 1, backgroundColor: "#4900FF", paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5 } : { borderRadius: 10, borderWidth: 1, backgroundColor: "green", paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5 } } >
+                                                <Text style={{ fontFamily: font.montserrat, fontSize: 15, color: "white", textAlign: "center" }} >{(!item.sent) ? "Invia" : "Inviato"}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+
+
 
             <Modal transparent visible={showMenu} animationType='slide' >
 
                 <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
                     <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
                         <View style={ComponentStyles.editContent}>
-                            <TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowShare(true);
+                                }}
+                            >
                                 <View style={{ borderBottomWidth: 1, borderBottomColor: "lightgray", paddingBottom: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }} >
                                     <Image source={require("../../assets/image/icona-condividi.png")} style={{ width: 22, height: 22, tintColor: "black", marginRight: 10 }} />
                                     <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}>Condividi il biglietto</Text>
@@ -149,5 +226,17 @@ const modalstyles = StyleSheet.create({
         fontFamily: font.montserrat,
         marginTop: 25,
         marginLeft: 20,
-    }
+    },
+    shareContent: {
+        padding: 20,
+        backgroundColor: "#FFF",
+        height: 200,
+        width: "100%",
+        position: "absolute",
+        bottom: 0,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });

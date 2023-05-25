@@ -10,6 +10,7 @@ import axios from 'axios';
 import LoadingPost from '../shared/loadingPost';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
 import { ActivityIndicator } from 'react-native-paper';
+import { getData } from '../shared/data/localdata';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
@@ -23,6 +24,8 @@ export default function TravelDetail({ navigation, route }) {
 
     const [refreshing, setRefreshing] = useState(false);
 
+    const [spent, setSpent] = useState(0);
+
     const onRefresh = async () => {
         setPostLoading(true);
         setRefreshing(true);
@@ -31,7 +34,9 @@ export default function TravelDetail({ navigation, route }) {
     };
 
 
-    function loadPosts(travelId) {
+    async function loadPosts(travelId) {
+        let aus = await getData("user");
+
         setPostData([]);
         axios.get(serverLink + "api/post/take?travel=" + travelId)
             .then(async (response) => {
@@ -44,6 +49,17 @@ export default function TravelDetail({ navigation, route }) {
 
                     await setPostData(aus);
                     await setPostLoading(false);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+
+        axios.get(serverLink + "api/post/takeTotalPayedByTravel?travel=" + travelId + "&userid=" + aus._id)
+            .then(async (response) => {
+                if (response.status == 200) {
+                    console.log(response.data)
+                    await setSpent(response.data);
                 }
             })
             .catch((error) => {
@@ -73,17 +89,21 @@ export default function TravelDetail({ navigation, route }) {
 
                     <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
                         <View style={styles.contentContainer}>
-                            <TouchableNativeFeedback
-                                onPress={() => setNewPost(true)}
-                            >
-                                <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
-                                    <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
-                                </View>
-                            </TouchableNativeFeedback>
+                            {
+                                (!route.params.closed) && (
+                                    <TouchableNativeFeedback
+                                        onPress={() => setNewPost(true)}
+                                    >
+                                        <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
+                                            <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
+                                        </View>
+                                    </TouchableNativeFeedback>
+                                )
+                            }
 
                             {
                                 (route.params.budget != null && route.params.budget != "") ?
-                                    <BudgetIndicator budget={parseFloat(route.params.budget)} spent={150} />
+                                    <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} />
                                     :
                                     null
                             }

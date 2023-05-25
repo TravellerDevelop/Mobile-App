@@ -4,19 +4,20 @@ import { font, color, serverLink } from "../global/globalVariable";
 import { getData } from "../shared/data/localdata";
 import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
+import { BarChart } from "react-native-chart-kit";
 
 export default function Money() {
-    const data=[ {value:50}, {value:80}, {value:90}, {value:70} ]
-
     let [lastYear, setLastYear] = React.useState("-- ");
     let [totalToPay, setTotalToPay] = React.useState("-- ");
     let [totalToGet, setTotalToGet] = React.useState("-- ");
+    let [payedGroupByTravel, setPayedGroupByTravel] = React.useState([]);
+    let [barChartData, setBarChartData] = React.useState({});
 
     useEffect(() => {
         takeUserData();
     }, [])
 
-    async function takeUserData(){
+    async function takeUserData() {
         let aus = await getData("user");
 
         axios.get(serverLink + "api/post/takeTotalExpenses?userid=" + aus._id)
@@ -43,6 +44,32 @@ export default function Money() {
             .then((response) => {
                 if (response.status == 200) {
                     setTotalToGet(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        axios.get(serverLink + "api/post/takePayedGroupByTravel?userid=" + aus._id)
+            .then((response) => {
+                if (response.status == 200) {
+                    let aus = response.data;
+                    let labels = [];
+                    let data = [];
+
+                    for (let item of aus) {
+                        labels.push(item.name);
+                        data.push(item.total);
+                    }
+
+                    setBarChartData({
+                        labels: labels,
+                        datasets: [
+                            {
+                                data: data
+                            }
+                        ]
+                    })
                 }
             })
             .catch((error) => {
@@ -94,6 +121,30 @@ export default function Money() {
                         </View>
                     </View>
 
+
+                    <View style={styles.bottomCard}>
+                        <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                        <BarChart
+                            data={barChartData}
+                            width={Dimensions.get("window").width - 20}
+                            height={220}
+                            yAxisLabel="€"
+                            chartConfig={{
+                                backgroundColor: "#FFF",
+                                backgroundGradientFrom: "#FFF",
+                                backgroundGradientTo: "#FFF",
+                                decimalPlaces: 0,
+                                color: (opacity = 1) => `rgba(73, 0, 255, ${opacity})`,
+                                style: {
+                                    borderRadius: 16,
+                                },
+                            }}
+                            style={{
+                                marginVertical: 8,
+                                borderRadius: 16,
+                            }}
+                        />
+                    </View>
                 </View>
             </ScrollView>
         </>
@@ -106,7 +157,7 @@ let styles = StyleSheet.create({
         flex: 1,
         paddingTop: 20,
         paddingLeft: 10,
-        paddingBottom: 20,
+        paddingBottom: 100,
         paddingRight: 10,
     },
     row: {

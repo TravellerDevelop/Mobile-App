@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, TouchableNativeFeedback } from 'react-native';
 import { color, font, serverLink } from '../../global/globalVariable';
-import { ScrollView, TextInput } from 'react-native-gesture-handler';
+import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
 import { SegmentedButtons } from 'react-native-paper';
@@ -19,7 +19,19 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
     let [date, setDate] = React.useState("");
     let [new_members_allowed, setNewMembersAllowed] = React.useState("1");
 
+    let [textValue, setTextValue] = React.useState("");
+
+    let [friendsAdded, setFriendsAdded] = React.useState([]);
+
+    let [friends, setFriends] = React.useState([]);
+
     let [isLoading, setIsLoading] = React.useState(false);
+
+    let [refresh, setRefresh] = React.useState(false);
+
+    const toggleRefresh = () => {
+        setRefresh(!refresh);
+    }
 
     const dataVisibility = [
         { label: 'Pubblico', value: '1' },
@@ -32,19 +44,29 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
         { label: 'Amici', value: '2' },
         { label: 'Chiuso', value: '0' },
     ];
-    
+
     async function getUserData() {
         let aus = await getData("user");
         console.log(aus)
-        setCreator({ userid: aus._id, username: aus.username, creator: true})
+        setCreator({ userid: aus._id, username: aus.username, creator: true })
         console.log("Creator", creator)
-    }    
+
+        axios.get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)
+            .then((response) => {
+                if (response.status == 200) {
+                    setFriends(response.data);
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
 
     React.useEffect(() => {
         setDate(new Date().toISOString().slice(0, 10));
         getUserData();
     }, []);
-    
+
 
     return (
         <Modal visible={true} animationType='slide'>
@@ -57,9 +79,33 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                 <ScrollView style={{ flex: 1, width: "80%" }}>
                     <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Nome del viaggio" onChangeText={(value) => { name_(value) }} />
                     <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} placeholder="Descrizione (facoltativa)" multiline onChangeText={(value) => { description_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Budget (facoltativo)" onChangeText={(value) => { budget_(parseInt(value)) }} />
-                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Aggiungi amico al viaggio" />
-                    <TouchableOpacity>
+                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Budget (facoltativo)" keyboardType="numeric" onChangeText={(value) => { budget_(parseInt(value)) }} />
+                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Aggiungi amico al viaggio" onChangeText={setTextValue} />
+                    <TouchableOpacity
+                        onPress={() => {
+                            let find = false;
+
+                            // Controlla che non sia già stato aggiunto
+                            for (let item of friendsAdded) {
+                                if (item.username == textValue) {
+                                    find = true;
+                                }
+                            }
+
+                            if (!find)
+                                for (let item of friends) {
+                                    if (item.username == textValue) {
+                                        let aus = friendsAdded;
+                                        aus.push(item);
+                                        setFriendsAdded(aus);
+                                        find = true;
+                                        toggleRefresh();
+                                    }
+
+                                }
+
+                        }}
+                    >
                         <View style={[styles.modalButton, { height: 35, marginTop: 0, borderRadius: 35, width: "50%", marginLeft: "25%" }]}>
                             <Text style={[styles.modalButtonText, { lineHeight: 35, fontSize: 16 }]}>Aggiungi</Text>
                         </View>
@@ -67,16 +113,28 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                     <View>
                         <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30 }]}>Persone aggiunte al viaggio:</Text>
                         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                            <View style={styles.person}>
-                                <Text style={styles.personText}>Bosso</Text>
-                            </View>
-                            <View style={styles.person}>
-                                <Text style={styles.personText}>Ernesto</Text>
-                            </View>
+                            <FlatList
+                                data={friendsAdded}
+                                scrollEnabled={false}
+                                extraData={refresh}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            let aus = friendsAdded;
+                                            aus.splice(aus.indexOf(item), 1);
+                                            setFriendsAdded(aus);
+                                            toggleRefresh();
+                                        }}>
+                                        <View style={[styles.person, { flexDirection: "row" }]}>
+                                            <Text style={styles.personText}>{item.username}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
+                            />
                         </View>
                     </View>
-                    
-                    <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
+
+                    {/* <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
                     <SegmentedButtons
                         value={visibility}
                         onValueChange={(value) => { setVisibility(value) }}
@@ -91,29 +149,36 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                         onValueChange={(value) => { setNewMembersAllowed(value) }}
                         value={new_members_allowed}
                     >
-                    </SegmentedButtons>
+                    </SegmentedButtons> */}
 
                     <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
                         // await setCreator(getStringData("username"))
+                        let part = []
+
+                        if (friendsAdded.length != 0) {
+                            for (let item of friendsAdded) {
+                                part.push({ userid: item._id, username: item.username, creator: false })
+                            }
+                        }
+
+                        part.push(creator);
+
                         setIsLoading(true);
-
-                        console.log("Creator", creator);
-
                         axios.post(serverLink + 'api/travel/create', {
                             name: name,
                             description: description,
                             budget: budget,
-                            participants: [
-                                creator
-                            ],
+                            participants: part,
                             visibility: visibility,
                             date: date,
                             new_members_allowed: new_members_allowed,
                             code: generateCode()
                         })
-                            .then(function (response) {
+                            .then(async function (response) {
+                                let aus = await getData("user");
+
                                 if (response.status == 200) {
-                                    updatecards(creator)
+                                    updatecards(creator.username, aus._id)
                                     setIsLoading(false);
                                     setNewTravelVisibility(false);
                                 }
@@ -122,15 +187,15 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                                 console.log(error);
                             });
 
-                            function generateCode() {
-                                var result = '';
-                                var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                                var charactersLength = characters.length;
-                                for (var i = 0; i < 5; i++) {
-                                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-                                }
-                                return result;
+                        function generateCode() {
+                            var result = '';
+                            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                            var charactersLength = characters.length;
+                            for (var i = 0; i < 5; i++) {
+                                result += characters.charAt(Math.floor(Math.random() * charactersLength));
                             }
+                            return result;
+                        }
                     }}>
                         <Text style={(isLoading) ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
                     </TouchableOpacity>
@@ -261,6 +326,8 @@ const styles = StyleSheet.create({
     personText: {
         color: "white",
         fontFamily: font.montserrat,
+        textAlign: "center",
+        width: "100%",
         fontSize: 15,
     }
 })

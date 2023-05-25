@@ -45,7 +45,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
                     <TouchableOpacity onPress={() => {
                         setEditVisibility(true)
                     }} style={{ zIndex: 100 }}>
-                        <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: top, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
+                        <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: 15, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
                             <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25 }} />
                         </View>
                     </TouchableOpacity>

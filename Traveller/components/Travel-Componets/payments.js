@@ -53,7 +53,6 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                 }
             } >
                 <View style={(!isLoading) ? ComponentStyles.card : { display: "none" }}>
-
                     <Modal transparent visible={showMenu} animationType='slide' >
                         <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
                             <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>

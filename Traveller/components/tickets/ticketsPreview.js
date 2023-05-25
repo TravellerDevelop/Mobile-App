@@ -7,7 +7,7 @@ let companies = {
     "Ryanair": "#2B4779",
     "EasyJet": "#FF561F",
     "Alitalia": "#009FE3",
-    "Ita" : "#009FE3",
+    "Ita": "#009FE3",
     "Vueling": "#F5B912",
     "KLM": "#00A1DE",
 }
@@ -46,6 +46,12 @@ export default function TicketsPreview({ item, takeInfo }) {
                     <View style={styles.left}></View>
                     <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
                     <Text style={styles.name}>{item.surname} {item.name}</Text>
+                    {
+                        (item.sharedBy) ?
+                            <Text style={styles.sharedBy}>Condiviso da {item.sharedBy}</Text>
+                            :
+                            <></>
+                    }
                     <Text style={styles.nrFlight}>Numero di volo: {item.flightNumber}</Text>
                     <Text style={styles.destination}>From {item.from.iata} to {item.to.iata}</Text>
                     <Text style={styles.date}>{new Date(item.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
@@ -111,6 +117,14 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 20,
         right: 20,
+        color: "#fff",
+        fontSize: 13,
+        fontFamily: font.montserratLight
+    },
+    sharedBy: {
+        position: "absolute",
+        bottom: 45,
+        left: 20,
         color: "#fff",
         fontSize: 13,
         fontFamily: font.montserratLight

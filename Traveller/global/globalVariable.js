@@ -10,6 +10,8 @@ export const font = {
     montserratBold: "montserrat-bold",
 }
 
+export const appVersion = "1.0.0";
+
 // In produzione cambiare il valore a 15
 // In sviluppo cambiare il valore a 40
 export const paddingTopPage = 15;
