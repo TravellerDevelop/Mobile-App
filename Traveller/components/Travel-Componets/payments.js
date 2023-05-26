@@ -8,6 +8,7 @@ import axios from "axios";
 
 export default function PaymentComponent({ navigation, item, home, travel, isLoading, loadPosts }) {
     let [info, setInfo] = React.useState([]);
+    let [isMine, setIsMine] = React.useState(false);
 
     let [userData, setUserData] = React.useState(false);
     let [showMenu, setShowMenu] = React.useState(false);
@@ -24,14 +25,22 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
         const test = async () => {
             let aus = await getData("user")
 
-            if (aus.username == item.creator && (item.destinator.length != 1)) {
+            if (aus.username == item.creator && item.paymentType == "normal") {
+                setIsMine(true);
                 setIsCreator(true);
             }
-            else if(item.destinator.length == 1 && item.destinator[0].personal === true){
+            
+            if(item.paymentType == "personal"){
+                setIsMine(true);
                 setIsPersonal(true);
+                setIsCreator(true);
             }
 
             for (let i of item.destinator) {
+                if(i.userid == aus._id){
+                    setIsMine(true);
+                }
+
                 if (i.userid == aus._id) {
                     setInfo(i);
                 }
@@ -44,7 +53,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
     }, []);
 
     return (
-        (info != []) ?
+        (info != [] && isMine) ?
             <TouchableWithoutFeedback onPress={
                 () => {
                     if (!home) {
@@ -148,7 +157,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                     }
 
                     {
-                        (isCreator) && (
+                        (isCreator && !isPersonal) && (
                             <View style={[styles.status, { backgroundColor: "#4900FF" }]}>
                                 <Text style={styles.statusText}>Creato da te</Text>
                             </View>
