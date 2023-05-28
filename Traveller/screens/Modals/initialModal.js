@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Platform } from "react-native";
 import { font } from "../../global/globalVariable";
 import InitialModalContent from "./initialModalContent";
 import { storeStringData } from "../../shared/data/localdata";
@@ -27,7 +27,7 @@ export default function InitialModal({ visibility, setVisibility }) {
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={
-                            () => (!num == pages - 1) 
+                            () => (!num == pages - 1)
                                 ? setNum(num + 1)
                                 : finish()
                         } style={{ marginRight: 40 }}>

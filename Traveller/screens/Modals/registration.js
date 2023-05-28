@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView, ActivityIndicator, Platform } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 import axios from "axios";
@@ -18,13 +18,13 @@ export default function Signup({ navigation, visibility, setVisibility, loginVis
     return (
         <Modal visible={visibility} animationType="none" >
             <ScrollView>
-                <Text style={styles.title}>TRAVELLER</Text>
+                <Text style={(Platform.OS == 'ios') ? [styles.title, {marginTop: 60}] : styles.title}>TRAVELLER</Text>
                 <View style={styles.container}>
-                    <TextInput placeholderTextColor={"gray"} placeholder="Nome" style={styles.input} onChangeText={(value) => { name_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} placeholder="Cognome" style={styles.input} onChangeText={(value) => { surname_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} placeholder="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} placeholder="Email" style={styles.input} onChangeText={(value) => { email_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} secureTextEntry placeholder="Password" style={styles.input} onChangeText={(value) => { password_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Nome" style={styles.input} autoCorrect={false} onChangeText={(value) => { name_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} placeholder="Cognome" style={styles.input} autoCorrect={false} onChangeText={(value) => { surname_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} autoCapitalize="none" placeholder="Username" style={styles.input} autoCorrect={false} onChangeText={(value) => { username_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} autoCapitalize="none" placeholder="Email" style={styles.input} autoCorrect={false} keyboardType='email-address' inputMode='email' onChangeText={(value) => { email_(value) }} />
+                    <TextInput placeholderTextColor={"gray"} autoCapitalize="none" secureTextEntry placeholder="Password" autoCorrect={false} style={styles.input} onChangeText={(value) => { password_(value) }} />
                     <TouchableNativeFeedback onPress={() => {
                         (async () => {
                             if (loading) return;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Platform } from "react-native";
 import { font } from "../../global/globalVariable";
 import LottieView from 'lottie-react-native';
 
@@ -7,7 +7,7 @@ export default function InitialModalContent({ num, setNum }) {
     if (num == 0) {
         return (
             <>
-                <Text style={modalstyles.apptitle}>TRAVELLER</Text>
+                <Text style={(Platform.OS == 'ios') ? [modalstyles.apptitle, {top: 60}] : [modalstyles.apptitle, {top: 20}]}>TRAVELLER</Text>
                 <View style={modalstyles.animationContainer}>
                     <LottieView
                         source={require('../../assets/animation/globeIntro.json')}
@@ -24,7 +24,7 @@ export default function InitialModalContent({ num, setNum }) {
     else if (num == 1) {
         return (
             <>
-                <Text style={modalstyles.apptitle}>TRAVELLER</Text>
+                <Text style={(Platform.OS == 'ios') ? [modalstyles.apptitle, {top: 60}] : [modalstyles.apptitle, {top: 20}]}>TRAVELLER</Text>
                 <View style={modalstyles.animationContainer}>
                     <LottieView
                         source={require('../../assets/animation/introWalking.json')}
@@ -51,7 +51,6 @@ const modalstyles = StyleSheet.create({
         fontSize: 25,
         color: "#FFF",
         position: "absolute",
-        top: 20,
     },
     animationContainer: {
         width: 300,

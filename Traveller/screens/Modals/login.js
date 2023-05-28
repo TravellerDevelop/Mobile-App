@@ -1,5 +1,5 @@
 import React, { useState, } from "react";
-import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, TextInput, ScrollView, ActivityIndicator, Platform } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { storeStringData, storeJsonData } from "../../shared/data/localdata";
 import AnimatedLottieView from "lottie-react-native";
@@ -23,7 +23,7 @@ export default function LoginModal({ navigation, visibility, setVisibility }) {
 
             <Modal visible={visibility} animationType={"none"} >
                 <ScrollView>
-                    <Text style={styles.title}>TRAVELLER</Text>
+                    <Text style={(Platform.OS == 'ios') ? [styles.title, {marginTop: 60}] : styles.title}>TRAVELLER</Text>
                     <View style={styles.container}>
                         <View style={{ width: 150, margintop: 30, height: 150, alignItems: "center", justifyContent: "center" }}>
                             <AnimatedLottieView source={require("../../assets/animation/121700-worldwide.json")} autoPlay loop />

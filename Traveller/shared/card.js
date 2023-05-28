@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
-import CardPartecipants from "./cardPartecipants";
 import { color, font } from "../global/globalVariable";
-
+import { getData } from "./data/localdata";
 
 export default function Card({ navigation, data, vertical, isLoading }) {
+    let [myData, setMyData] = React.useState(false);
+
     let creator = "";
 
     let i = 0;
@@ -15,13 +16,22 @@ export default function Card({ navigation, data, vertical, isLoading }) {
         i++;
     }
 
+    useEffect(() => {
+        getCreator();
+
+        async function getCreator() {
+            let getMyData = await getData("user");
+            setMyData(getMyData);
+        }
+    }, [])
+
     return (
         <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
             {(!vertical) ?
                 <View style={(!isLoading) ? styles.container : {display: "none"}} >
                     <View style={{ position: 'absolute', top: 10, left: 10 }}>
                         <Text style={styles.cardTitle}>{data.name}</Text>
-                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {creator}</Text>
+                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
                     </View>
                     <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
                         {/* <CardPartecipants  data={data} /> */}
@@ -31,10 +41,9 @@ export default function Card({ navigation, data, vertical, isLoading }) {
                 <View style={styles.containerVertical}>
                     <View style={{ position: 'absolute', top: 10, left: 10 }}>
                         <Text style={styles.cardTitle}>{data.name}</Text>
-                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {creator}</Text>
+                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
                     </View>
                     <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
-                        {/* <CardPartecipants  data={data} /> */}
                     </View>
                 </View>
             }
@@ -45,8 +54,8 @@ export default function Card({ navigation, data, vertical, isLoading }) {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: color.primary,
-        height: 140,
-        width: 250,
+        height: 120,
+        width: 270,
         borderRadius: 10,
         margin: 10,
         padding: 10,
@@ -85,7 +94,8 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 24,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.montserratBold,
+        marginBottom: 10,
     },
     cardSubtitle: {
         color: "white",

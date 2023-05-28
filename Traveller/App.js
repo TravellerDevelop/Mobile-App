@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext, createContext } from 'react';
 import Font from './components/font';
 import { color } from './global/globalVariable';
-import { Image, View, Text, StatusBar, Platform, TouchableOpacity } from 'react-native';
+import { Image, View, Text, StatusBar, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -20,6 +20,8 @@ export const GlobalUserContext = createContext();
 export default function App() {
   let [globalUserInfo, setGlobalUserInfo] = useState({});
 
+  let [isLoading, setIsLoading] = useState(false);
+
   let fontLoaded = Font();
   let [modalVisible, setModalVisible] = useState(false);
   let [connection, setConnection] = useState(false);
@@ -27,21 +29,33 @@ export default function App() {
   getStringDataWithStateReverse('initialModal', modalVisible, setModalVisible);
 
   useEffect(() => {
+    verifyConnection();
+
+  }, []);
+
+  function verifyConnection() {
+    setIsLoading(true);
     axios({
       method: 'get',
       url: serverLink + "api/verifyConnection",
-      timeout: 20000,
+      timeout: 15000,
     })
       .then((response) => {
-        if (response.status == 200)
+        if (response.status == 200) {
+
           setConnection(true);
-        else
+          setIsLoading(false);
+        }
+        else {
           setConnection('error')
+          setIsLoading(false);
+        }
       })
       .catch((error) => {
         setConnection('error');
+        setIsLoading(false);
       });
-  }, []);
+  }
 
   if (!fontLoaded || !connection) {
     return (
@@ -52,7 +66,15 @@ export default function App() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Image style={{ width: 50, height: 50, marginBottom: 20 }} source={require('./assets/image/icona-alert.png')} />
-        <Text style={{ fontSize: 20, fontWeight: 'bold', fontFamily: "montserrat-regular" }}>Errore di connessione al server : /</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', fontFamily: "montserrat-regular" }}>Errore di connessione al server 😥</Text>
+        {
+          (!isLoading) ?
+            <TouchableOpacity onPress={() => verifyConnection()} style={{ marginTop: 20, backgroundColor: color.primary, padding: 10, borderRadius: 10 }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', fontFamily: "montserrat-regular", color: "white" }}>Riprova</Text>
+            </TouchableOpacity>
+            :
+            <ActivityIndicator style={{ marginTop: 20 }} size="large" color={color.primary} />
+        }
       </View>
     )
   }
@@ -71,8 +93,33 @@ export default function App() {
             <Tab.Navigator
               initialRouteName="White"
               screenOptions={({ route }) => ((Platform.OS === 'ios') ? {
+                tabBarVisibilityAnimationConfig: {
+                  show: {
+                    animation: 'timing',
+                    config: {
+                      duration: 300,
+                    },
+                  },
+                  hide: {
+                    animation: 'timing',
+                    config: {
+                      duration: 300,
+                    },
+                  },
+                },
+                animationEnabled: true,
                 tabBarShowLabel: false,
-                activeTintColor: '#e91e63',
+                activeTintColor: '#4900FF',
+                topBarActiveTintColor: '#4900FF',
+                tabBarLabelStyle: {
+                  fontFamily: "montserrat-regular",
+                  fontSize: 12,
+                  color: "black",
+                  textAlign: "center",
+                  marginTop: 5,
+                  position: "absolute",
+                  left: 75,
+                },
                 tabBarStyle: {
                   flexDirection: "row",
                   padding: 0,
@@ -80,7 +127,7 @@ export default function App() {
                   width: "85%",
                   left: "7.5%",
                   position: "absolute",
-                  bottom: 50,
+                  bottom: 20,
                   borderRadius: 10,
                   alignItems: "center",
                   justifyContent: "space-evenly",
@@ -114,17 +161,17 @@ export default function App() {
                     iconName = focused ? require('./assets/image/icona-wallet.png') : require('./assets/image/icona-wallet.png');
                   }
 
-
-                  if (route.name != 'White')
+                  if (route.name != 'White' && focused)
                     return (
-                      <TouchableOpacity>
-                        <View style={{ backgroundColor: "#4960FF90" }}>
-                          <Image style={{ width: 30, height: 30, tintColor: color, marginLeft: 20, marginRight: 20, resizeMode: "contain" }} source={iconName} />
-                          <Text style={{ color: color.primary, fontSize: 10, fontFamily: "montserrat-regular", textAlign: "center", color: "black" }}>{route.name}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-
+                      <View style={{ height: 40, backgroundColor: "#4960FF40", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderRadius: 5, position:'absolute', top: -1.5 }}>
+                        <Image style={{ width: 40, height: 30, tintColor: color, marginRight: 5, resizeMode: "contain" }} source={iconName} />
+                        <Text style={{ color: color.primary, fontSize: 11, fontFamily: "montserrat-bold", textAlign: "center", color: "black", marginRight: 10 }}>{route.name}</Text>
+                      </View>
+                    )
+                  else
+                    return (
+                      <Image style={{ width: 40, height: 30, tintColor: color, marginRight: 5, resizeMode: "contain", position: 'absolute', top: -1.5 }} source={iconName} />
+                    )
                 }
               }
                 :

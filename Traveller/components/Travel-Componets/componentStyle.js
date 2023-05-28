@@ -25,6 +25,8 @@ export const ComponentStyles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 3.84,
         elevation: 5,
+        borderWidth: 1,
+        borderColor: "#E0E0E0",
     },
     contentText: {
         color: "#000",
