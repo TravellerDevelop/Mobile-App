@@ -11,6 +11,7 @@ import LoadingPost from '../shared/loadingPost';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
 import { ActivityIndicator } from 'react-native-paper';
 import { getData } from '../shared/data/localdata';
+import { Socket } from 'socket.io-client';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
@@ -20,6 +21,13 @@ export default function TravelDetail({ navigation, route }) {
 
     useEffect(() => {
         loadPosts(route.params._id);
+
+        // const io = new Socket(serverLink, { transports: ['websocket'] });
+        // let serverSocket = io.connect();
+        // serverSocket.on("connect", () => {
+        //     console.log("Connesso");
+        // })
+
     }, [])
 
     const [refreshing, setRefreshing] = useState(false);

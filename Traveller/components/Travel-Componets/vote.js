@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, FlatList, TouchableNativeFeedback, Image, StyleSheet, Modal, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableNativeFeedback, Image, StyleSheet, Modal, TouchableWithoutFeedback, TouchableOpacity, Dimensions } from 'react-native';
 import { RadioButton, ProgressBar } from 'react-native-paper';
 import { ComponentStyles } from './componentStyle';
 import { color, serverLink } from '../../global/globalVariable';

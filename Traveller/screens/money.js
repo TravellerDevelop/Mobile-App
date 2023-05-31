@@ -171,6 +171,7 @@ let styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
     },
     title: {
         color: "black",
