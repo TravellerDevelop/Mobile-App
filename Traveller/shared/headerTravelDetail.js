@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, TouchableNativeFeedback, Image } from 'react-native';
-import { color, font, paddingTopPage } from '../global/globalVariable';
+import { StyleSheet, View, TouchableOpacity, Text, TouchableNativeFeedback, Image, ImageBackground } from 'react-native';
+import { color, font, paddingTopPage, serverLink } from '../global/globalVariable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getData } from './data/localdata';
@@ -15,7 +15,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
     let creator = "";
 
     for (let item of data.participants) {
-        if (item.creator) {   
+        if (item.creator) {
             creator = item.username;
         }
     }
@@ -33,49 +33,97 @@ export default function HeaderTravelDetail({ navigation, data }) {
     let [editVisibility, setEditVisibility] = React.useState(false)
 
     return (
-        <LinearGradient
-            style={styles.header}
-            start={{ x: 0.5, y: 0.2 }}
-            colors={[color.primary, color.secondary]}
-        >
-
+        <>
             {
-                creator == username ? <>
-                    {editVisibility ? <EditTravel visible={editVisibility} setVisible={setEditVisibility} item={data} /> : null}
-                    <TouchableOpacity onPress={() => {
-                        setEditVisibility(true)
-                    }} style={{ zIndex: 100 }}>
-                        <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: 15, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
-                            <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25 }} />
+                (!data.image) ?
+                    <LinearGradient
+                        style={styles.header}
+                        start={{ x: 0.5, y: 0.2 }}
+                        colors={[color.primary, color.secondary]}
+                    >
+
+                        {
+                            creator == username ? <>
+                                {editVisibility ? <EditTravel visible={editVisibility} setVisible={setEditVisibility} item={data} /> : null}
+                                <TouchableOpacity onPress={() => {
+                                    setEditVisibility(true)
+                                }} style={{ zIndex: 100 }}>
+                                    <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: 15, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
+                                        <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25 }} />
+                                    </View>
+                                </TouchableOpacity>
+                            </>
+                                :
+                                null
+
+                        }
+                        <View style={styles.row}>
+                            <TouchableNativeFeedback onPress={() => navigation.goBack()}>
+                                <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
+                            </TouchableNativeFeedback>
+                            <Text style={styles.title}>{data.name}</Text>
                         </View>
-                    </TouchableOpacity>
-                </>
+                        <Text style={styles.subtitle}>Creato da {creator}</Text>
+
+                        <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
+
+                        <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 300 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
+                            <Badge label={
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <MaterialCommunityIcons style={{ marginRight: 5 }} name='information-outline' color="white" />
+                                    <Text
+                                        style={{ color: 'white', fontFamily: font.montserrat }}
+                                    >Informazioni sul viaggio</Text>
+                                </View>
+                            }
+                                color="#490099" />
+                        </TouchableOpacity>
+                    </LinearGradient>
                     :
-                    null
+                    <ImageBackground
+                        style={styles.header}
+                        source={{ uri: serverLink + "userImage/" + data.image }}
+                        imageStyle={{ opacity: 0.9 }}
+                    >
+                        {
+                            creator == username ? <>
+                                {editVisibility ? <EditTravel visible={editVisibility} setVisible={setEditVisibility} item={data} /> : null}
+                                <TouchableOpacity onPress={() => {
+                                    setEditVisibility(true)
+                                }} style={{ zIndex: 100 }}>
+                                    <View style={{ height: 35, width: 35, position: "absolute", right: 20, top: 15, justifyContent: "center", alignItems: "center", zIndex: 100 }}>
+                                        <Image source={require("../assets/image/icona-edit.png")} style={{ tintColor: "white", height: 25, width: 25 }} />
+                                    </View>
+                                </TouchableOpacity>
+                            </>
+                                :
+                                null
 
+                        }
+                        <View style={styles.row}>
+                            <TouchableNativeFeedback onPress={() => navigation.goBack()}>
+                                <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
+                            </TouchableNativeFeedback>
+                            <Text style={styles.title}>{data.name}</Text>
+                        </View>
+                        <Text style={styles.subtitle}>Creato da {creator}</Text>
+
+                        <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
+
+                        <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 300 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
+                            <Badge label={
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <MaterialCommunityIcons style={{ marginRight: 5 }} name='information-outline' color="white" />
+                                    <Text
+                                        style={{ color: 'white', fontFamily: font.montserrat }}
+                                    >Informazioni sul viaggio</Text>
+                                </View>
+                            }
+                                color="#490099" />
+                        </TouchableOpacity>
+                    </ImageBackground>
             }
-            <View style={styles.row}>
-                <TouchableNativeFeedback onPress={() => navigation.goBack()}>
-                    <MaterialCommunityIcons name='arrow-left' size={24} color={"white"} />
-                </TouchableNativeFeedback>
-                <Text style={styles.title}>{data.name}</Text>
-            </View>
-            <Text style={styles.subtitle}>Creato da {creator}</Text>
-
-            <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
-
-            <TouchableOpacity style={{ flexDirection: "row", marginLeft: 44, marginTop: 15, width: 300 }} onPress={() => navigation.navigate("TravelPartecipants", data)} >
-                <Badge label={
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <MaterialCommunityIcons style={{ marginRight: 5 }} name='information-outline' color="white" />
-                        <Text
-                            style={{ color: 'white', fontFamily: font.montserrat }}
-                        >Informazioni sul viaggio</Text>
-                    </View>
-                }
-                    color="#490099" />
-            </TouchableOpacity>
-        </LinearGradient>
+        </>
     )
 }
 
@@ -84,7 +132,7 @@ const styles = StyleSheet.create({
         backgroundColor: color.primary,
         width: "100%",
         paddingTop: paddingTopPage,
-        paddingBottom: 20,
+        paddingBottom: 40,
     },
     row: {
         flexDirection: "row",

@@ -95,7 +95,7 @@ export default function TravelDetail({ navigation, route }) {
                 >
                     <HeaderTravelDetail navigation={navigation} data={route.params} />
 
-                    <View style={{ flex: 1, backgroundColor: "#4900FF" }}>
+                    <View style={(route.params.image)?{ flex: 1, backgroundColor: "#000" } : {flex:1, backgroundColor: "#4960FF"}}>
                         <View style={styles.contentContainer}>
                             {
                                 (!route.params.closed) && (
@@ -175,7 +175,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
         borderTopEndRadius: 20,
         borderTopLeftRadius: 20,
-        minHeight: 100
+        minHeight: 100,
+        marginTop: -20,
     },
     card: {
         backgroundColor: "#FFF",

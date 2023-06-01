@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableNativeFeedback, ImageBackground } from "react-native";
-import { color, font } from "../global/globalVariable";
+import { color, font, serverLink } from "../global/globalVariable";
 import { getData } from "./data/localdata";
 
 export default function Card({ navigation, data, vertical, isLoading }) {
@@ -19,6 +19,10 @@ export default function Card({ navigation, data, vertical, isLoading }) {
     useEffect(() => {
         getCreator();
 
+        if(data.image != null && data.image != undefined && data.image != "") {
+            console.log("immagine presente");
+        }
+
         async function getCreator() {
             let getMyData = await getData("user");
             setMyData(getMyData);
@@ -28,13 +32,13 @@ export default function Card({ navigation, data, vertical, isLoading }) {
     return (
         <>
             {
-                (!data.image) ?
+                (data.image == null || data.image == undefined || data.image == "") ?
                     <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
                         {(!vertical) ?
                             <View style={(!isLoading) ? styles.container : { display: "none" }} >
                                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
                                     <Text style={styles.cardTitle}>{data.name}</Text>
-                                    <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
+                                    <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
                                 </View>
                                 <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
                                     {/* <CardPartecipants  data={data} /> */}
@@ -44,7 +48,7 @@ export default function Card({ navigation, data, vertical, isLoading }) {
                             <View style={styles.containerVertical}>
                                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
                                     <Text style={styles.cardTitle}>{data.name}</Text>
-                                    <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
+                                    <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
                                 </View>
                                 <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
                                 </View>
@@ -55,19 +59,17 @@ export default function Card({ navigation, data, vertical, isLoading }) {
                     <TouchableNativeFeedback style={{ zIndex: 10 }} onPress={() => navigation.navigate("TravelDetail", data)}>
                         {
                             (!vertical) ?
-                                <ImageBackground imageStyle={{ borderRadius: 10, opacity: 0.7 }} source={require("../assets/image/testsfondo.jpg")} style={styles.containerWithBg}>
+                                <ImageBackground imageStyle={{ borderRadius: 10, opacity: 0.7 }} source={{uri: serverLink + "userImage/" + data.image}} style={styles.containerWithBg}>
                                     <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
                                         <Text style={styles.cardTitle}>{data.name}</Text>
-                                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
-                                    </View>
-                                    <View style={{ position: 'absolute', bottom: 10, right: 30 }}>
+                                        <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
                                     </View>
                                 </ImageBackground>
                                 :
-                                <ImageBackground  resizeMode="cover" imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }} source={require("../assets/image/testsfondo.jpg")} style={styles.containerVerticalWithBg}>
+                                <ImageBackground  resizeMode="cover" imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }} source={{uri: serverLink + "userImage/" + data.image}} style={styles.containerVerticalWithBg}>
                                     <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
                                         <Text style={styles.cardTitle}>{data.name}</Text>
-                                        <Text style={styles.cardSubtitle}>Creato il {data.creation_date} da {(creator == myData.username) ? "te" : creator}</Text>
+                                        <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
                                     </View>
                                 </ImageBackground>
                         }

@@ -1,11 +1,14 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, TouchableNativeFeedback } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, Button } from 'react-native';
 import { color, font, serverLink } from '../../global/globalVariable';
 import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
 import { SegmentedButtons } from 'react-native-paper';
 import { getStringData, getData } from '../../shared/data/localdata';
+import * as ImagePicker from 'expo-image-picker';
+import { Avatar } from '@react-native-material/core';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
 export default function NewTravel({ userState, setUserState, setNewTravelVisibility, updatecards }) {
@@ -32,6 +35,33 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
     const toggleRefresh = () => {
         setRefresh(!refresh);
     }
+
+    let globalImageInfo = {}
+
+
+    const [image, setImage] = useState(null);
+
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            // aspect: [4, 3],
+            base64: true,
+            quality: 1,
+        });
+
+        // Converte l'immagine in base64
+        globalImageInfo = result
+
+        if (!result.canceled) {
+            setImage(result);
+        }
+    };
+
+
+
+
 
     const dataVisibility = [
         { label: 'Pubblico', value: '1' },
@@ -112,27 +142,59 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
                     </TouchableOpacity>
                     <View>
                         <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30 }]}>Persone aggiunte al viaggio:</Text>
-                        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                        <View>
                             <FlatList
                                 data={friendsAdded}
                                 scrollEnabled={false}
                                 extraData={refresh}
                                 renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            let aus = friendsAdded;
-                                            aus.splice(aus.indexOf(item), 1);
-                                            setFriendsAdded(aus);
-                                            toggleRefresh();
-                                        }}>
-                                        <View style={[styles.person, { flexDirection: "row" }]}>
-                                            <Text style={styles.personText}>{item.username}</Text>
+                                    <View style={[styles.person, { flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: "#f2f2f2" }]}>
+                                        <View
+                                            style={{
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                width: 52,
+                                                height: 52,
+                                                borderRadius: 48 / 2,
+                                                backgroundColor: "#fff",
+                                                overflow: "hidden",
+                                                elevation: 5,
+                                                marginRight: 10,
+                                                borderWidth: 1,
+                                                borderColor: "#f2f2f2",
+                                            }}
+                                        >
+                                            <Avatar size={44} autoColor label={item.name + " " + item.surname} />
                                         </View>
-                                    </TouchableOpacity>
+                                        <View>
+                                            <Text style={styles.personTextTitle}>{item.name + " " + item.surname}</Text>
+                                            <Text style={styles.personText}>@{item.username}</Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            style={{ position: "absolute", right: 10 }}
+                                            onPress={() => {
+                                                let aus = friendsAdded;
+                                                aus.splice(aus.indexOf(item), 1);
+                                                setFriendsAdded(aus);
+                                                toggleRefresh();
+                                            }}>
+                                                <MaterialCommunityIcons name="close" size={24} color="black" />
+                                        </TouchableOpacity>
+                                    </View>
                                 )}
                             />
                         </View>
                     </View>
+
+                    <TouchableOpacity style={[styles.modalButton, { marginTop: 30 }]} onPress={pickImage}>
+                        <Text style={[styles.modalButtonText, { fontSize: 16 }]}>Immagine di copertina (facoltativo)</Text>
+                    </TouchableOpacity>
+                    <View style={{ width: "100%", justifyContent: "center", alignItems: "center" }}>
+                        {image ?
+                            <Image source={{ uri: image.assets[0].uri }} style={{ width: 200, height: 200 }} />
+                            : <Text style={{fontFamily: font.montserrat}}>Nessun immagine selezionata</Text>}
+                    </View>
+                    {/* <Text>{(image) ? JSON.stringify(image.assets[0]) : ""}</Text> */}
 
                     {/* <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
                     <SegmentedButtons
@@ -153,39 +215,79 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
                     <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
                         // await setCreator(getStringData("username"))
-                        let part = []
-
+                        let part = [];
                         if (friendsAdded.length != 0) {
                             for (let item of friendsAdded) {
                                 part.push({ userid: item._id, username: item.username, creator: false })
                             }
                         }
-
                         part.push(creator);
-
                         setIsLoading(true);
-                        axios.post(serverLink + 'api/travel/create', {
-                            name: name,
-                            description: description,
-                            budget: budget,
-                            participants: part,
-                            visibility: visibility,
-                            date: date,
-                            new_members_allowed: new_members_allowed,
-                            code: generateCode()
-                        })
-                            .then(async function (response) {
-                                let aus = await getData("user");
+                        if (image) {
+                            let fileName = image.assets[0].uri.split("/").pop();
 
-                                if (response.status == 200) {
-                                    updatecards(creator.username, aus._id)
-                                    setIsLoading(false);
-                                    setNewTravelVisibility(false);
-                                }
+                            axios.post(serverLink + 'api/travel/uploadImage', {
+                                img: image.assets[0].base64,
+                                imgName: fileName
                             })
-                            .catch(function (error) {
-                                console.log(error);
-                            });
+                                .then(function (response) {
+                                    axios.post(serverLink + 'api/travel/create', {
+                                        name: name,
+                                        description: description,
+                                        budget: budget,
+                                        participants: part,
+                                        visibility: visibility,
+                                        creation_date: new Date(date),
+                                        new_members_allowed: new_members_allowed,
+                                        code: generateCode(),
+                                        image: response.data,
+                                        closed: false
+                                    })
+                                        .then(async function (response) {
+                                            let aus = await getData("user");
+
+                                            if (response.status == 200) {
+                                                updatecards(creator.username, aus._id)
+                                                setIsLoading(false);
+                                                setNewTravelVisibility(false);
+                                            }
+                                        })
+                                        .catch(function (error) {
+                                            console.log(error);
+                                            setIsLoading(false);
+                                        });
+                                })
+                                .catch(function (error) {
+                                    setIsLoading(false);
+                                    console.log(error);
+                                });
+                        }
+                        else {
+                            axios.post(serverLink + 'api/travel/create', {
+                                name: name,
+                                description: description,
+                                budget: budget,
+                                participants: part,
+                                visibility: visibility,
+                                creation_date: new Date(date),
+                                new_members_allowed: new_members_allowed,
+                                code: generateCode(),
+                                closed: false
+                            })
+                                .then(async function (response) {
+                                    let aus = await getData("user");
+
+                                    if (response.status == 200) {
+                                        updatecards(creator.username, aus._id)
+                                        setIsLoading(false);
+                                        setNewTravelVisibility(false);
+                                    }
+                                })
+                                .catch(function (error) {
+                                    console.log(error);
+                                    setIsLoading(false);
+                                });
+                        }
 
                         function generateCode() {
                             var result = '';
@@ -315,7 +417,7 @@ const styles = StyleSheet.create({
         lineHeight: 50,
     },
     person: {
-        backgroundColor: color.secondary,
+        backgroundColor: "white",
         borderRadius: 20,
         padding: 5,
         paddingLeft: 10,
@@ -324,10 +426,15 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     personText: {
-        color: "white",
+        color: "#000",
         fontFamily: font.montserrat,
-        textAlign: "center",
         width: "100%",
         fontSize: 15,
-    }
+    },
+    personTextTitle: {
+        color: "#000",
+        fontFamily: font.montserrat,
+        width: "100%",
+        fontSize: 18,
+    },
 })
