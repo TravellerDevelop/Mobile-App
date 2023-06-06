@@ -139,10 +139,11 @@ export default function Money() {
                                         backgroundGradientFrom: "#FFF",
                                         backgroundGradientTo: "#FFF",
                                         decimalPlaces: 0,
-                                        color: (opacity = 1) => `rgba(73, 0, 255, ${opacity})`,
+                                        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
                                         style: {
                                             borderRadius: 16,
                                         },
+                                        padding: 0,
                                     }}
                                     style={{
                                         marginVertical: 8,

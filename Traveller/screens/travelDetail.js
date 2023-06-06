@@ -7,11 +7,10 @@ import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import NewPost from './Modals/NewPost';
 import axios from 'axios';
-import LoadingPost from '../shared/loadingPost';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
 import { ActivityIndicator } from 'react-native-paper';
 import { getData } from '../shared/data/localdata';
-import { Socket } from 'socket.io-client';
+import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
 
 export default function TravelDetail({ navigation, route }) {
     let [newPost, setNewPost] = useState(false);
@@ -21,13 +20,6 @@ export default function TravelDetail({ navigation, route }) {
 
     useEffect(() => {
         loadPosts(route.params._id);
-
-        // const io = new Socket(serverLink, { transports: ['websocket'] });
-        // let serverSocket = io.connect();
-        // serverSocket.on("connect", () => {
-        //     console.log("Connesso");
-        // })
-
     }, [])
 
     const [refreshing, setRefreshing] = useState(false);
@@ -95,7 +87,7 @@ export default function TravelDetail({ navigation, route }) {
                 >
                     <HeaderTravelDetail navigation={navigation} data={route.params} />
 
-                    <View style={(route.params.image)?{ flex: 1, backgroundColor: "#000" } : {flex:1, backgroundColor: "#4960FF"}}>
+                    <View style={(route.params.image) ? { flex: 1, backgroundColor: "#000" } : { flex: 1, backgroundColor: "#4960FF" }}>
                         <View style={styles.contentContainer}>
                             {
                                 (!route.params.closed) && (
@@ -141,7 +133,11 @@ export default function TravelDetail({ navigation, route }) {
                                                         (item.type == "payments") ?
                                                             <PaymentComponent navigation={navigation} item={item} home={false} loadPosts={loadPosts} />
                                                             :
-                                                            null}
+                                                            (item.type == "images") ?
+                                                                <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
+                                                                :
+                                                                null
+                                                            }
                                             </>
                                         )}
                                     />

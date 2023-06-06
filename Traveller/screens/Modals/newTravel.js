@@ -59,10 +59,6 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
         }
     };
 
-
-
-
-
     const dataVisibility = [
         { label: 'Pubblico', value: '1' },
         { label: 'Amici', value: '2' },
@@ -79,7 +75,6 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
         let aus = await getData("user");
         console.log(aus)
         setCreator({ userid: aus._id, username: aus.username, creator: true })
-        console.log("Creator", creator)
 
         axios.get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)
             .then((response) => {
@@ -100,208 +95,209 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
     return (
         <Modal visible={true} animationType='slide'>
-            <TouchableOpacity style={{ position: "absolute", top: 20, right: 20 }} onPress={() => setNewTravelVisibility(false)}>
-                <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
-            </TouchableOpacity>
 
-            <Text style={[styles.title, { marginBottom: 30, marginTop: 60 }]}>Crea un nuovo viaggio!</Text>
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", width: "100%" }}>
-                <ScrollView style={{ flex: 1, width: "80%" }}>
-                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Nome del viaggio" onChangeText={(value) => { name_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} placeholder="Descrizione (facoltativa)" multiline onChangeText={(value) => { description_(value) }} />
-                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Budget (facoltativo)" keyboardType="numeric" onChangeText={(value) => { budget_(parseInt(value)) }} />
-                    <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Aggiungi amico al viaggio" onChangeText={setTextValue} />
-                    <TouchableOpacity
-                        onPress={() => {
-                            let find = false;
+                <ScrollView style={{ flex: 1, width: "100%" }}>
+                    <View style={{ width: "80%", marginLeft: "10%" }}>
+                        <TouchableOpacity style={{ position: "absolute", top: 20, right: 0 }} onPress={() => setNewTravelVisibility(false)}>
+                            <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
+                        </TouchableOpacity>
+                        <Text style={[styles.title, { marginBottom: 30, marginTop: 60 }]}>Crea un nuovo viaggio!</Text>
+                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Nome del viaggio" onChangeText={(value) => { name_(value) }} />
+                        <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} placeholder="Descrizione (facoltativa)" multiline onChangeText={(value) => { description_(value) }} />
+                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Budget (facoltativo)" keyboardType="numeric" onChangeText={(value) => { budget_(parseInt(value)) }} />
+                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Aggiungi amico al viaggio" onChangeText={setTextValue} />
+                        <TouchableOpacity
+                            onPress={() => {
+                                let find = false;
 
-                            // Controlla che non sia già stato aggiunto
-                            for (let item of friendsAdded) {
-                                if (item.username == textValue) {
-                                    find = true;
-                                }
-                            }
-
-                            if (!find)
-                                for (let item of friends) {
+                                for (let item of friendsAdded) {
                                     if (item.username == textValue) {
-                                        let aus = friendsAdded;
-                                        aus.push(item);
-                                        setFriendsAdded(aus);
                                         find = true;
-                                        toggleRefresh();
+                                    }
+                                }
+
+                                if (!find)
+                                    for (let item of friends) {
+                                        if (item.username == textValue) {
+                                            let aus = friendsAdded;
+                                            aus.push(item);
+                                            setFriendsAdded(aus);
+                                            find = true;
+                                            toggleRefresh();
+                                        }
+
                                     }
 
-                                }
-
-                        }}
-                    >
-                        <View style={[styles.modalButton, { height: 35, marginTop: 0, borderRadius: 35, width: "50%", marginLeft: "25%" }]}>
-                            <Text style={[styles.modalButtonText, { lineHeight: 35, fontSize: 16 }]}>Aggiungi</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <View>
-                        <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30 }]}>Persone aggiunte al viaggio:</Text>
+                            }}
+                        >
+                            <View style={[styles.modalButton, { height: 35, marginTop: 0, borderRadius: 35, width: "50%", marginLeft: "25%" }]}>
+                                <Text style={[styles.modalButtonText, { lineHeight: 35, fontSize: 16 }]}>Aggiungi</Text>
+                            </View>
+                        </TouchableOpacity>
                         <View>
-                            <FlatList
-                                data={friendsAdded}
-                                scrollEnabled={false}
-                                extraData={refresh}
-                                renderItem={({ item }) => (
-                                    <View style={[styles.person, { flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: "#f2f2f2" }]}>
-                                        <View
-                                            style={{
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                width: 52,
-                                                height: 52,
-                                                borderRadius: 48 / 2,
-                                                backgroundColor: "#fff",
-                                                overflow: "hidden",
-                                                elevation: 5,
-                                                marginRight: 10,
-                                                borderWidth: 1,
-                                                borderColor: "#f2f2f2",
-                                            }}
-                                        >
-                                            <Avatar size={44} autoColor label={item.name + " " + item.surname} />
-                                        </View>
-                                        <View>
-                                            <Text style={styles.personTextTitle}>{item.name + " " + item.surname}</Text>
-                                            <Text style={styles.personText}>@{item.username}</Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            style={{ position: "absolute", right: 10 }}
-                                            onPress={() => {
-                                                let aus = friendsAdded;
-                                                aus.splice(aus.indexOf(item), 1);
-                                                setFriendsAdded(aus);
-                                                toggleRefresh();
-                                            }}>
+                            <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30 }]}>Persone aggiunte al viaggio:</Text>
+                            <View>
+                                <FlatList
+                                    data={friendsAdded}
+                                    scrollEnabled={false}
+                                    extraData={refresh}
+                                    renderItem={({ item }) => (
+                                        <View style={[styles.person, { flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: "#f2f2f2" }]}>
+                                            <View
+                                                style={{
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 52,
+                                                    height: 52,
+                                                    borderRadius: 48 / 2,
+                                                    backgroundColor: "#fff",
+                                                    overflow: "hidden",
+                                                    elevation: 5,
+                                                    marginRight: 10,
+                                                    borderWidth: 1,
+                                                    borderColor: "#f2f2f2",
+                                                }}
+                                            >
+                                                <Avatar size={44} autoColor label={item.name + " " + item.surname} />
+                                            </View>
+                                            <View>
+                                                <Text style={styles.personTextTitle}>{item.name + " " + item.surname}</Text>
+                                                <Text style={styles.personText}>@{item.username}</Text>
+                                            </View>
+                                            <TouchableOpacity
+                                                style={{ position: "absolute", right: 10 }}
+                                                onPress={() => {
+                                                    let aus = friendsAdded;
+                                                    aus.splice(aus.indexOf(item), 1);
+                                                    setFriendsAdded(aus);
+                                                    toggleRefresh();
+                                                }}>
                                                 <MaterialCommunityIcons name="close" size={24} color="black" />
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                            />
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                />
+                            </View>
                         </View>
-                    </View>
 
-                    <TouchableOpacity style={[styles.modalButton, { marginTop: 30 }]} onPress={pickImage}>
-                        <Text style={[styles.modalButtonText, { fontSize: 16 }]}>Immagine di copertina (facoltativo)</Text>
-                    </TouchableOpacity>
-                    <View style={{ width: "100%", justifyContent: "center", alignItems: "center" }}>
-                        {image ?
-                            <Image source={{ uri: image.assets[0].uri }} style={{ width: 200, height: 200 }} />
-                            : <Text style={{fontFamily: font.montserrat}}>Nessun immagine selezionata</Text>}
-                    </View>
-                    {/* <Text>{(image) ? JSON.stringify(image.assets[0]) : ""}</Text> */}
+                        <TouchableOpacity style={[styles.modalButton, { marginTop: 30 }]} onPress={pickImage}>
+                            <Text style={[styles.modalButtonText, { fontSize: 16 }]}>Immagine di copertina (facoltativo)</Text>
+                        </TouchableOpacity>
+                        <View style={{ width: "100%", justifyContent: "center", alignItems: "center" }}>
+                            {image ?
+                                <Image source={{ uri: image.assets[0].uri }} style={{ width: 200, height: 200 }} />
+                                : <Text style={{ fontFamily: font.montserrat }}>Nessun immagine selezionata</Text>}
+                        </View>
+                        {/* <Text>{(image) ? JSON.stringify(image.assets[0]) : ""}</Text> */}
 
-                    {/* <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
+                        {/* <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
                     <SegmentedButtons
                         value={visibility}
                         onValueChange={(value) => { setVisibility(value) }}
                         buttons={dataVisibility}
-                    >
-                    </SegmentedButtons>
-
-                    <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Nuovi membri ammessi:</Text>
-
-                    <SegmentedButtons
+                        >
+                        </SegmentedButtons>
+                        
+                        <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Nuovi membri ammessi:</Text>
+                        
+                        <SegmentedButtons
                         buttons={newMembers}
                         onValueChange={(value) => { setNewMembersAllowed(value) }}
                         value={new_members_allowed}
-                    >
+                        >
                     </SegmentedButtons> */}
 
-                    <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
-                        // await setCreator(getStringData("username"))
-                        let part = [];
-                        if (friendsAdded.length != 0) {
-                            for (let item of friendsAdded) {
-                                part.push({ userid: item._id, username: item.username, creator: false })
+                        <TouchableOpacity style={(isLoading) ? null : [styles.modalButton, { marginBottom: 10 }]} onPress={async () => {
+                            // await setCreator(getStringData("username"))
+                            let part = [];
+                            if (friendsAdded.length != 0) {
+                                for (let item of friendsAdded) {
+                                    part.push({ userid: item._id, username: item.username, creator: false })
+                                }
                             }
-                        }
-                        part.push(creator);
-                        setIsLoading(true);
-                        if (image) {
-                            let fileName = image.assets[0].uri.split("/").pop();
+                            part.push(creator);
+                            setIsLoading(true);
+                            if (image) {
+                                let fileName = image.assets[0].uri.split("/").pop();
 
-                            axios.post(serverLink + 'api/travel/uploadImage', {
-                                img: image.assets[0].base64,
-                                imgName: fileName
-                            })
-                                .then(function (response) {
-                                    axios.post(serverLink + 'api/travel/create', {
-                                        name: name,
-                                        description: description,
-                                        budget: budget,
-                                        participants: part,
-                                        visibility: visibility,
-                                        creation_date: new Date(date),
-                                        new_members_allowed: new_members_allowed,
-                                        code: generateCode(),
-                                        image: response.data,
-                                        closed: false
-                                    })
-                                        .then(async function (response) {
-                                            let aus = await getData("user");
-
-                                            if (response.status == 200) {
-                                                updatecards(creator.username, aus._id)
-                                                setIsLoading(false);
-                                                setNewTravelVisibility(false);
-                                            }
+                                axios.post(serverLink + 'api/travel/uploadImage', {
+                                    img: image.assets[0].base64,
+                                    imgName: fileName
+                                })
+                                    .then(function (response) {
+                                        axios.post(serverLink + 'api/travel/create', {
+                                            name: name,
+                                            description: description,
+                                            budget: budget,
+                                            participants: part,
+                                            visibility: visibility,
+                                            creation_date: new Date(date),
+                                            new_members_allowed: new_members_allowed,
+                                            code: generateCode(),
+                                            image: response.data,
+                                            closed: false
                                         })
-                                        .catch(function (error) {
-                                            console.log(error);
-                                            setIsLoading(false);
-                                        });
-                                })
-                                .catch(function (error) {
-                                    setIsLoading(false);
-                                    console.log(error);
-                                });
-                        }
-                        else {
-                            axios.post(serverLink + 'api/travel/create', {
-                                name: name,
-                                description: description,
-                                budget: budget,
-                                participants: part,
-                                visibility: visibility,
-                                creation_date: new Date(date),
-                                new_members_allowed: new_members_allowed,
-                                code: generateCode(),
-                                closed: false
-                            })
-                                .then(async function (response) {
-                                    let aus = await getData("user");
+                                            .then(async function (response) {
+                                                let aus = await getData("user");
 
-                                    if (response.status == 200) {
-                                        updatecards(creator.username, aus._id)
+                                                if (response.status == 200) {
+                                                    updatecards(creator.username, aus._id)
+                                                    setIsLoading(false);
+                                                    setNewTravelVisibility(false);
+                                                }
+                                            })
+                                            .catch(function (error) {
+                                                console.log(error);
+                                                setIsLoading(false);
+                                            });
+                                    })
+                                    .catch(function (error) {
                                         setIsLoading(false);
-                                        setNewTravelVisibility(false);
-                                    }
-                                })
-                                .catch(function (error) {
-                                    console.log(error);
-                                    setIsLoading(false);
-                                });
-                        }
-
-                        function generateCode() {
-                            var result = '';
-                            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                            var charactersLength = characters.length;
-                            for (var i = 0; i < 5; i++) {
-                                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                                        console.log(error);
+                                    });
                             }
-                            return result;
-                        }
-                    }}>
-                        <Text style={(isLoading) ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
-                    </TouchableOpacity>
-                    {isLoading ? <ActivityIndicator size="large" color="#4900FF" /> : null}
+                            else {
+                                axios.post(serverLink + 'api/travel/create', {
+                                    name: name,
+                                    description: description,
+                                    budget: budget,
+                                    participants: part,
+                                    visibility: visibility,
+                                    creation_date: new Date(date),
+                                    new_members_allowed: new_members_allowed,
+                                    code: generateCode(),
+                                    closed: false
+                                })
+                                    .then(async function (response) {
+                                        let aus = await getData("user");
+
+                                        if (response.status == 200) {
+                                            updatecards(creator.username, aus._id)
+                                            setIsLoading(false);
+                                            setNewTravelVisibility(false);
+                                        }
+                                    })
+                                    .catch(function (error) {
+                                        console.log(error);
+                                        setIsLoading(false);
+                                    });
+                            }
+
+                            function generateCode() {
+                                var result = '';
+                                var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                                var charactersLength = characters.length;
+                                for (var i = 0; i < 5; i++) {
+                                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                                }
+                                return result;
+                            }
+                        }}>
+                            <Text style={(isLoading) ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
+                        </TouchableOpacity>
+                        {isLoading ? <ActivityIndicator size="large" color="#4900FF" /> : null}
+                    </View>
                 </ScrollView>
             </View>
         </Modal>

@@ -17,7 +17,7 @@ export default function TravelPartecipantsHeader({ navigation, route }) {
                     <MaterialCommunityIcons name="arrow-left" size={24} color="white" onPress={() => navigation.goBack()} />
                     <Text style={styles.title}>{route.params.name}</Text>
                 </View>
-                <Text style={styles.subtitle}>Creato il {route.params.creation_date}</Text>
+                <Text style={styles.subtitle}>Creato il {new Date(route.params.creation_date).toLocaleDateString('it-IT')}</Text>
             </LinearGradient>
             <View style={styles.bg}>
                 <View style={styles.rounded}></View>
