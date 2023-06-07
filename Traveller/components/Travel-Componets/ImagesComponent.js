@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, Dimensions, Modal, TouchableWithoutFeedback, TouchableOpacity, SafeAreaView } from 'react-native'
 import Swiper from 'react-native-swiper'
+import { Badge } from "@react-native-material/core";
 import { getData } from "../../shared/data/localdata";
 import { ComponentStyles } from './componentStyle'
 import { font, serverLink } from "../../global/globalVariable";
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
     },
 })
 
-export default function ImagesComponent({ item, home, loadPosts }) {
+export default function ImagesComponent({ item, home, loadPosts, travel }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [userData, setUserData] = useState(false);
@@ -116,6 +117,11 @@ export default function ImagesComponent({ item, home, loadPosts }) {
                 </TouchableWithoutFeedback>
             </Modal>
 
+            {(home) ?
+                <Badge label={travel} style={ComponentStyles.Badge} labelStyle={ComponentStyles.BadgeText} />
+                : null
+            }
+
             {
                 ((item.creator == userData.username) && !home) ?
                     <View
@@ -137,18 +143,17 @@ export default function ImagesComponent({ item, home, loadPosts }) {
                 <View style={ComponentStyles.nameContainer}>
                     <Text style={ComponentStyles.nameText}>@{item.creator}</Text>
                 </View>
-                <Text style={ComponentStyles.datetimeText}>12/07/2023</Text>
+                <Text style={ComponentStyles.datetimeText}>{item.dateTime}</Text>
             </View>
 
             <FlatList
                 data={item.source}
                 renderItem={({ item }) => (
                     <View>
-                        <Image source={{ uri: item }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
+                        <Image source={{ uri: serverLink + "SharedImages/" + item }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
                     </View>
                 )}
                 onScroll={(e) => { setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / ((Dimensions.get("screen").width / 100) * 88))) }}
-                keyExtractor={item => item}
                 horizontal={true}
                 pagingEnabled={true}
                 showsHorizontalScrollIndicator={false}

@@ -4,8 +4,7 @@ import { color, font, serverLink } from '../../global/globalVariable';
 import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
 import { Dropdown } from 'react-native-element-dropdown';
 import axios from 'axios';
-import { SegmentedButtons } from 'react-native-paper';
-import { getStringData, getData } from '../../shared/data/localdata';
+import { getData } from '../../shared/data/localdata';
 import * as ImagePicker from 'expo-image-picker';
 import { Avatar } from '@react-native-material/core';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -44,9 +43,8 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            // aspect: [4, 3],
             base64: true,
             quality: 1,
         });

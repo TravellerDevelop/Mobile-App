@@ -6,10 +6,13 @@ import InteractiveCard from '../components/interactiveCard';
 import { color, serverLink, font, appVersion } from '../global/globalVariable';
 import axios from 'axios';
 import { getData, storeJsonData, storeStringData } from '../shared/data/localdata';
+import { Avatar } from '@react-native-material/core';
+
+// Componenti
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
-import { Avatar } from '@react-native-material/core';
+import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
 
 export default function Home({ navigation }) {
     let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -55,9 +58,9 @@ export default function Home({ navigation }) {
             })
 
         async function verifyUserData() {
-            let data = await getData("user");            
+            let data = await getData("user");
             await setUserData(await data);
-            
+
             if (data != null && data.toString() != '[]' && data.toString() != 'false' && data.toString() != '') {
                 storeStringData("username", data.username);
                 axios.get(serverLink + "api/user/info?username=" + data.username)
@@ -212,7 +215,7 @@ export default function Home({ navigation }) {
                         <Text style={styles.subtitle}>I tuoi prossimi viaggi:</Text>
                         {
                             (joinedTravelsLoading) && (
-                                <View style={{height: 140, width: "100%", justifyContent: "center", alignItems: "center"}}>
+                                <View style={{ height: 140, width: "100%", justifyContent: "center", alignItems: "center" }}>
                                     <ActivityIndicator size="large" color={color.secondary} />
                                 </View>
                             )
@@ -240,7 +243,7 @@ export default function Home({ navigation }) {
                         <Text style={styles.subtitle}>Gli ultimi post dai tuoi viaggi:</Text>
                         {
                             (lastPostsLoading) && (
-                                <View style={{height: 140, width: "100%", justifyContent: "center", alignItems: "center"}}>
+                                <View style={{ height: 140, width: "100%", justifyContent: "center", alignItems: "center" }}>
                                     <ActivityIndicator size="large" color={color.secondary} />
                                 </View>
                             )
@@ -261,7 +264,10 @@ export default function Home({ navigation }) {
                                                     (item.type == "payments") ?
                                                         <PaymentComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                         :
-                                                        null}
+                                                        (item.type == "images") && (
+                                                            <ImagesComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
+                                                        )
+                                            }
                                         </>
                                     )}
                                 />

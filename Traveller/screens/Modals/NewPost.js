@@ -1,24 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, TouchableOpacity, Image } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
-import { Dropdown } from "react-native-element-dropdown";
 import { Checkbox, SegmentedButtons } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { getData } from "../../shared/data/localdata";
 import axios from "axios";
+import * as ImagePicker from 'expo-image-picker';
 
 let voteParams;
 let textParams;
 let paymentParams;
-
-/* 
-Struttura dei post:
-{ type: "text", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ", creator: "Bosso", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
-{ type: "vote", question: "Sta sera cosa si fa?", content: ["Vota 1", "Vota 2", "Vota 3", "Vota 4", "Vota 5"], "votes": [["Bosso"], ["Ciao", "Ok", "Lollo"], [], ["Miao"], []], creator: "Bosso", pinned: false, dateTime: "2020-12-12 12:12:12", travel: "_id" },
-{ type: "payment", mode: "pay", to: [], creator: "Bosso", amount: "28.00€", pinned: true, dateTime: "2020-12-12 12:12:12", travel: "_id" },
-*/
+let imageParams;
 
 export default function NewPost({ setNewPost, data, refresh }) {
+    let [images, setImages] = useState([]);
+    let [imagesDescription, setImagesDescription] = useState("");
+
+    const pickImages = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            base64: true,
+            allowsMultipleSelection: true,
+            allowsEditing: false,
+            quality: 0.8,
+        })
+
+        
+        if (!result.canceled) {
+            await setImages(result.assets)
+            toggleExtraImages()
+        }
+    }
+
+    let [newImages, setNewImages] = useState(false)
+
+    const toggleExtraImages = () => {
+        setNewImages(!newImages)
+    }
+
+    async function addImage() {
+        let links = [];
+
+        for (let item of images) {
+            let fileName = item.uri.split("/").pop();
+             await axios.post(`${serverLink}api/post/addImage`, {
+                img: item.base64,
+                name: fileName,
+             })
+                .then((res) => {
+                    console.log(res.data)
+                    links.push(res.data)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+        }
+
+        console.log(links)
+        imageParams.source = links;
+    }
+
     let [user, setUser] = useState({});
 
     let [isLoading, setIsLoading] = useState(false);
@@ -27,6 +68,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
         { label: "Testo", value: "text" },
         { label: "Sondaggio", value: "vote" },
         { label: "Pagamento", value: "payments" },
+        { label: "Immagini", value: "images" },
     ]
 
     // Payment
@@ -72,6 +114,14 @@ export default function NewPost({ setNewPost, data, refresh }) {
                 amount: "",
                 destinator: [],
                 paymentType: "",
+                description: "",
+            }
+
+            imageParams = {
+                pinned: false,
+                creator: aus.username,
+                travel: data._id,
+                source: [],
                 description: "",
             }
 
@@ -200,7 +250,7 @@ export default function NewPost({ setNewPost, data, refresh }) {
                         }
 
                         {/* <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text> */}
-{/* 
+                        {/* 
                         <SegmentedButtons
                             style={{ fontFamily: font.montserrat }}
                             buttons={[{ label: "Normale", value: "normal" }, { label: "non contato", value: "notCounted" }]}
@@ -260,6 +310,41 @@ export default function NewPost({ setNewPost, data, refresh }) {
                     : null
                 }
 
+                {type == "images" && (
+                    <View>
+                        <TouchableNativeFeedback onPress={() => pickImages()} >
+                            <View style={styles.button} >
+                                <Text style={styles.buttonText} >+ Aggiungi immagini</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TextInput style={styles.input} placeholder="Descrizone immagini" onChangeText={(text)=>setImagesDescription(text)} />
+                        <View>
+                            {
+                                (images.length > 0) && (
+                                    <Text
+                                        style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}
+                                    >Preview delle immagini:</Text>
+                                )
+                            }
+
+                            <FlatList
+                                data={images}
+                                extraData={newImages}
+                                horizontal={true}
+                                scrollEnabled={true}
+                                renderItem={({ item }) => (
+                                    <>
+                                        {
+                                            (item.uri != undefined) && (
+                                                <Image source={{ uri: item.uri }} style={{ width: (item.width / item.height) * 200, height: 200, marginRight: 10 }} />
+                                            )
+                                        }
+                                    </>
+                                )}
+                            />
+                        </View>
+                    </View>
+                )}
 
 
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
@@ -271,21 +356,19 @@ export default function NewPost({ setNewPost, data, refresh }) {
                     <Text style={styles.subtitle}>Post fissato in alto</Text>
                 </View>
 
-                <TouchableNativeFeedback onPress={() => {
+                <TouchableNativeFeedback onPress={async () => {
+                    setIsLoading(true);
                     let param = []
                     if (type == "vote") {
                         voteParams.pinned = pinned;
                         voteParams.question = question;
-                        // voteParams.dateTime = new Date();
                         param = voteParams;
                     }
                     else if (type == "text") {
-                        // textParams.dateTime = new Date().toString();
                         textParams.pinned = pinned;
                         param = textParams
                     }
                     else if (type == "payments") {
-                        // paymentParams.dateTime = new Date().toString();
                         paymentParams.pinned = pinned;
 
                         if (paymentDestinator == "custom") {
@@ -315,10 +398,14 @@ export default function NewPost({ setNewPost, data, refresh }) {
 
                         param = paymentParams
                     }
+                    else if (type == "images") {
+                        await addImage()
+                        imageParams.pinned = pinned;
+                        imageParams.description = imagesDescription;
+                        param = imageParams
+                    }
 
                     param.type = type;
-
-                    setIsLoading(true)
 
                     if (param != []) {
                         axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
