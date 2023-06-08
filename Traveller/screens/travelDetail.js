@@ -45,6 +45,16 @@ export default function TravelDetail({ navigation, route }) {
 
                     for (let item of aus) {
                         item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        if(item.type == "images"){
+                            let i = 0;
+                            let aus = [];
+                            
+                            for(let image of item.source){
+                                aus.push({id: i, source: image})
+                                item.source = aus;
+                                i++;     
+                            }
+                        }
                     }
 
                     await setPostData(aus);

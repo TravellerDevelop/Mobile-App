@@ -33,6 +33,8 @@ const styles = StyleSheet.create({
 })
 
 export default function ImagesComponent({ item, home, loadPosts, travel }) {
+    // console.log(item)
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [userData, setUserData] = useState(false);
@@ -150,24 +152,27 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                 data={item.source}
                 renderItem={({ item }) => (
                     <View>
-                        <Image source={{ uri: serverLink + "SharedImages/" + item }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
+                        <Image source={{ uri: serverLink + "SharedImages/" + item.source }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
                     </View>
                 )}
                 onScroll={(e) => { setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / ((Dimensions.get("screen").width / 100) * 88))) }}
                 horizontal={true}
                 pagingEnabled={true}
+                keyExtractor={item => item.id}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
                 style={{ width: (Dimensions.get("window").width / 100) * 88, height: 300, borderRadius: 20 }}
             />
-            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", width: "100%", marginTop: 10 }}>
-                {
-                    item.source.map((item, index) => {
-                        return (
-                            <View style={[styles.dots, (currentIndex == index) ? styles.activeDots : null]}></View>
-                        )
-                    })
-                }
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", width: "100%", marginTop: 10, padding: 2, borderRadius: 50 }}>
+                <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: "#4060FF20", padding: 2, borderRadius: 50 }}>
+                    {
+                        item.source.map((item) => {
+                            return (
+                                <View key={item.id} style={[styles.dots, (currentIndex == item.id) ? styles.activeDots : null]}></View>
+                            )
+                        })
+                    }
+                </View>
             </View>
             <Text style={styles.description}>{item.description}</Text>
         </View >

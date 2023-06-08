@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking, Modal, Image } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
 import { color, serverLink, font, appVersion } from '../global/globalVariable';
 import axios from 'axios';
-import { getData, storeJsonData, storeStringData } from '../shared/data/localdata';
+import { getData, storeJsonData, storeStringData, getStringData } from '../shared/data/localdata';
 import { Avatar } from '@react-native-material/core';
+import Swiper from 'react-native-swiper';
 
 // Componenti
 import TextComponent from '../components/Travel-Componets/textcomponent';
@@ -28,15 +29,15 @@ export default function Home({ navigation }) {
     const [serchData, setSerchData] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
 
+    const [showNew, setShowNew] = useState(false);
+
     useEffect(() => {
         verifyUserData();
 
         axios.get(serverLink + "api/takeVersion")
-            .then((response) => {
+            .then(async (response) => {
                 if (response.status == 200) {
                     if (response.data[0].AppVersion.toString() != appVersion.toString()) {
-                        console.log(response.data[0].AppVersion)
-                        console.log(appVersion)
                         Alert.alert(
                             "Aggiornamento disponibile",
                             "È disponibile un aggiornamento per l'applicazione (" + response.data[0].AppVersion + ") , vuoi aggiornare?",
@@ -50,6 +51,15 @@ export default function Home({ navigation }) {
                             ],
                             { cancelable: false }
                         );
+                    }
+                    else {
+                        let data = await getStringData(response.data[0].AppVersion)
+
+                        console.log(data)
+
+                        if (data != "true") {
+                            setShowNew(true);
+                        }
                     }
                 }
             })
@@ -106,7 +116,19 @@ export default function Home({ navigation }) {
         axios.get(serverLink + "api/post/takeLastsByUsername?userid=" + userid + "&username=" + username)
             .then(async (response) => {
                 if (response.status == 200) {
-                    for (let item of response.data[0]) { item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" }) }
+                    for (let item of response.data[0]) {
+                        item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
+                        if (item.type == "images") {
+                            let i = 0;
+                            let aus = [];
+
+                            for (let image of item.source) {
+                                aus.push({ id: i, source: image })
+                                item.source = aus;
+                                i++;
+                            }
+                        }
+                    }
                     await setLastPosts(response.data);
                     await setLastPostsLoading(false);
                 }
@@ -126,6 +148,121 @@ export default function Home({ navigation }) {
                     />
                 }
             >
+                {
+                    (showNew) && (
+                        <Modal
+                            transparent={true}
+                            animationType='slide'
+                        >
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: "rgba(0,0,0,0.5)",
+                                justifyContent: "center",
+                                alignItems: "center"
+                            }}>
+
+                                <Swiper
+                                    loop={false}
+                                    showsPagination={true}
+                                    showsButtons={true}
+                                    index={0}
+                                    style={{
+                                        backgroundColor: "white",
+                                        borderRadius: 10,
+                                    }}
+                                >
+                                    <View style={{
+                                        backgroundColor: "white",
+                                        alignItems: "center",
+                                        justifyContent: "flex-start",
+                                        borderRadius: 10,
+                                        margin: 20,
+                                        paddingTop: 20
+                                    }}>
+                                        <Text style={{
+                                            fontFamily: font.montserrat,
+                                            fontSize: 23,
+                                            textAlign: "center",
+                                            color: color.secondary
+                                        }}>Novità versione {appVersion}</Text>
+                                        <Text style={{
+                                            fontFamily: font.montserratBold,
+                                            fontSize: 23,
+                                            textAlign: "center",
+                                            marginTop: 50,
+                                        }}>Personalizza il tuo viaggio!</Text>
+                                        <Image source={require("../assets/image/News/Copertina.jpg")} style={{
+                                            width: 300,
+                                            height: 300,
+                                        }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={{
+                                            fontFamily: font.montserrat,
+                                            fontSize: 20,
+                                            textAlign: "center",
+                                        }}>Aggiungi un immagine di copertina al tuo viaggio, e rendilo ancora più unico!</Text>
+                                    </View>
+                                    <View style={{
+                                        backgroundColor: "white",
+                                        alignItems: "center",
+                                        justifyContent: "flex-start",
+                                        borderRadius: 10,
+                                        margin: 20,
+                                        paddingTop: 20
+                                    }}>
+                                        <Text style={{
+                                            fontFamily: font.montserrat,
+                                            fontSize: 23,
+                                            textAlign: "center",
+                                            color: color.secondary
+                                        }}>Novità versione {appVersion}</Text>
+                                        <Text style={{
+                                            fontFamily: font.montserratBold,
+                                            fontSize: 23,
+                                            textAlign: "center",
+                                            marginTop: 50,
+                                            marginBottom: 20
+                                        }}>Condividi le tue esperienze!</Text>
+                                        <Image source={require("../assets/image/News/Card.jpg")} style={{
+                                            width: 300,
+                                            height: 300,
+                                        }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={{
+                                            fontFamily: font.montserrat,
+                                            fontSize: 20,
+                                            marginTop: 20,
+                                            textAlign: "center",
+                                        }}>Invia le immagini ai partecipanti di un viaggio, e permetti a loro di scaricarle, anche più insieme!</Text>
+                                        <View style={{
+                                            flexDirection: "row",
+                                            justifyContent: "space-evenly",
+                                            alignItems:"center" ,
+                                            marginTop: 20,
+                                        }}>
+                                            <TouchableOpacity 
+                                                onPress={async () => {
+                                                    await storeStringData(appVersion, "true");
+                                                    await setShowNew(false);
+                                                }}
+                                            >
+                                                <Text style={{
+                                                    fontFamily: font.montserrat,
+                                                    fontSize: 20,
+                                                    color: color.primary,
+                                                    textDecorationLine: "underline"
+                                                }}>Chiudi</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </Swiper>
+                            </View>
+                        </Modal>
+                    )
+                }
+
                 <MainHeader navigation={navigation} updateJoinTravels={loadJoinedTravels} refresh={refreshing} />
                 <View style={styles.blue}>
                     <View style={styles.content}>

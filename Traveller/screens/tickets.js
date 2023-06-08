@@ -6,6 +6,7 @@ import TicketsPreview from "../components/tickets/ticketsPreview";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
 import { FlatList } from "react-native-gesture-handler";
+import { storeJsonData } from "../shared/data/localdata";
 
 export default function Tickets() {
     let [data, setData] = useState([]);
@@ -27,6 +28,7 @@ export default function Tickets() {
                 setData(res.data);
                 setAusTicket(res.data);
                 setIsLoading(false);
+                storeJsonData("tickets", res.data);
             }).catch(err => {
                 console.log(err);
                 setIsLoading(false);

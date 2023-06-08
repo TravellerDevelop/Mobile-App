@@ -1,19 +1,22 @@
 import React, { useEffect, useState, useContext, createContext } from 'react';
 import Font from './components/font';
-import { color } from './global/globalVariable';
-import { Image, View, Text, StatusBar, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { color, font } from './global/globalVariable';
+import { Image, View, Text, StatusBar, Platform, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { serverLink } from './global/globalVariable';
 import Nav from './screens/nav';
 import Tickets from './screens/tickets';
-import Travels from './screens/travels';
 import InitialModal from './screens/Modals/initialModal';
-import { getStringDataWithStateReverse } from './shared/data/localdata';
+import { getStringDataWithStateReverse, getData } from './shared/data/localdata';
 import Money from './screens/money';
 import WhitePage from './shared/white';
 import axios from 'axios';
+import TicketsPreview from './components/tickets/ticketsPreview';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { xyz } from 'color';
+
 
 export const GlobalUserContext = createContext();
 
@@ -26,14 +29,20 @@ export default function App() {
   let [modalVisible, setModalVisible] = useState(false);
   let [connection, setConnection] = useState(false);
 
+  let [ticketsModalVisibility, setTicketsVisibility] = useState(false);
+
   getStringDataWithStateReverse('initialModal', modalVisible, setModalVisible);
+
+  let [offlineTickets, setOfflineTickets] = useState([]);
 
   useEffect(() => {
     verifyConnection();
-
   }, []);
 
-  function verifyConnection() {
+  async function verifyConnection() {
+    await setOfflineTickets(await getData('tickets'));
+    console.log(await getData('tickets'))
+
     setIsLoading(true);
     axios({
       method: 'get',
@@ -75,6 +84,59 @@ export default function App() {
             :
             <ActivityIndicator style={{ marginTop: 20 }} size="large" color={color.primary} />
         }
+        <TouchableOpacity onPress={() => setTicketsVisibility(true)}>
+          <Text
+            style={{ marginTop: 20, fontSize: 18, fontFamily: "montserrat-regular", color: color.secondary, textDecorationStyle: "solid", textDecorationLine: "underline" }}
+          >
+            Visualizza biglietti offline
+          </Text>
+          <Modal visible={ticketsModalVisibility} animationType='slide'>
+            <ScrollView
+              style={{ flex: 1 }}
+            >
+
+              <Text
+                style={{ marginTop: 20, fontSize: 20, fontFamily: font.montserratBold, textAlign: "center" }}
+              >
+                Biglietti offline
+              </Text>
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {
+                  (offlineTickets != null && offlineTickets.length > 0) ?
+                    <FlatList
+                      data={offlineTickets}
+                      scrollEnabled={false}
+                      renderItem={({ item }) => (
+                        <>
+                          <TicketsPreview item={item} />
+                        </>
+                      )}
+                    />
+                    :
+                    <Text
+                      style={{ marginTop: 50, fontSize: 20, fontFamily: font.montserrat, textAlign: "center" }}
+                    >
+                      Non ci sono biglietti salvati offline
+                    </Text>
+                }
+              </View>
+            </ScrollView>
+            <TouchableOpacity 
+              style={{position: "absolute", bottom: 20, width: "100%"}}
+            onPress={() => setTicketsVisibility(false)}>
+              <Text
+                style={{ marginTop: 20, fontSize: 18, fontFamily: "montserrat-regular", color: color.secondary, textDecorationStyle: "solid", textDecorationLine: "underline", textAlign: "center", width: "100%" }}
+              >
+                Chiudi
+              </Text>
+            </TouchableOpacity>
+          </Modal>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -163,7 +225,7 @@ export default function App() {
 
                   if (route.name != 'White' && focused)
                     return (
-                      <View style={{ height: 40, backgroundColor: "#4960FF40", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderRadius: 5, position:'absolute', top: -1.5 }}>
+                      <View style={{ height: 40, backgroundColor: "#4960FF40", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderRadius: 5, position: 'absolute', top: -1.5 }}>
                         <Image style={{ width: 40, height: 30, tintColor: color, marginRight: 5, resizeMode: "contain" }} source={iconName} />
                         <Text style={{ color: color.primary, fontSize: 11, fontFamily: "montserrat-bold", textAlign: "center", color: "black", marginRight: 10 }}>{route.name}</Text>
                       </View>

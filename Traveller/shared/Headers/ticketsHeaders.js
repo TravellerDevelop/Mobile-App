@@ -7,7 +7,7 @@ import { Badge } from "@react-native-material/core";
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from "axios";
-import { getData } from "../data/localdata.js";
+import { getData, storeJsonData } from "../data/localdata.js";
 
 export default function TicketsHeader({ update }) {
 
@@ -293,12 +293,16 @@ export default function TicketsHeader({ update }) {
                     out.creator = userInfo._id;
 
                     axios.post(serverLink + "api/tickets/create", { data: out })
-                        .then(function (response) {
+                        .then(async function (response) {
                             update();
                             setScaned(false);
                             setData(null);
                             setQrVisible(false);
                             setModalVisible(false);
+                            let aus = await getData("tickets");
+                            if(aus == null) aus = [];
+                            aus.push(out);
+                            await storeData("tickets", aus);
                         })
                         .catch(function (error) {
                             console.error(error);
