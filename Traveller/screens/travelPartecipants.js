@@ -1,27 +1,34 @@
 import { Avatar } from "@react-native-material/core";
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback, Image } from "react-native";
+import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback, Image, ActivityIndicator } from "react-native";
 import { color, font, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
 
 export default function TravelPartecipants({ navigation, route }) {
+    let [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
+
     let num = route.params.participants.length;
     let [usersData, setUsersData] = useState([]);
     let [myData, setMyData] = useState({});
 
+    let [itscreator, setitscreator] = useState(false);
+
     async function getUserData() {
         let data = await getData("user");
-        setMyData(data);
+        await setMyData(data);
     }
 
     let [creator, setCreator] = React.useState({});
 
-    useEffect(() => {
+    async function update() {
+        await getUserData();
+        setIsLoadingParticipants(true);
         for (let item of route.params.participants) {
             if (item.creator == true) {
                 setCreator(item);
+                if(item.userid == myData._id){ setitscreator(true); }
             }
         }
 
@@ -29,13 +36,17 @@ export default function TravelPartecipants({ navigation, route }) {
             .then((response) => {
                 if (response.status == 200) {
                     setUsersData(response.data);
+                    setIsLoadingParticipants(false);
                 }
             })
             .catch((error) => {
                 console.log(error);
             })
 
-        getUserData();
+    }
+
+    useEffect(() => {
+        update();
     }, [])
 
     return (
@@ -45,7 +56,7 @@ export default function TravelPartecipants({ navigation, route }) {
                 <Text style={styles.subtext}>Descrizione:</Text>
                 <Text style={styles.description} >{route.params.description}</Text>
                 <Text style={styles.subtext}>Codice di invito: {route.params.code}</Text>
-                <Text style={styles.subtext}>{(num == 1) ? num + " partecipante" : num + " partecipanti"}</Text>
+                <Text style={styles.subtext}>{(usersData.length == 1) ? usersData.length + " partecipante" : usersData.length + " partecipanti"}</Text>
                 <FlatList
                     data={usersData}
                     renderItem={({ item }) => (
@@ -64,17 +75,47 @@ export default function TravelPartecipants({ navigation, route }) {
                                     <Text style={[styles.subtext, { marginBottom: 0, marginTop: 0, marginLeft: 10 }]}>@{item.username}</Text>
                                 </View>
                                 {
-                                    (creator.userid == item._id) ?
+                                    (creator.userid == item._id) &&
+                                    (
                                         <View style={styles.flag}>
                                             <Text style={styles.flagText}>Creatore</Text>
                                         </View>
-                                        :
-                                        null
+                                    )
+                                }
+                                {
+                                    (itscreator == true && creator.userid != item._id) &&
+                                    (
+                                        <TouchableNativeFeedback
+                                            onPress={() => {
+                                                axios.post(serverLink + "api/travel/leave", { userid: item._id, travel: route.params._id })
+                                                    .then((response) => {
+                                                        if (response.status == 200) {
+                                                            update();
+                                                        }
+                                                    })
+                                                    .catch((error) => {
+                                                        console.log(error);
+                                                    })
+                                            }}
+                                        >
+                                            <View style={styles.flagRemove}>
+                                                <Text style={styles.flagText}>Rimuovi</Text>
+                                            </View>
+                                        </TouchableNativeFeedback>
+                                    )
                                 }
                             </View>
                         </TouchableNativeFeedback>
                     )}
                 />
+                {
+                    (isLoadingParticipants) &&
+                    (
+                        <View style={{ justifyContent: "center", alignItems: "center" }}>
+                            <ActivityIndicator size="large" color={color.primary} />
+                        </View>
+                    )
+                }
             </View>
             <TouchableNativeFeedback
                 onPress={
@@ -192,5 +233,16 @@ const styles = StyleSheet.create({
         color: "white",
         fontFamily: font.montserratBold,
         fontSize: 13,
-    }
+    },
+    flagRemove: {
+        backgroundColor: "#FF0000",
+        height: 25,
+        padding: 5,
+        paddingLeft: 10,
+        paddingRight: 10,
+        position: "absolute",
+        bottom: 5,
+        right: 0,
+        borderRadius: 12.5,
+    },
 });

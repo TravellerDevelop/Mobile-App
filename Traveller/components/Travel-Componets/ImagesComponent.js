@@ -33,8 +33,6 @@ const styles = StyleSheet.create({
 })
 
 export default function ImagesComponent({ item, home, loadPosts, travel }) {
-    // console.log(item)
-
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [userData, setUserData] = useState(false);
@@ -152,7 +150,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                 data={item.source}
                 renderItem={({ item }) => (
                     <View>
-                        <Image source={{ uri: serverLink + "SharedImages/" + item.source }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
+                        <Image source={{ uri: serverLink + "userImage/posts/" + item.source }} style={{ width: (Dimensions.get("screen").width / 100) * 88, height: "100%" }} />
                     </View>
                 )}
                 onScroll={(e) => { setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / ((Dimensions.get("screen").width / 100) * 88))) }}
