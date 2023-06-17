@@ -159,7 +159,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                 keyExtractor={item => item.id}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                style={{ width: (Dimensions.get("window").width / 100) * 88, height: 300, borderRadius: 20 }}
+                style={{ width: (Dimensions.get("window").width / 100) * 88, height: 300 }}
             />
             <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", width: "100%", marginTop: 10, padding: 2, borderRadius: 50 }}>
                 <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: "#4060FF20", padding: 2, borderRadius: 50 }}>

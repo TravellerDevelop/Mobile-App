@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext, createContext } from 'react';
 import Font from './components/font';
 import { color, font } from './global/globalVariable';
-import { Image, View, Text, StatusBar, Platform, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
+import { Image, View, Text, StatusBar, Platform, TouchableOpacity, ActivityIndicator, Modal, SafeAreaView } from 'react-native';
 import Loading from './shared/loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -91,8 +91,10 @@ export default function App() {
             Visualizza biglietti offline
           </Text>
           <Modal visible={ticketsModalVisibility} animationType='slide'>
-            <ScrollView
-              style={{ flex: 1 }}
+            <SafeAreaView
+              style={{
+                flex: 1,
+              }}
             >
 
               <Text
@@ -110,7 +112,7 @@ export default function App() {
                   (offlineTickets != null && offlineTickets.length > 0) ?
                     <FlatList
                       data={offlineTickets}
-                      scrollEnabled={false}
+                      scrollEnabled={true}
                       renderItem={({ item }) => (
                         <>
                           <TicketsPreview item={item} />
@@ -125,16 +127,16 @@ export default function App() {
                     </Text>
                 }
               </View>
-            </ScrollView>
-            <TouchableOpacity 
-              style={{position: "absolute", bottom: 20, width: "100%"}}
-            onPress={() => setTicketsVisibility(false)}>
-              <Text
-                style={{ marginTop: 20, fontSize: 18, fontFamily: "montserrat-regular", color: color.secondary, textDecorationStyle: "solid", textDecorationLine: "underline", textAlign: "center", width: "100%" }}
-              >
-                Chiudi
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={{ position: "absolute", bottom: 20, width: "100%" }}
+                onPress={() => setTicketsVisibility(false)}>
+                <Text
+                  style={{ marginTop: 20, fontSize: 18, fontFamily: "montserrat-regular", color: color.secondary, textDecorationStyle: "solid", textDecorationLine: "underline", textAlign: "center", width: "100%" }}
+                >
+                  Chiudi
+                </Text>
+              </TouchableOpacity>
+            </SafeAreaView>
           </Modal>
         </TouchableOpacity>
       </View>

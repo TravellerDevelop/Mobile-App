@@ -71,7 +71,6 @@ export default function NewTravel({ userState, setUserState, setNewTravelVisibil
 
     async function getUserData() {
         let aus = await getData("user");
-        console.log(aus)
         setCreator({ userid: aus._id, username: aus.username, creator: true })
 
         axios.get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)

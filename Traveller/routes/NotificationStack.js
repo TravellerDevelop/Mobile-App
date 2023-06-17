@@ -9,6 +9,7 @@ import TravelPartecipants from '../screens/travelPartecipants'
 import MyProfile from '../screens/profile'
 import PaymentInfo from '../screens/paymentsInfo'
 import OtherProfile from '../screens/otherProfile'
+import NewPost from '../screens/Modals/NewPost'
 
 const Stack = createStackNavigator()
 
@@ -62,7 +63,11 @@ export default function Navigator() {
             headerShown: false,
           }}
         />
-        
+
+        <Stack.Screen name='NewPost' component={NewPost} 
+          options={{
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

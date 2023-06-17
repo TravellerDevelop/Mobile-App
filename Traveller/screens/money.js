@@ -185,6 +185,8 @@ let styles = StyleSheet.create({
         width: 150,
         height: 150,
         backgroundColor: "white",
+        borderColor: "#CCCCCC90",
+        borderWidth: 0.5,
         elevation: 5,
         borderRadius: 20,
         marginRight: 10,

@@ -78,14 +78,12 @@ export default function TravelDetail({ navigation, route }) {
     }
 
     function onAddData(data) {
-        data.dateTime = new Date(data.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
-        setPostData([...postData, data]);
+        loadPosts(route.params._id);
     }
 
 
     return (
         <>
-            {newPost ? <NewPost setNewPost={setNewPost} refresh={onAddData} data={route.params} /> : null}
             <View style={styles.container}>
                 <ScrollView
                     refreshControl={
@@ -102,7 +100,11 @@ export default function TravelDetail({ navigation, route }) {
                             {
                                 (!route.params.closed) && (
                                     <TouchableNativeFeedback
-                                        onPress={() => setNewPost(true)}
+                                        onPress={() => 
+                                            {
+                                                navigation.navigate("NewPost", { data: route.params, refresh: onAddData })
+                                            }
+                                        }
                                     >
                                         <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
                                             <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>

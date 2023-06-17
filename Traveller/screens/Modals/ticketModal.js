@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableWithoutFeedback, Image, FlatList, Dimensions, TextInput } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableWithoutFeedback, Image, FlatList, Dimensions, TextInput, SafeAreaView } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
 import QrCodeModal from "./qrCodeModal";
@@ -11,7 +11,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 export default function TicketModal({ data, visibility, setVisibility, takeInfo }) {
     let [qrVisibility, setQrVisibility] = useState(false);
-    let [showMenu, setShowMenu] = React.useState(true);
+    let [showMenu, setShowMenu] = React.useState(false);
     let [showShare, setShowShare] = React.useState(false);
 
     let [searchFriend, setSearchFriend] = useState("");
@@ -48,9 +48,9 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
 
     return (
         <Modal visible={visibility} animationType="slide" >
-            <View style={modalstyles.container}>
+            <SafeAreaView style={modalstyles.container}>
                 <View
-                    style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}
+                    style={{ position: "relative", top: 0, right: 0, zIndex: 99 }}
                 >
                     <TouchableOpacity
                         style={{ position: "absolute", top: 10, right: 10, zIndex: 100 }}
@@ -86,16 +86,16 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                         size={180}
                     />
                 </TouchableOpacity>
-            </View>
+            </SafeAreaView>
 
             <Modal transparent visible={showShare} animationType='slide' >
-                <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }} >
+                <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }} >
                     <TouchableWithoutFeedback onPress={() => setShowShare(false)}>
                         <View style={{ position: "absolute", top: 0, width: "100%", height: Dimensions.get('screen').height - 250, backgroundColor: "#FFFFFF00" }} >
                         </View>
                     </TouchableWithoutFeedback>
                     <View style={[modalstyles.shareContent]}>
-                        <TextInput placeholder="Cerca un amico" style={[modalstyles.input]} placeholderTextColor="gray" 
+                        <TextInput placeholder="Cerca un amico" style={[modalstyles.input]} placeholderTextColor="gray"
                             onChangeText={(value) => {
                                 let aus = friends.filter((item) => {
                                     return item.name.toLowerCase().includes(value.toLowerCase()) || item.surname.toLowerCase().includes(value.toLowerCase());
@@ -149,15 +149,14 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                             )}
                         />
                     </View>
-                </View>
+                </SafeAreaView>
             </Modal>
 
 
 
             <Modal transparent visible={showMenu} animationType='slide' >
-
                 <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-                    <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
+                    <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
                         <View style={ComponentStyles.editContent}>
                             <TouchableOpacity
                                 onPress={() => {
@@ -190,10 +189,10 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                                 </View>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </SafeAreaView>
                 </TouchableWithoutFeedback>
             </Modal>
-        </Modal>
+        </Modal >
     )
 }
 
