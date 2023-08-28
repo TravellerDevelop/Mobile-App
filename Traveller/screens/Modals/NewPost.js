@@ -156,91 +156,79 @@ export default function NewPost({ navigation, route }) {
     let [paymentDestinator, setpaymentDestinator] = React.useState("all");
 
     return (
-        // <Modal visible={true} animationType="slide" >
-            <SafeAreaView
-                style={{ backgroundColor: "white", paddingBottom: 100 }}
-            >
-                <Text style={[styles.title]} >Crea un nuovo post</Text>
-                <ScrollView style={{ width: "100%", padding: 20 }} >
-                    <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text>
-                    <ScrollView
-                        horizontal={true}
-                        style={{ paddingBottom: 10 }}
+        <SafeAreaView
+            style={{ backgroundColor: "white", paddingBottom: 100, flex: 1 }}
+        >
+            <Text style={[styles.title]} >Crea un nuovo post</Text>
+            <ScrollView style={{ width: "100%", padding: 20 }} >
+                <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text>
+                <ScrollView
+                    horizontal={true}
+                    style={{ paddingBottom: 10 }}
+                >
+                    <SegmentedButtons
+                        density="small"
+                        style={{ fontFamily: font.montserrat }}
+                        buttons={PostType}
+                        onValueChange={(value) => { setType(value) }}
+                        value={type}
+                        checkedColor={color.primary}
                     >
-                        <SegmentedButtons
-                            density="small"
-                            style={{ fontFamily: font.montserrat }}
-                            buttons={PostType}
-                            onValueChange={(value) => { setType(value) }}
-                            value={type}
-                            checkedColor={color.primary}
-                        >
-                        </SegmentedButtons>
-                    </ScrollView>
-                    {type == "text" ? <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
-                    {type == "payments" ?
-                        <>
-                            <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                <TextInput placeholderTextColor={"gray"} style={[styles.input, { width: "90%" }]} inputMode="numeric" placeholder="Importo del pagamento"
-                                    onChangeText={(value) => {
-                                        setAmount(parseFloat(value))
-                                    }}
-                                />
-                                <Text style={[styles.title, { marginLeft: 10 }]}>€</Text>
-                            </View>
-                            <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline={true} placeholder="Note del pagamento"
+                    </SegmentedButtons>
+                </ScrollView>
+                {type == "text" ? <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
+                {type == "payments" ?
+                    <>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <TextInput placeholderTextColor={"gray"} style={[styles.input, { width: "90%" }]} inputMode="numeric" placeholder="Importo del pagamento"
                                 onChangeText={(value) => {
-                                    setPaymentDescription(value)
+                                    setAmount(parseFloat(value))
                                 }}
                             />
+                            <Text style={[styles.title, { marginLeft: 10 }]}>€</Text>
+                        </View>
+                        <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline={true} placeholder="Note del pagamento"
+                            onChangeText={(value) => {
+                                setPaymentDescription(value)
+                            }}
+                        />
 
-                            <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Destinatari del pagamento:</Text>
-                            <ScrollView
-                                horizontal={true}
-                                style={{ paddingBottom: 10 }}
-                            >
-                                <SegmentedButtons
-                                    style={{ fontFamily: font.montserrat }}
-                                    buttons={[{ label: "Tutti", value: "all", checkedColor: color.primary }, { label: "Personalizzato", value: "custom", checkedColor: color.primary }, { label: "Personale", value: "me", checkedColor: color.primary }]}
-                                    onValueChange={(value) => {
-                                        setpaymentDestinator(value);
-                                    }}
-                                    density="small"
-                                    value={paymentDestinator}
-                                />
-                            </ScrollView>
-                            {paymentDestinator == "custom" ?
-                                <>
-                                    <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>
-                                        Seleziona i partecipanti che riceveranno la richiesta di pagamento
-                                    </Text>
-                                    <FlatList
-                                        data={checked}
-                                        scrollEnabled={false}
-                                        renderItem={({ item, index }) => (
-                                            (item.userid != user._id) && (
-                                                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
-                                                    <Text>{item.selected}</Text>
-                                                    {
-                                                        Platform.OS == "ios" ?
-                                                            <View
-                                                                style={{
-                                                                    backgroundColor: "#CCCCCC50",
-                                                                    borderRadius: "50%",
-                                                                    marginRight: 10,
-                                                                }}
-                                                            >
-                                                                <Checkbox
-                                                                    status={item.selected ? 'checked' : 'unchecked'}
-                                                                    onPress={() => {
-                                                                        const tempArr = [...checked];
-                                                                        tempArr.splice(index, 1, { ...item, selected: !item.selected });
-                                                                        setChecked(tempArr);
-                                                                    }}
-                                                                    color="#4900FF"
-                                                                />
-                                                            </View>
-                                                            :
+                        <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Destinatari del pagamento:</Text>
+                        <ScrollView
+                            horizontal={true}
+                            style={{ paddingBottom: 10 }}
+                        >
+                            <SegmentedButtons
+                                style={{ fontFamily: font.montserrat }}
+                                buttons={[{ label: "Tutti", value: "all", checkedColor: color.primary }, { label: "Personalizzato", value: "custom", checkedColor: color.primary }, { label: "Personale", value: "me", checkedColor: color.primary }]}
+                                onValueChange={(value) => {
+                                    setpaymentDestinator(value);
+                                }}
+                                density="small"
+                                value={paymentDestinator}
+                            />
+                        </ScrollView>
+                        {paymentDestinator == "custom" ?
+                            <>
+                                <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>
+                                    Seleziona i partecipanti che riceveranno la richiesta di pagamento
+                                </Text>
+                                <FlatList
+                                    data={checked}
+                                    scrollEnabled={false}
+                                    renderItem={({ item, index }) => (
+                                        (item.userid != user._id) && (
+                                            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
+                                                <Text>{item.selected}</Text>
+                                                {
+                                                    Platform.OS == "ios" ?
+                                                        <View
+                                                            style={{
+                                                                backgroundColor: "#CCCCCC50",
+                                                                borderRadius: "50%",
+                                                                marginRight: 10,
+                                                            }}
+                                                        >
                                                             <Checkbox
                                                                 status={item.selected ? 'checked' : 'unchecked'}
                                                                 onPress={() => {
@@ -250,23 +238,34 @@ export default function NewPost({ navigation, route }) {
                                                                 }}
                                                                 color="#4900FF"
                                                             />
-                                                    }
-                                                    <Text style={styles.subtitle}>{item.username}</Text>
-                                                </View>
-                                            )
-                                        )}
-                                    />
-                                </>
-                                :
-                                paymentDestinator == "all" ?
-                                    <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Tutti i partecipanti del viaggio riceveranno la richiesta di pagamento</Text>
-                                    : paymentDestinator == "me" ?
-                                        <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Solo tu riceverai la richiesta di pagamento.</Text>
-                                        : null
-                            }
+                                                        </View>
+                                                        :
+                                                        <Checkbox
+                                                            status={item.selected ? 'checked' : 'unchecked'}
+                                                            onPress={() => {
+                                                                const tempArr = [...checked];
+                                                                tempArr.splice(index, 1, { ...item, selected: !item.selected });
+                                                                setChecked(tempArr);
+                                                            }}
+                                                            color="#4900FF"
+                                                        />
+                                                }
+                                                <Text style={styles.subtitle}>{item.username}</Text>
+                                            </View>
+                                        )
+                                    )}
+                                />
+                            </>
+                            :
+                            paymentDestinator == "all" ?
+                                <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Tutti i partecipanti del viaggio riceveranno la richiesta di pagamento</Text>
+                                : paymentDestinator == "me" ?
+                                    <Text style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}>Solo tu riceverai la richiesta di pagamento.</Text>
+                                    : null
+                        }
 
-                            {/* <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text> */}
-                            {/* 
+                        {/* <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text> */}
+                        {/* 
                         <SegmentedButtons
                             style={{ fontFamily: font.montserrat }}
                             buttons={[{ label: "Normale", value: "normal" }, { label: "non contato", value: "notCounted" }]}
@@ -288,100 +287,91 @@ export default function NewPost({ navigation, route }) {
                                     </>
                                     : null
                         } */}
-                        </>
-                        : null}
+                    </>
+                    : null}
 
 
-                    {type == "vote" ?
-                        <>
-                            <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
+                {type == "vote" ?
+                    <>
+                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
 
 
-                            <Text style={[styles.subtitle, { marginTop: 30 }]}>Risposte:</Text>
+                        <Text style={[styles.subtitle, { marginTop: 30 }]}>Risposte:</Text>
+                        <FlatList
+                            data={answers}
+                            scrollEnabled={false}
+                            extraData={ausState}
+                            renderItem={({ item }) => (
+                                <TextInput placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => {
+                                    voteParams.content[item.key - 1] = value
+                                }} placeholder={"Risposta " + item.key} />
+                            )}
+                        />
+
+                        <TouchableNativeFeedback onPress={() => {
+                            let aus = answers;
+                            voteParams.content.push("");
+                            voteParams.votes.push([]);
+                            answers.push({ key: answers.length + 1, question: "" });
+                            setAusState({ key: answers.length + 1, question: "" })
+                            setAnswers(aus);
+                        }
+                        } >
+                            <View style={styles.button} >
+                                <Text style={styles.buttonText} >+ Aggiungi risposta</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                    </>
+                    : null
+                }
+
+                {type == "images" && (
+                    <View>
+                        <TouchableNativeFeedback onPress={() => pickImages()} >
+                            <View style={styles.button} >
+                                <Text style={styles.buttonText} >+ Aggiungi immagini</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TextInput style={styles.input} placeholder="Descrizone immagini" onChangeText={(text) => setImagesDescription(text)} />
+                        <View>
+                            {
+                                (images.length > 0) && (
+                                    <Text
+                                        style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}
+                                    >Preview delle immagini:</Text>
+                                )
+                            }
+
                             <FlatList
-                                data={answers}
-                                scrollEnabled={false}
-                                extraData={ausState}
+                                data={images}
+                                extraData={newImages}
+                                horizontal={true}
+                                scrollEnabled={true}
                                 renderItem={({ item }) => (
-                                    <TextInput placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => {
-                                        voteParams.content[item.key - 1] = value
-                                    }} placeholder={"Risposta " + item.key} />
+                                    <>
+                                        {
+                                            (item.uri != undefined) && (
+                                                <Image source={{ uri: item.uri }} style={{ width: (item.width / item.height) * 200, height: 200, marginRight: 10 }} />
+                                            )
+                                        }
+                                    </>
                                 )}
                             />
-
-                            <TouchableNativeFeedback onPress={() => {
-                                let aus = answers;
-                                voteParams.content.push("");
-                                voteParams.votes.push([]);
-                                answers.push({ key: answers.length + 1, question: "" });
-                                setAusState({ key: answers.length + 1, question: "" })
-                                setAnswers(aus);
-                            }
-                            } >
-                                <View style={styles.button} >
-                                    <Text style={styles.buttonText} >+ Aggiungi risposta</Text>
-                                </View>
-                            </TouchableNativeFeedback>
-                        </>
-                        : null
-                    }
-
-                    {type == "images" && (
-                        <View>
-                            <TouchableNativeFeedback onPress={() => pickImages()} >
-                                <View style={styles.button} >
-                                    <Text style={styles.buttonText} >+ Aggiungi immagini</Text>
-                                </View>
-                            </TouchableNativeFeedback>
-                            <TextInput style={styles.input} placeholder="Descrizone immagini" onChangeText={(text) => setImagesDescription(text)} />
-                            <View>
-                                {
-                                    (images.length > 0) && (
-                                        <Text
-                                            style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}
-                                        >Preview delle immagini:</Text>
-                                    )
-                                }
-
-                                <FlatList
-                                    data={images}
-                                    extraData={newImages}
-                                    horizontal={true}
-                                    scrollEnabled={true}
-                                    renderItem={({ item }) => (
-                                        <>
-                                            {
-                                                (item.uri != undefined) && (
-                                                    <Image source={{ uri: item.uri }} style={{ width: (item.width / item.height) * 200, height: 200, marginRight: 10 }} />
-                                                )
-                                            }
-                                        </>
-                                    )}
-                                />
-                            </View>
                         </View>
-                    )}
+                    </View>
+                )}
 
 
-                    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
-                        {
-                            Platform.OS == "ios" ?
-                                <View
-                                    style={{
-                                        backgroundColor: "#CCCCCC50",
-                                        borderRadius: "50%",
-                                        marginRight: 10,
-                                    }}
-                                >
-                                    <Checkbox
-                                        status={pinned ? "checked" : "unchecked"}
-                                        onPress={() => { setPinned(!pinned) }}
-                                        style={{ borderColor: "#CCC", borderWidth: 1 }}
-                                        uncheckedColor="#CCC"
-                                        color="#4900FF"
-                                    />
-                                </View>
-                                :
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
+                    {
+                        Platform.OS == "ios" ?
+                            <View
+                                style={{
+                                    backgroundColor: "#CCCCCC50",
+                                    borderRadius: "50%",
+                                    marginRight: 10,
+                                }}
+                            >
                                 <Checkbox
                                     status={pinned ? "checked" : "unchecked"}
                                     onPress={() => { setPinned(!pinned) }}
@@ -389,84 +379,92 @@ export default function NewPost({ navigation, route }) {
                                     uncheckedColor="#CCC"
                                     color="#4900FF"
                                 />
-                        }
-                        <Text style={styles.subtitle}>Post fissato in alto</Text>
-                    </View>
+                            </View>
+                            :
+                            <Checkbox
+                                status={pinned ? "checked" : "unchecked"}
+                                onPress={() => { setPinned(!pinned) }}
+                                style={{ borderColor: "#CCC", borderWidth: 1 }}
+                                uncheckedColor="#CCC"
+                                color="#4900FF"
+                            />
+                    }
+                    <Text style={styles.subtitle}>Post fissato in alto</Text>
+                </View>
 
-                    <TouchableNativeFeedback onPress={async () => {
-                        setIsLoading(true);
-                        let param = []
-                        if (type == "vote") {
-                            voteParams.pinned = pinned;
-                            voteParams.question = question;
-                            param = voteParams;
-                        }
-                        else if (type == "text") {
-                            textParams.pinned = pinned;
-                            param = textParams
-                        }
-                        else if (type == "payments") {
-                            paymentParams.pinned = pinned;
+                <TouchableNativeFeedback onPress={async () => {
+                    setIsLoading(true);
+                    let param = []
+                    if (type == "vote") {
+                        voteParams.pinned = pinned;
+                        voteParams.question = question;
+                        param = voteParams;
+                    }
+                    else if (type == "text") {
+                        textParams.pinned = pinned;
+                        param = textParams
+                    }
+                    else if (type == "payments") {
+                        paymentParams.pinned = pinned;
 
-                            if (paymentDestinator == "custom") {
-                                paymentParams.destinator = []
-                                checked.forEach(element => {
-                                    if (element.selected) {
-                                        paymentParams.destinator.push({ userid: element.userid, payed: false })
-                                    }
-                                });
-                            }
-                            else if (paymentDestinator == "all") {
-                                paymentParams.destinator = []
-                                participants.forEach(element => {
-                                    if (element.userid != user._id) {
-                                        paymentParams.destinator.push({ userid: element.userid, payed: false })
-                                    }
-                                });
-                            }
-                            else if (paymentDestinator == "me") {
-                                paymentParams.destinator = []
-                                paymentParams.destinator.push({ userid: user._id, payed: false, personal: true })
-                            }
-
-                            paymentParams.paymentType = paymentType;
-                            paymentParams.amount = amount;
-                            paymentParams.description = paymentDescription;
-
-                            param = paymentParams
+                        if (paymentDestinator == "custom") {
+                            paymentParams.destinator = []
+                            checked.forEach(element => {
+                                if (element.selected) {
+                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
+                                }
+                            });
                         }
-                        else if (type == "images") {
-                            await addImage()
-                            imageParams.pinned = pinned;
-                            imageParams.description = imagesDescription;
-                            param = imageParams
+                        else if (paymentDestinator == "all") {
+                            paymentParams.destinator = []
+                            participants.forEach(element => {
+                                if (element.userid != user._id) {
+                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
+                                }
+                            });
+                        }
+                        else if (paymentDestinator == "me") {
+                            paymentParams.destinator = []
+                            paymentParams.destinator.push({ userid: user._id, payed: false, personal: true })
                         }
 
-                        param.type = type;
+                        paymentParams.paymentType = paymentType;
+                        paymentParams.amount = amount;
+                        paymentParams.description = paymentDescription;
 
-                        if (param != []) {
-                            axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
-                                setIsLoading(false)
-                                refresh(param)
-                                navigation.goBack()
-                            }).catch((error) => {
-                                setIsLoading(false)
-                                console.log(error)
-                            })
-                        }
-                    }} >
-                        {
-                            isLoading ?
-                                <ActivityIndicator size="large" color="#4900FF" style={{ marginTop: 20 }} />
-                                :
-                                <View style={[styles.button, (type == "") ? { backgroundColor: "lightgray" } : null]} >
-                                    <Text style={styles.buttonText} >Crea</Text>
-                                </View>
-                        }
-                    </TouchableNativeFeedback>
-                </ScrollView>
-            </SafeAreaView>
-        // </Modal>
+                        param = paymentParams
+                    }
+                    else if (type == "images") {
+                        await addImage()
+                        imageParams.pinned = pinned;
+                        imageParams.description = imagesDescription;
+                        param = imageParams
+                    }
+
+                    param.type = type;
+
+                    if (param != []) {
+                        axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
+                            setIsLoading(false)
+                            refresh(param)
+                            navigation.goBack()
+                        }).catch((error) => {
+                            setIsLoading(false)
+                            console.log(error)
+                        })
+                    }
+                }} >
+                    {
+                        isLoading ?
+                            <ActivityIndicator size="large" color="#4900FF" style={{ marginTop: 20 }} />
+                            :
+                            <View style={[styles.button, (type == "") ? { backgroundColor: "lightgray" } : null]} >
+                                <Text style={styles.buttonText} >Crea</Text>
+                            </View>
+                    }
+                </TouchableNativeFeedback>
+            </ScrollView>
+        </SafeAreaView>
     )
 }
 

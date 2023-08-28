@@ -54,7 +54,7 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }) {
             >
                 <Modal visible={easterVisibility} animation="slide">
                     <AnimatedLottieView source={require('../assets/animation/toucan-walk-cycle.json')} autoPlay loop />
-                    <Text style={{ fontFamily: font.montserrat, fontSize: 18, textAlign: "center", marginTop: 50 }}>Hai clickato troppe volte, ora sei obbligato a guardare il tucano!</Text>
+                    <Text style={{ fontFamily: font.text, fontSize: 18, textAlign: "center", marginTop: 50 }}>Hai clickato troppe volte, ora sei obbligato a guardare il tucano!</Text>
                 </Modal>
                 <View style={styles.rowHeader}>
                     <TouchableWithoutFeedback onPress={() => {
@@ -72,7 +72,7 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }) {
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <MaterialCommunityIcons style={{ marginRight: 5 }} name='bell-outline' color="white" />
                                     <Text
-                                        style={{ color: 'white', fontFamily: "montserrat-regular", marginRight: 5 }}
+                                        style={{ color: 'white', fontFamily: font.text, marginRight: 5 }}
                                     >{notification}</Text>
                                 </View>
                             }
@@ -81,7 +81,7 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }) {
 
                         <View style={styles.whiteRound} ></View>
                         <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-                            <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: 'montserrat-regular' }} />
+                            <Avatar label={(user != null && user != '[]' && user != false && user != '') ? user.name + " " + user.surname : ""} size={40} autoColor uppercase labelStyle={{ fontFamily: font.text }} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
         color: "white",
         marginLeft: 10,
         fontSize: 20,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     headerSubtitle: {
         color: "white",
         marginLeft: 10,
         fontSize: 15,
-        fontFamily: font.montserratLight,
+        fontFamily: font.text_light,
     },
     header: {
         backgroundColor: color.primary,
@@ -156,6 +156,6 @@ const styles = StyleSheet.create({
     headerText: {
         color: "black",
         fontSize: 12,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     }
 })

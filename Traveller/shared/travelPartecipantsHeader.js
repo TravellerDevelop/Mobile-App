@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: "white",
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
         fontSize: 25,
         marginLeft: 10
     },
@@ -56,9 +56,8 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 15,
-        fontFamily: font.montserratLight,
+        fontFamily: font.text,
         marginLeft: 35,
-        marginTop: 10,
         color: "white",
         marginBottom: 10,
     },

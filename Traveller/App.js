@@ -15,7 +15,7 @@ import WhitePage from './shared/white';
 import axios from 'axios';
 import TicketsPreview from './components/tickets/ticketsPreview';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { xyz } from 'color';
+import TicketModal from './screens/Modals/ticketModal';
 
 
 export const GlobalUserContext = createContext();
@@ -41,7 +41,6 @@ export default function App() {
 
   async function verifyConnection() {
     await setOfflineTickets(await getData('tickets'));
-    console.log(await getData('tickets'))
 
     setIsLoading(true);
     axios({
@@ -148,7 +147,8 @@ export default function App() {
     return (
       <>
         {(Platform.OS === 'ios') ?
-          <View style={{ "backgroundColor": color.primary, "height": 30, width: "100%" }}></View>
+          // <View style={{ "backgroundColor": color.primary, "height": 30, width: "100%" }}></View>
+          <></>
           :
           <StatusBar backgroundColor={color.primary} barStyle="white-content" />}
         <InitialModal visibility={modalVisible} setVisibility={setModalVisible} />
@@ -330,6 +330,14 @@ export default function App() {
                   tabBarStyle: { display: 'none' },
                 }}
                 name="White" component={WhitePage} />
+
+              <Tab.Screen name='TicketsModal' component={TicketModal}
+                options={{
+                  headerShown: false,
+                  tabBarButton: (props) => null,
+                  tabBarStyle: { display: 'none' },
+                }}
+              />
               <Tab.Screen
                 options={{
                   headerShown: false

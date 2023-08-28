@@ -10,6 +10,7 @@ import MyProfile from '../screens/profile'
 import PaymentInfo from '../screens/paymentsInfo'
 import OtherProfile from '../screens/otherProfile'
 import NewPost from '../screens/Modals/NewPost'
+import TicketModal from '../screens/Modals/ticketModal'
 
 const Stack = createStackNavigator()
 
@@ -37,6 +38,8 @@ export default function Navigator() {
         <Stack.Screen name='TravelDetail' component={TravelDetail}
           options={{
             headerShown: false,
+            headerTitle: '',
+            title: ''
           }}
         />
 
@@ -66,6 +69,13 @@ export default function Navigator() {
 
         <Stack.Screen name='NewPost' component={NewPost} 
           options={{
+            headerTitle: 'Nuovo Post',
+          }}
+        />
+
+        <Stack.Screen name='TicketsModal' component={TicketModal}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

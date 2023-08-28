@@ -19,10 +19,6 @@ export default function Card({ navigation, data, vertical, isLoading }) {
     useEffect(() => {
         getCreator();
 
-        if(data.image != null && data.image != undefined && data.image != "") {
-            console.log("immagine presente");
-        }
-
         async function getCreator() {
             let getMyData = await getData("user");
             setMyData(getMyData);
@@ -33,7 +29,20 @@ export default function Card({ navigation, data, vertical, isLoading }) {
         <>
             {
                 (data.image == null || data.image == undefined || data.image == "") ?
-                    <TouchableNativeFeedback onPress={() => navigation.navigate("TravelDetail", data)}>
+                    <TouchableNativeFeedback onPress={async () => {
+                        let myD = await getData("user");
+                        let found = false;
+
+                        for (let item of data.participants) {
+                            if (item.username == myD.username) {
+                                found = true;
+                            }
+                        }
+
+                        if (found) {
+                            navigation.navigate("TravelDetail", data)
+                        }
+                    }}>
                         {(!vertical) ?
                             <View style={(!isLoading) ? styles.container : { display: "none" }} >
                                 <View style={{ position: 'absolute', top: 10, left: 10 }}>
@@ -59,14 +68,14 @@ export default function Card({ navigation, data, vertical, isLoading }) {
                     <TouchableNativeFeedback style={{ zIndex: 10 }} onPress={() => navigation.navigate("TravelDetail", data)}>
                         {
                             (!vertical) ?
-                                <ImageBackground imageStyle={{ borderRadius: 10, opacity: 0.7 }} source={{uri: serverLink + "userImage/" + data.image}} style={styles.containerWithBg}>
+                                <ImageBackground imageStyle={{ borderRadius: 10, opacity: 0.7 }} source={{ uri: serverLink + "userImage/" + data.image }} style={styles.containerWithBg}>
                                     <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
                                         <Text style={styles.cardTitle}>{data.name}</Text>
                                         <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
                                     </View>
                                 </ImageBackground>
                                 :
-                                <ImageBackground  resizeMode="cover" imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }} source={{uri: serverLink + "userImage/" + data.image}} style={styles.containerVerticalWithBg}>
+                                <ImageBackground resizeMode="cover" imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }} source={{ uri: serverLink + "userImage/" + data.image }} style={styles.containerVerticalWithBg}>
                                     <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
                                         <Text style={styles.cardTitle}>{data.name}</Text>
                                         <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
@@ -152,21 +161,20 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-
         elevation: 5,
     },
     cardTitle: {
         color: "white",
         fontSize: 24,
         textAlign: "left",
-        fontFamily: font.montserratBold,
-        marginBottom: 10,
+        fontFamily: font.text_bold,
+        marginBottom: 5,
     },
     cardSubtitle: {
         color: "white",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserratLight,
+        fontFamily: font.text,
     },
     avatarContainer: {
         backgroundColor: "white",

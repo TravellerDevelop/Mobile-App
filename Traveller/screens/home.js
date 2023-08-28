@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking, Modal, Image } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking, Modal, Image, SafeAreaView } from 'react-native';
 import Card from '../shared/card';
 import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
@@ -54,8 +54,6 @@ export default function Home({ navigation }) {
                     }
                     else {
                         let data = await getStringData(response.data[0].AppVersion)
-
-                        console.log(data)
 
                         if (data != "true") {
                             setShowNew(true);
@@ -139,15 +137,16 @@ export default function Home({ navigation }) {
     }
 
     return (
-        <View style={styles.container}>
-            <ScrollView
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                    />
-                }
-            >
+        <ScrollView
+            style={{ backgroundColor: color.primary }}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
+            }
+        >
+            <SafeAreaView style={styles.container}>
                 {
                     (showNew) && (
                         <Modal
@@ -239,10 +238,10 @@ export default function Home({ navigation }) {
                                         <View style={{
                                             flexDirection: "row",
                                             justifyContent: "space-evenly",
-                                            alignItems:"center" ,
+                                            alignItems: "center",
                                             marginTop: 20,
                                         }}>
-                                            <TouchableOpacity 
+                                            <TouchableOpacity
                                                 onPress={async () => {
                                                     await storeStringData(appVersion, "true");
                                                     await setShowNew(false);
@@ -420,8 +419,8 @@ export default function Home({ navigation }) {
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />
                 </View>
-            </ScrollView >
-        </View>
+            </SafeAreaView>
+        </ScrollView >
     );
 }
 
@@ -435,7 +434,7 @@ const styles = StyleSheet.create({
         fontSize: 30,
         fontWeight: 200,
         marginBottom: 20,
-        fontFamily: "montserrat-regular",
+        fontFamily: font.text_bold,
         textAlign: "center"
     },
     subtitle: {
@@ -443,7 +442,7 @@ const styles = StyleSheet.create({
         fontWeight: 200,
         marginBottom: 10,
         textAlign: "left",
-        fontFamily: "montserrat-light",
+        fontFamily: font.text,
         marginLeft: 10
     },
     blue: {
@@ -459,7 +458,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: Dimensions.get("window").width - 20,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         height: 40,
         backgroundColor: "#F5F5F5",
         marginBottom: 20,
@@ -470,7 +469,7 @@ const styles = StyleSheet.create({
     },
     inputResult: {
         width: Dimensions.get("window").width - 20,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         height: 40,
         backgroundColor: "#F5F5F5",
         paddingLeft: 10,

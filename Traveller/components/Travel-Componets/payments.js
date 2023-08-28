@@ -85,9 +85,9 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                                             <Image source={require("../../assets/image/pin.png")} style={{ width: 22, height: 22, tintColor: "lightgray", marginRight: 10 }} />
                                             {
                                                 (item.pinned) ?
-                                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Rimuovi pin</Text>
+                                                    <Text style={{ fontFamily: font.text, fontSize: 20 }}>Rimuovi pin</Text>
                                                     :
-                                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Aggiungi pin</Text>
+                                                    <Text style={{ fontFamily: font.text, fontSize: 20 }}>Aggiungi pin</Text>
                                             }
                                         </View>
                                     </TouchableOpacity>
@@ -107,7 +107,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                                             style={{ paddingTop: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
                                         >
                                             <Image source={require("../../assets/image/icona-cestino.png")} style={{ width: 22, height: 22, tintColor: "red", marginRight: 10 }} />
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "red" }}>Elimina post</Text>
+                                            <Text style={{ fontFamily: font.text, fontSize: 20, color: "red" }}>Elimina post</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -173,7 +173,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                     </View>
                     <View>
                         <Text style={ComponentStyles.contentText}>{ (!isPersonal) ? "Ti ha inviato una richiesta di:" : "Pagamento personale di:"}</Text>
-                        <Text style={[ComponentStyles.contentText, { fontSize: 25, fontFamily: font.montserratBold }]}>{item.amount}€</Text>
+                        <Text style={[ComponentStyles.contentText, { fontSize: 25, fontFamily: font.text_bold }]}>{item.amount}€</Text>
                         {
                             (home) ?
                                 null
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
     statusText: {
         color: "#FFF",
         fontSize: 12,
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
     },
 });

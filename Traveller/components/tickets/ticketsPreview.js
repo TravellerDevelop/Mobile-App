@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
 import { font } from "../../global/globalVariable";
-import TicketModal from "../../screens/Modals/ticketModal";
 
 let companies = {
     "Ryanair": "#2B4779",
@@ -15,9 +14,7 @@ let companies = {
 let col = "#FFF"
 let img;
 
-export default function TicketsPreview({ item, takeInfo }) {
-    let company = "Ciao";
-
+export default function TicketsPreview({ item, takeInfo, navigation }) {
     if (item.company.name === "Ryanair") {
         col = companies.Ryanair;
         img = require("../../assets/image/airlines/ryanair.png");
@@ -35,23 +32,14 @@ export default function TicketsPreview({ item, takeInfo }) {
         img = require("../../assets/image/airlines/klm.png");
     }
 
-    let [modalVisibility, setModalVisibility] = useState(false);
-
     return (
         <>
-            <TicketModal visibility={modalVisibility} data={item} setVisibility={setModalVisibility} takeInfo={takeInfo} />
-
-            <TouchableNativeFeedback onPress={() => setModalVisibility(true)} >
+            <TouchableNativeFeedback onPress={() => navigation.navigate("TicketsModal", {data: item, takeInfo: takeInfo })} >
                 <View style={[styles.container, { backgroundColor: col }]} >
                     <View style={styles.left}></View>
                     <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
                     <Text style={styles.name}>{item.surname} {item.name}</Text>
-                    {
-                        (item.sharedBy) ?
-                            <Text style={styles.sharedBy}>Condiviso da {item.sharedBy}</Text>
-                            :
-                            <></>
-                    }
+                    { (item.sharedBy) && ( <Text style={styles.sharedBy}>Condiviso da {item.sharedBy}</Text> ) }
                     <Text style={styles.nrFlight}>Numero di volo: {item.flightNumber}</Text>
                     <Text style={styles.destination}>From {item.from.iata} to {item.to.iata}</Text>
                     <Text style={styles.date}>{new Date(item.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
@@ -95,7 +83,7 @@ const styles = StyleSheet.create({
         left: 20,
         color: "#fff",
         fontSize: 18,
-        fontFamily: font.montserrat
+        fontFamily: font.text
     },
     nrFlight: {
         position: "absolute",
@@ -103,7 +91,7 @@ const styles = StyleSheet.create({
         left: 20,
         color: "#fff",
         fontSize: 13,
-        fontFamily: font.montserratLight
+        fontFamily: font.text_light
     },
     destination: {
         position: "absolute",
@@ -111,7 +99,7 @@ const styles = StyleSheet.create({
         left: 20,
         color: "#fff",
         fontSize: 15,
-        fontFamily: font.montserrat
+        fontFamily: font.text
     },
     date: {
         position: "absolute",
@@ -119,7 +107,7 @@ const styles = StyleSheet.create({
         right: 20,
         color: "#fff",
         fontSize: 13,
-        fontFamily: font.montserratLight
+        fontFamily: font.text_light
     },
     sharedBy: {
         position: "absolute",
@@ -127,6 +115,6 @@ const styles = StyleSheet.create({
         left: 20,
         color: "#fff",
         fontSize: 13,
-        fontFamily: font.montserratLight
+        fontFamily: font.text_light
     }
 });

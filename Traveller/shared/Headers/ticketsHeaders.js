@@ -102,10 +102,10 @@ export default function TicketsHeader({ update }) {
                                             showPicker && Platform.OS == "ios" && (
                                                 <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
                                                     <TouchableOpacity onPress={() => { toggleDatePicker() }} >
-                                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: color.primary }}>Annulla</Text>
+                                                        <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Annulla</Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity onPress={() => { confirmIOSDate() }} >
-                                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: color.primary }}>Conferma</Text>
+                                                        <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Conferma</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             )
@@ -146,7 +146,7 @@ export default function TicketsHeader({ update }) {
                                             >
                                                 <Text
                                                     style={{
-                                                        fontFamily: font.montserrat,
+                                                        fontFamily: font.text,
                                                         fontSize: 20,
                                                         color: color.primary,
                                                         textAlign: "center",
@@ -192,7 +192,7 @@ export default function TicketsHeader({ update }) {
                 start={{ x: 0.5, y: 0.2 }}
                 colors={[color.primary, color.secondary]}
             >
-                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, color: "white", marginLeft: 20 }}>Tickets</Text>
+                <Text style={{ fontFamily: font.text_bold, fontSize: 25, color: "white", marginLeft: 20 }}>Tickets</Text>
                 <Text style={styles.paragraph}>Aggiungi tutti i tuoi biglietti per averceli sempre dietro! (Anche disponibili offline!) 🎫 🎟️</Text>
                 <TouchableOpacity style={[styles.add, { height: 30 }]} onPress={() => setModalVisible(true)} >
                     <Badge label={"+ Aggiungi biglietto"} color="#FFF" labelStyle={styles.label} />
@@ -339,12 +339,12 @@ const styles = StyleSheet.create({
     label: {
         marginLeft: 10,
         marginRight: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 12,
         color: "#000",
     },
     paragraph: {
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 15,
         color: "#FFF",
         marginLeft: 20,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: Dimensions.get("window").width - 22,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         height: 40,
         backgroundColor: "#F5F5F5",
         marginBottom: 20,
@@ -382,12 +382,12 @@ const modalstyles = StyleSheet.create({
         justifyContent: "space-around",
     },
     title: {
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
         fontSize: 25,
         color: color.secondary,
     },
     subtitle: {
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 19,
         maxWidth: "80%",
     },
@@ -414,7 +414,7 @@ const modalstyles = StyleSheet.create({
         elevation: 5,
     },
     paragraph: {
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 15,
         marginLeft: 20,
         marginRight: 20,
@@ -430,7 +430,7 @@ const modalstyles = StyleSheet.create({
         elevation: 5,
     },
     buttonText: {
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 20,
         color: "white",
     },

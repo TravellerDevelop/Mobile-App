@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback, RefreshControl } from 'react-native';
-import { font, serverLink } from '../global/globalVariable';
+import { color, font, serverLink } from '../global/globalVariable';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
@@ -8,11 +8,17 @@ import PaymentComponent from '../components/Travel-Componets/payments';
 import NewPost from './Modals/NewPost';
 import axios from 'axios';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
-import { ActivityIndicator } from 'react-native-paper';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { getData } from '../shared/data/localdata';
 import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
+// import socketService from '../components/utils/socketServise';
+import { io } from "socket.io-client";
+
+// const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
+
 
 export default function TravelDetail({ navigation, route }) {
+
     let [newPost, setNewPost] = useState(false);
     let [postLoading, setPostLoading] = useState(true);
 
@@ -45,14 +51,14 @@ export default function TravelDetail({ navigation, route }) {
 
                     for (let item of aus) {
                         item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", { timeZone: "Europe/Andorra" })
-                        if(item.type == "images"){
+                        if (item.type == "images") {
                             let i = 0;
                             let aus = [];
-                            
-                            for(let image of item.source){
-                                aus.push({id: i, source: image})
+
+                            for (let image of item.source) {
+                                aus.push({ id: i, source: image })
                                 item.source = aus;
-                                i++;     
+                                i++;
                             }
                         }
                     }
@@ -68,7 +74,6 @@ export default function TravelDetail({ navigation, route }) {
         axios.get(serverLink + "api/post/takeTotalPayedByTravel?travel=" + travelId + "&userid=" + aus._id)
             .then(async (response) => {
                 if (response.status == 200) {
-                    console.log(response.data)
                     await setSpent(response.data);
                 }
             })
@@ -86,6 +91,10 @@ export default function TravelDetail({ navigation, route }) {
         <>
             <View style={styles.container}>
                 <ScrollView
+                    style={{
+                        flex: 1,
+
+                    }}
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
@@ -100,10 +109,9 @@ export default function TravelDetail({ navigation, route }) {
                             {
                                 (!route.params.closed) && (
                                     <TouchableNativeFeedback
-                                        onPress={() => 
-                                            {
-                                                navigation.navigate("NewPost", { data: route.params, refresh: onAddData })
-                                            }
+                                        onPress={() => {
+                                            navigation.navigate("NewPost", { data: route.params, refresh: onAddData })
+                                        }
                                         }
                                     >
                                         <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
@@ -149,7 +157,7 @@ export default function TravelDetail({ navigation, route }) {
                                                                 <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
                                                                 :
                                                                 null
-                                                            }
+                                                }
                                             </>
                                         )}
                                     />
@@ -159,7 +167,7 @@ export default function TravelDetail({ navigation, route }) {
                             {
                                 ((postData.length == 0 || postData == null) && !postLoading) ?
                                     < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
-                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat }}>Non ci sono post</Text>
+                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text_bold }}>Non ci sono post</Text>
                                     </View>
                                     :
                                     null
@@ -197,7 +205,7 @@ const styles = StyleSheet.create({
         color: "#000",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     nameContainer: {
         flexDirection: "row",
@@ -209,13 +217,13 @@ const styles = StyleSheet.create({
         color: "#000",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginRight: 5,
     },
     datetimeText: {
         color: "#000",
         fontSize: 12,
-        fontFamily: font.montserratLight,
+        fontFamily: font.text_light,
         marginBottom: 10,
     },
     rowVote: {
@@ -235,13 +243,13 @@ const styles = StyleSheet.create({
         color: "#FFF",
         fontSize: 16,
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     questionText: {
         color: "#000",
         fontSize: 18,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginBottom: 10,
     },
 });

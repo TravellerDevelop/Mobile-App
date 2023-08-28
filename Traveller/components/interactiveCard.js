@@ -48,14 +48,14 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 19,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text_bold,
     },
     cardSubtitle: {
         color: "white",
-        marginTop: 10,
-        fontSize: 15,
+        marginTop: 5,
+        fontSize: 17,
         textAlign: "left",
-        fontFamily: font.montserratLight,
+        fontFamily: font.text,
     },
     button: {
         position: "absolute",
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         color: "white",
         textAlign: "center",
         fontSize: 15,
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
         lineHeight: 40,
         width: "100%",
     },
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         marginTop: 20,
-        fontFamily: "montserrat-regular",
+        fontFamily: font.text,
         textAlign: "center"
     },
     input: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 50,
         marginBottom: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         borderBottomColor: color.secondary,
         borderBottomWidth: 2,
         borderTopColor: "lightgray",
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 100,
         marginBottom: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         borderBottomColor: color.secondary,
         borderBottomWidth: 2,
         borderTopColor: "lightgray",
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     },
     modalButtonText: {
         color: "white",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 18,
         textAlign: "center",
         lineHeight: 50,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     },
     personText: {
         color: "white",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 15,
     }
 })

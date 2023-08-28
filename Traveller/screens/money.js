@@ -6,6 +6,7 @@ import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
 import { BarChart } from "react-native-chart-kit";
 import { ActivityIndicator } from "@react-native-material/core";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Money() {
     let [lastYear, setLastYear] = React.useState("-- ");
@@ -92,6 +93,9 @@ export default function Money() {
     return (
         <>
             <ScrollView
+            style={{
+                backgroundColor: "#4960FF"
+            }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -99,62 +103,68 @@ export default function Money() {
                     />
                 }
             >
-                <MoneyHeader />
+                <SafeAreaView
+                    style={{
+                        flex: 1,
+                    }}
+                >
+                    <MoneyHeader />
 
-                <View style={styles.container}>
-                    <View style={styles.topCard}>
-                        <View style={styles.row}>
-                            <View style={styles.minicard}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
-                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                    <View style={styles.container}>
+                        <View style={styles.topCard}>
+                            <View style={styles.row}>
+                                <View style={styles.minicard}>
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
+                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                                </View>
+                                <View style={styles.minicard}>
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
+                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                                </View>
                             </View>
-                            <View style={styles.minicard}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
-                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                            <View style={styles.row}>
+                                <View style={styles.minicard}>
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
+                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{totalToPay}€</Text>
+                                </View>
+                                <View style={styles.minicard}>
+                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
+                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{totalToGet}€</Text>
+                                </View>
                             </View>
                         </View>
-                        <View style={styles.row}>
-                            <View style={styles.minicard}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
-                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{totalToPay}€</Text>
-                            </View>
-                            <View style={styles.minicard}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
-                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{totalToGet}€</Text>
-                            </View>
-                        </View>
-                    </View>
 
-                    {
-                        (chartDataLoading == false) ?
-                            <View style={styles.bottomCard}>
-                                <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
-                                <BarChart
-                                    data={barChartData}
-                                    width={Dimensions.get("window").width - 20}
-                                    height={220}
-                                    yAxisLabel="€"
-                                    chartConfig={{
-                                        backgroundColor: "#FFF",
-                                        backgroundGradientFrom: "#FFF",
-                                        backgroundGradientTo: "#FFF",
-                                        decimalPlaces: 0,
-                                        color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-                                        style: {
+                        {
+                            (chartDataLoading == false) ?
+                                <View style={styles.bottomCard}>
+                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                                    <BarChart
+                                        data={barChartData}
+                                        width={Dimensions.get("window").width - 20}
+                                        height={220}
+                                        yAxisLabel="€"
+                                        chartConfig={{
+                                            backgroundColor: "#FFF",
+                                            backgroundGradientFrom: "#FFF",
+                                            backgroundGradientTo: "#FFF",
+                                            decimalPlaces: 0,
+                                            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
+                                            style: {
+                                                borderRadius: 16,
+                                            },
+                                            padding: 0,
+                                        }}
+                                        style={{
+                                            marginVertical: 8,
                                             borderRadius: 16,
-                                        },
-                                        padding: 0,
-                                    }}
-                                    style={{
-                                        marginVertical: 8,
-                                        borderRadius: 16,
-                                    }}
-                                />
-                            </View>
-                        :
-                        <ActivityIndicator size={50} color={color.primary} style={{ marginTop: 50 }} />
-                    }
-                </View>
+                                        }}
+                                    />
+                                </View>
+                                :
+                                <ActivityIndicator size={50} color={color.primary} style={{ marginTop: 50 }} />
+                        }
+                    </View>
+                </SafeAreaView>
             </ScrollView>
         </>
     )

@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 30,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         textAlign: "center",
         marginTop: 10,
         marginBottom: 10,
@@ -186,16 +186,16 @@ const styles = StyleSheet.create({
     text: {
         marginLeft: 10,
         fontSize: 20,
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
     },
     description: {
         marginLeft: 20,
         fontSize: 18,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     subtext: {
         fontSize: 15,
-        fontFamily: font.montserratLight,
+        fontFamily: font.text_light,
         marginLeft: 20,
         marginTop: 10,
         marginBottom: 10,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     },
     leaveText: {
         color: "white",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 20,
     },
     flag: {
@@ -228,10 +228,11 @@ const styles = StyleSheet.create({
         right: 0,
         borderTopLeftRadius: 12.5,
         borderBottomLeftRadius: 12.5,
+        alignItems: "center",
     },
     flagText: {
         color: "white",
-        fontFamily: font.montserratBold,
+        fontFamily: font.text_bold,
         fontSize: 13,
     },
     flagRemove: {

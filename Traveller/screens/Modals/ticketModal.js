@@ -7,9 +7,12 @@ import { ComponentStyles } from "../../components/Travel-Componets/componentStyl
 import axios from "axios";
 import { getData } from "../../shared/data/localdata";
 import { Avatar } from "@react-native-material/core";
-import { ScrollView } from "react-native-gesture-handler";
 
-export default function TicketModal({ data, visibility, setVisibility, takeInfo }) {
+// export default function TicketModal({ data, visibility, setVisibility, takeInfo }) {
+export default function TicketModal({ navigation, route }) {
+    let data = route.params.data;
+    let [takeInfo, setTakeInfo] = useState(route.params.takeInfo);
+
     let [qrVisibility, setQrVisibility] = useState(false);
     let [showMenu, setShowMenu] = React.useState(false);
     let [showShare, setShowShare] = React.useState(false);
@@ -47,46 +50,44 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
     }, [])
 
     return (
-        <Modal visible={visibility} animationType="slide" >
-            <SafeAreaView style={modalstyles.container}>
-                <View
-                    style={{ position: "relative", top: 0, right: 0, zIndex: 99 }}
-                >
-                    <TouchableOpacity
-                        style={{ position: "absolute", top: 10, right: 10, zIndex: 100 }}
-                        onPress={() => {
-                            showMenu ? setShowMenu(false) : setShowMenu(true);
-                        }}>
-                        <Image source={require("../../assets/image/icona-more-cerchio.png")} style={{ width: 30, height: 30, tintColor: "white" }} />
-                    </TouchableOpacity>
-                </View>
-                <QrCodeModal
-                    data={data.qrdata}
-                    visibility={qrVisibility}
-                    setVisibility={setQrVisibility}
-                />
-                <View style={modalstyles.top}>
-                    <TouchableOpacity onPress={() => setVisibility(false)} >
-                        <Image source={require("../../assets/image/icona-freccia-left.png")} style={{ height: 25, width: 25 }} resizeMode="contain" />
-                    </TouchableOpacity>
-                    <Text style={{ color: "#FFF", fontSize: 20, fontFamily: font.montserrat, marginLeft: 20 }}>{data.title}</Text>
-                </View>
-                <Text style={modalstyles.name}>{data.surname} {data.name}</Text>
-                <Text style={modalstyles.destination} >Da{data.from.name.split(',')[1]} a{data.to.name.split(',')[1]}</Text>
-                <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
-                <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>
-                <View style={modalstyles.row}>
-                    <Text style={modalstyles.position}>Data: {new Date(data.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
-                </View>
-                <TouchableOpacity style={modalstyles.qrcode} onPress={() => {
-                    setQrVisibility(true)
-                }}  >
-                    <QRCode
-                        value={data.qrdata}
-                        size={180}
-                    />
+        <SafeAreaView style={modalstyles.container}>
+            <View
+                style={{ position: "relative", top: 0, right: 0, zIndex: 99 }}
+            >
+                <TouchableOpacity
+                    style={{ position: "absolute", top: 10, right: 10, zIndex: 100 }}
+                    onPress={() => {
+                        showMenu ? setShowMenu(false) : setShowMenu(true);
+                    }}>
+                    <Image source={require("../../assets/image/icona-more-cerchio.png")} style={{ width: 30, height: 30, tintColor: "white" }} />
                 </TouchableOpacity>
-            </SafeAreaView>
+            </View>
+            <QrCodeModal
+                data={data.qrdata}
+                visibility={qrVisibility}
+                setVisibility={setQrVisibility}
+            />
+            <View style={modalstyles.top}>
+                <TouchableOpacity onPress={() => navigation.goBack()} >
+                    <Image source={require("../../assets/image/icona-freccia-left.png")} style={{ height: 25, width: 25 }} resizeMode="contain" />
+                </TouchableOpacity>
+                <Text style={{ color: "#FFF", fontSize: 20, fontFamily: font.montserrat, marginLeft: 20 }}>{data.title}</Text>
+            </View>
+            <Text style={modalstyles.name}>{data.surname} {data.name}</Text>
+            <Text style={modalstyles.destination} >Da{data.from.name.split(',')[1]} a{data.to.name.split(',')[1]}</Text>
+            <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
+            <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>
+            <View style={modalstyles.row}>
+                <Text style={modalstyles.position}>Data: {new Date(data.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
+            </View>
+            <TouchableOpacity style={modalstyles.qrcode} onPress={() => {
+                setQrVisibility(true)
+            }}  >
+                <QRCode
+                    value={data.qrdata}
+                    size={180}
+                />
+            </TouchableOpacity>
 
             <Modal transparent visible={showShare} animationType='slide' >
                 <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }} >
@@ -120,7 +121,7 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                                     <Avatar
                                         size={40}
                                         autoColor
-                                        labelStyle={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}
+                                        labelStyle={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF", fontWeight: "bold" }}
                                         label={item.name + " " + item.surname}
                                         style={{ marginRight: 10 }}
                                     />
@@ -192,7 +193,7 @@ export default function TicketModal({ data, visibility, setVisibility, takeInfo 
                     </SafeAreaView>
                 </TouchableWithoutFeedback>
             </Modal>
-        </Modal >
+        </SafeAreaView>
     )
 }
 

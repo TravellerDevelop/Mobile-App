@@ -14,13 +14,13 @@ export default function BudgetIndicator({ budget, spent }) {
 
     return (
         <View style={styles.card}>
-            <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.montserrat, marginBottom: 10 }}>Budget:</Text>
+            <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text_bold, marginBottom: 10 }}>Budget:</Text>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.montserrat }}>{spent}€</Text>
+                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent}€</Text>
                 <ProgressBar progress={percent} color={(spent < budget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, minWidth: "60%" }} />
-                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.montserrat }}>{budget}€</Text>
+                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{budget}€</Text>
             </View>
-            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.montserrat, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget) + "€ 😥"}</Text>
+            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget) + "€ 😥"}</Text>
         </View>
     )
 }

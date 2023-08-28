@@ -110,9 +110,9 @@ export default function Vote({ item, home, travel, loadPosts, isLoading }) {
                                     <Image source={require("../../assets/image/pin.png")} style={{ width: 22, height: 22, tintColor: "lightgray", marginRight: 10 }} />
                                     {
                                         (item.pinned) ?
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Rimuovi pin</Text>
+                                            <Text style={{ fontFamily: font.text, fontSize: 20 }}>Rimuovi pin</Text>
                                             :
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Aggiungi pin</Text>
+                                            <Text style={{ fontFamily: font.text, fontSize: 20 }}>Aggiungi pin</Text>
                                     }
                                 </View>
                             </TouchableOpacity>
@@ -132,7 +132,7 @@ export default function Vote({ item, home, travel, loadPosts, isLoading }) {
                                     style={{ paddingTop: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
                                 >
                                     <Image source={require("../../assets/image/icona-cestino.png")} style={{ width: 22, height: 22, tintColor: "red", marginRight: 10 }} />
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "red" }}>Elimina post</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: "red" }}>Elimina post</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -265,6 +265,6 @@ const styles = StyleSheet.create({
         color: "gray",
         fontSize: 15,
         marginLeft: 15,
-        fontFamily: font.montserrat
+        fontFamily: font.text
     }
 })

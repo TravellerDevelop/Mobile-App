@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
         color: '#000',
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginTop: 10,
     },
     dots: {
@@ -66,7 +66,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                                     style={{ borderBottomWidth: 1, borderBottomColor: "lightgray", paddingBottom: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
                                 >
                                     <Image source={require("../../assets/image/icona-download.png")} style={{ width: 22, height: 22, tintColor: "gray", marginRight: 10 }} />
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "black" }}>Salva nella galleria</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: "black" }}>Salva nella galleria</Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -88,9 +88,9 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                                     <Image source={require("../../assets/image/pin.png")} style={{ width: 22, height: 22, tintColor: "lightgray", marginRight: 10 }} />
                                     {
                                         (item.pinned) ?
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Rimuovi pin</Text>
+                                            <Text style={{ fontFamily: font.text, fontSize: 20 }}>Rimuovi pin</Text>
                                             :
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20 }}>Aggiungi pin</Text>
+                                            <Text style={{ fontFamily: font.text, fontSize: 20 }}>Aggiungi pin</Text>
                                     }
                                 </View>
                             </TouchableOpacity>
@@ -109,7 +109,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
                                     style={{ paddingTop: 10, flexDirection: "row", justifyContent: "flex-start", alignItems: "center" }}
                                 >
                                     <Image source={require("../../assets/image/icona-cestino.png")} style={{ width: 22, height: 22, tintColor: "red", marginRight: 10 }} />
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "red" }}>Elimina post</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: "red" }}>Elimina post</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>

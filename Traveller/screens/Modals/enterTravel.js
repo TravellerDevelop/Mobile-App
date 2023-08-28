@@ -14,11 +14,11 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
         <Modal animationType="slide" visible={visibility}>
             <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                 <TouchableOpacity style={{ position: "absolute", top: 20, right: 20 }} onPress={() => setVisibility(false)}>
-                    <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.montserrat }}>Annulla</Text>
+                    <Text style={{ color: color.primary, fontSize: 18, fontFamily: font.text }}>Annulla</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>Entra in un nuovo viaggio</Text>
                 <Text style={styles.text}>Inserisci il codice a 5 cifre che trovi nella home page del viaggio:</Text>
-                {error ? <Text style={{ color: "red", fontSize: 16, fontFamily: font.montserrat }}>{error}</Text> : null}
+                {error ? <Text style={{ color: "red", fontSize: 16, fontFamily: font.text }}>{error}</Text> : null}
                 <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Codice invito" maxLength={5} onChangeText={(value) => setCode(value)} />
                 <TouchableOpacity style={[{ borderRadius: 10, padding: 10, width: "80%" }, (code.length < 5) ? { backgroundColor: "lightGray" } : { backgroundColor: color.primary, }, (loading) ? { opacity: 0, height: 0 } : { opacity: 100 }]} onPress={async () => {
                     if (code.length == 5) {
@@ -50,7 +50,7 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
                             })
                     }
                 }}>
-                    <Text style={{ color: "white", textAlign: "center", fontSize: 18, fontFamily: font.montserrat }}>Entra</Text>
+                    <Text style={{ color: "white", textAlign: "center", fontSize: 18, fontFamily: font.text_bold }}>Entra</Text>
                 </TouchableOpacity>
                 {(loading)
                     ?
@@ -71,12 +71,12 @@ const styles = StyleSheet.create({
         color: color.primary,
         fontSize: 23,
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text_bold,
     },
     text: {
         fontSize: 18,
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginTop: 10,
         marginBottom: 20,
         marginLeft: 20,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         width: "80%",
         height: 50,
         marginBottom: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         borderBottomColor: color.secondary,
         borderBottomWidth: 2,
     },

@@ -32,26 +32,26 @@ export const ComponentStyles = StyleSheet.create({
         color: "#000",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     nameContainer: {
         flexDirection: "row",
         justifyContent: "flex-start",
         alignItems: "center",
-        marginBottom: 5,
+        marginBottom: 0,
     },
     nameText: {
         color: "#000",
         fontSize: 16,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginRight: 5,
     },
     datetimeText: {
         color: "#000",
         fontSize: 12,
-        fontFamily: font.montserratLight,
-        marginBottom: 10,
+        fontFamily: font.text_light,
+        marginBottom: 5,
     },
     rowVote: {
         flexDirection: "row",
@@ -70,13 +70,13 @@ export const ComponentStyles = StyleSheet.create({
         color: "#FFF",
         fontSize: 16,
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     questionText: {
         color: "#000",
         fontSize: 18,
         textAlign: "left",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginBottom: 10,
     },
     pinned: {
@@ -88,7 +88,7 @@ export const ComponentStyles = StyleSheet.create({
     pinnedText: {
         color: "gray",
         fontSize: 12,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     Badge: {
         backgroundColor: "#4900FF",
@@ -106,7 +106,7 @@ export const ComponentStyles = StyleSheet.create({
     BadgeText: {
         color: "#FFF",
         fontSize: 13,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         marginRight: 5,
         marginLeft: 5,
     },

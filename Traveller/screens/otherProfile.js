@@ -5,12 +5,14 @@ import { color, font, paddingTopPage, serverLink } from "../global/globalVariabl
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
 import AnimatedLottieView from "lottie-react-native";
+import Card from "../shared/card";
 
 export default function OtherProfile({ navigation, route }) {
     let [myData, setMyData] = React.useState({});
     let [user, setUser] = React.useState({});
     let [ntravel, setNtravel] = React.useState("--");
     let [requestStatus, setRequestStatus] = React.useState(false);
+    let [myTravel, setMyTravel] = React.useState([]);
 
     let [followed, setFollowed] = React.useState("--");
     let [followers, setFollowers] = React.useState("--");
@@ -49,6 +51,14 @@ export default function OtherProfile({ navigation, route }) {
                             .catch((error) => {
                                 console.log(error);
                             })
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
+
+                axios.get(serverLink + "api/travel/takeByCreator?username=" + response.data[0].username)
+                    .then((response) => {
+                        setMyTravel(response.data);
                     })
                     .catch((error) => {
                         console.log(error);
@@ -143,10 +153,27 @@ export default function OtherProfile({ navigation, route }) {
                             }
                         </View>
                     </TouchableNativeFeedback>
-                    <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
-                        <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
-                        <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
-                    </View>
+                    {
+                        (ntravel == 0) ?
+                            <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 50 }}>
+                                <AnimatedLottieView source={require("../assets/animation/sadGuyWalking.json")} autoPlay loop style={{ width: 150, height: 150 }} />
+                                <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
+                            </View>
+                            :
+                            <View style={{ width: "100%" }}>
+                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
+                                {
+                                    (myTravel.length > 0) ?
+                                        <FlatList
+                                            scrollEnabled={false}
+                                            data={myTravel}
+                                            renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
+                                        />
+                                        :
+                                        null
+                                }
+                            </View>
+                    }
                 </View >
             </View>
         </ScrollView>
