@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, FlatList, Text, TouchableNativeFeedback, RefreshControl } from 'react-native';
-import { color, font, serverLink } from '../global/globalVariable';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, View, ScrollView, FlatList, Text, RefreshControl, Image, Animated } from 'react-native';
+import { font, serverLink } from '../global/globalVariable';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
-import NewPost from './Modals/NewPost';
 import axios from 'axios';
 import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
-import { ActivityIndicator, Button } from 'react-native-paper';
+import { ActivityIndicator } from 'react-native-paper';
 import { getData } from '../shared/data/localdata';
 import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
 // import socketService from '../components/utils/socketServise';
+import { IconButton, MD3Colors } from 'react-native-paper';
 import { io } from "socket.io-client";
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import MenuNewPost from '../components/MenuNewPost';
 
 // const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
-
 
 export default function TravelDetail({ navigation, route }) {
 
@@ -23,6 +24,8 @@ export default function TravelDetail({ navigation, route }) {
     let [postLoading, setPostLoading] = useState(true);
 
     let [postData, setPostData] = useState([]);
+
+    // console.log(PostType)
 
     useEffect(() => {
         loadPosts(route.params._id);
@@ -87,9 +90,15 @@ export default function TravelDetail({ navigation, route }) {
     }
 
 
+
     return (
         <>
             <View style={styles.container}>
+                <MenuNewPost
+                    navigation={navigation}
+                    data={route.params}
+                    onAddData={onAddData}
+                />
                 <ScrollView
                     style={{
                         flex: 1,
@@ -106,7 +115,7 @@ export default function TravelDetail({ navigation, route }) {
 
                     <View style={(route.params.image) ? { flex: 1, backgroundColor: "#000" } : { flex: 1, backgroundColor: "#4960FF" }}>
                         <View style={styles.contentContainer}>
-                            {
+                            {/* {
                                 (!route.params.closed) && (
                                     <TouchableNativeFeedback
                                         onPress={() => {
@@ -119,7 +128,7 @@ export default function TravelDetail({ navigation, route }) {
                                         </View>
                                     </TouchableNativeFeedback>
                                 )
-                            }
+                            } */}
 
                             {
                                 (route.params.budget != null && route.params.budget != "") ?

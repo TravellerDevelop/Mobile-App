@@ -1,20 +1,14 @@
 import React from "react";
-import ContentLoader, { Rect, Circle, Path } from "react-content-loader/native"
+// import ContentLoader, { Rect, Circle, Path } from "react-content-loader/native"
 import { color } from "../global/globalVariable";
 import { StyleSheet, View } from "react-native";
+import SkeletonScreen from "../components/SkeletonScreen";
 
 export default function LoadingCard() {
     return (
         <View style={styles.container}>
-            <ContentLoader
-                speed={2}
-                width={400}
-                height={150}
-                viewBox="0 0 400 150"
-            >
-                <Rect x="10" y="15" rx="7.5" ry="7.5" width="210" height="15" />
-                <Rect x="10" y="45" rx="5" ry="5" width="190" height="10" />
-            </ContentLoader>
+                <SkeletonScreen borderRadius={12.5} width={190} height={20} style={{marginTop: 5}} />
+                <SkeletonScreen borderRadius={7.5} width={150} height={10} style={{marginTop: 15}} />
         </View>
     )
 }
@@ -22,8 +16,8 @@ export default function LoadingCard() {
 let styles = StyleSheet.create({
     container: {
         backgroundColor: color.primary,
-        height: 140,
-        width: 250,
+        height: 120,
+        width: 270,
         borderRadius: 10,
         margin: 10,
         padding: 10,

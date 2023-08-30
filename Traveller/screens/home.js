@@ -8,6 +8,7 @@ import axios from 'axios';
 import { getData, storeJsonData, storeStringData, getStringData } from '../shared/data/localdata';
 import { Avatar } from '@react-native-material/core';
 import Swiper from 'react-native-swiper';
+import LoadingCard from '../shared/loadingCard';
 
 // Componenti
 import TextComponent from '../components/Travel-Componets/textcomponent';
@@ -351,9 +352,11 @@ export default function Home({ navigation }) {
                         <Text style={styles.subtitle}>I tuoi prossimi viaggi:</Text>
                         {
                             (joinedTravelsLoading) && (
-                                <View style={{ height: 140, width: "100%", justifyContent: "center", alignItems: "center" }}>
-                                    <ActivityIndicator size="large" color={color.secondary} />
-                                </View>
+                                <ScrollView horizontal>
+                                    <LoadingCard />
+                                    <LoadingCard />
+                                    <LoadingCard />
+                                </ScrollView>
                             )
                         }
                         {

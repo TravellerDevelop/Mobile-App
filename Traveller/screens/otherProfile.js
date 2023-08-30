@@ -1,11 +1,12 @@
-import React from "react";
-import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView, Dimensions } from "react-native";
 import { Avatar } from "@react-native-material/core";
 import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
 import AnimatedLottieView from "lottie-react-native";
 import Card from "../shared/card";
+import SkeletonScreen from "../components/SkeletonScreen";
 
 export default function OtherProfile({ navigation, route }) {
     let [myData, setMyData] = React.useState({});
@@ -17,7 +18,7 @@ export default function OtherProfile({ navigation, route }) {
     let [followed, setFollowed] = React.useState("--");
     let [followers, setFollowers] = React.useState("--");
 
-    let [refreshing, setRefreshing] = React.useState(false);
+    let [isLoading, setIsLoading] = useState(false)
 
     async function getUserData() {
         setMyData(await getData("user"));
@@ -25,6 +26,7 @@ export default function OtherProfile({ navigation, route }) {
     }
 
     React.useEffect(() => {
+        setIsLoading(true);
         getUserData();
 
         axios.get(serverLink + "api/user/takeUserById?id=" + route.params.userid)
@@ -47,6 +49,7 @@ export default function OtherProfile({ navigation, route }) {
                                     setRequestStatus("Not sent");
                                 }
 
+                                setIsLoading(false)
                             })
                             .catch((error) => {
                                 console.log(error);
@@ -88,32 +91,80 @@ export default function OtherProfile({ navigation, route }) {
     return (
         <ScrollView>
             <View style={styles.container}>
-
                 <TouchableNativeFeedback onPress={() => { navigation.goBack() }}>
                     <Image source={require("../assets/image/icona-freccia-left.png")} style={styles.back} />
                 </TouchableNativeFeedback>
                 <View style={styles.content}>
                     <View style={styles.avatarview}>
-                        <Avatar label={user.name + " " + user.surname} autoColor size={100} labelStyle={{ fontFamily: font.montserrat, fontSize: 50 }} style={styles.avatar} />
+                        {
+                            isLoading ?
+                                <SkeletonScreen width={100} height={100} borderRadius={100} />
+                                :
+                                <Avatar label={user.name + " " + user.surname} autoColor size={100} labelStyle={{ fontFamily: font.text, fontSize: 50 }} style={styles.avatar} />
+                        }
                     </View>
-                    <Text style={styles.name}>{user.name} {user.surname}</Text>
-                    <Text style={styles.nickname}>@{user.username}</Text>
+                    {
+                        isLoading ?
+                            <View style={{display: "flex", flexDirection: "row"}}>
+                                <SkeletonScreen width={150} height={40} borderRadius={5} />
+                                <SkeletonScreen width={150} height={40} borderRadius={5} style={{marginLeft: 20}} />
+                            </View>
+                            :
+                            <Text style={styles.name}>{user.name} {user.surname}</Text>
+                        }
+                    {
+                        isLoading ? 
+                        <SkeletonScreen width={100} height={25} borderRadius={5} style={{marginTop: 10}}/>
+                        :
+                        <Text style={styles.nickname}>@{user.username}</Text>
+
+                    }
                     <View style={styles.row}>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext} >{ntravel}</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{ntravel}</Text>
+                                }
                                 <Text style={styles.subtext}>Viaggi</Text>
                             </View>
                         </TouchableNativeFeedback>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext}>{followers}</Text>
-                                <Text style={styles.subtext}>Follower</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{followers}</Text>
+                                }
+                                <Text style={styles.subtext}>Followers</Text>
                             </View>
                         </TouchableNativeFeedback>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext}>{followed}</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{followed}</Text>
+                                }
                                 <Text style={styles.subtext}>Seguiti</Text>
                             </View>
                         </TouchableNativeFeedback>
@@ -141,17 +192,27 @@ export default function OtherProfile({ navigation, route }) {
                             }
                         }
                     }>
-                        <View style={styles.button}>
-                            {
-                                (requestStatus == "Sent") ?
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Richiesta inviata</Text>
-                                    : (requestStatus == "Followed") ?
-                                        <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Segui già</Text>
-                                        : (requestStatus == "Not sent") ?
-                                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Inizia a seguire</Text>
-                                            : null
-                            }
-                        </View>
+                        {
+                            isLoading ?
+                                <SkeletonScreen
+                                    width={(Dimensions.get("window").width / 100) * 90}
+                                    height={50}
+                                    borderRadius={10}
+                                    style={{ marginBottom: 20 }}
+                                />
+                                :
+                                <View style={styles.button}>
+                                    {
+                                        (requestStatus == "Sent") ?
+                                            <Text style={{ fontFamily: font.text, fontSize: 20, color: "#FFF" }}>Richiesta inviata</Text>
+                                            : (requestStatus == "Followed") ?
+                                                <Text style={{ fontFamily: font.text, fontSize: 20, color: "#FFF" }}>Segui già</Text>
+                                                : (requestStatus == "Not sent") ?
+                                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: "#FFF" }}>Inizia a seguire</Text>
+                                                    : null
+                                    }
+                                </View>
+                        }
                     </TouchableNativeFeedback>
                     {
                         (ntravel == 0) ?
@@ -161,9 +222,11 @@ export default function OtherProfile({ navigation, route }) {
                             </View>
                             :
                             <View style={{ width: "100%" }}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
                                 {
-                                    (myTravel.length > 0) ?
+                                    !isLoading && <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da {user.name}:</Text>
+                                }
+                                {
+                                    (myTravel.length > 0 && !isLoading) ?
                                         <FlatList
                                             scrollEnabled={false}
                                             data={myTravel}
@@ -211,13 +274,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     name: {
-        fontFamily: font.montserratBold,
-        fontSize: 23,
+        fontFamily: font.text_bold,
+        fontSize: 30,
         color: color.secondary,
     },
     nickname: {
-        fontFamily: font.montserrat,
-        fontSize: 15,
+        fontFamily: font.text,
+        fontSize: 20,
         color: color.secondary,
     },
     row: {
@@ -234,8 +297,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     subtext: {
-        fontFamily: font.montserrat,
-        fontSize: 15,
+        fontFamily: font.text,
+        fontSize: 18,
         color: "#000",
     },
     button: {
@@ -248,7 +311,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     err: {
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 20,
         color: "#000",
     },

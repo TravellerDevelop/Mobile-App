@@ -19,5 +19,5 @@ export const appVersion = "1.0.2";
 
 export const paddingTopPage = 15;
 
-export const serverLink = "http://192.168.1.127:1337/"
-// export const serverLink = "https://traveller-ttze.onrender.com/"
+// export const serverLink = "http://192.168.1.127:1337/"
+export const serverLink = "https://traveller-ttze.onrender.com/"

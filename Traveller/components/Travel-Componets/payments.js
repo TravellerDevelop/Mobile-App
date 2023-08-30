@@ -169,7 +169,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                         <View style={ComponentStyles.nameContainer}>
                             <Text style={ComponentStyles.nameText}>@{item.creator}</Text>
                         </View>
-                        <Text style={ComponentStyles.datetimeText}>{item.dateTime}</Text>
+                        <Text style={ComponentStyles.datetimeText}>{item.dateTime.substring(0, item.dateTime.length - 3)}</Text>
                     </View>
                     <View>
                         <Text style={ComponentStyles.contentText}>{ (!isPersonal) ? "Ti ha inviato una richiesta di:" : "Pagamento personale di:"}</Text>

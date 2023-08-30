@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, TouchableOpacity, Image, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, Image, SafeAreaView, LogBox } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { Button, Checkbox, SegmentedButtons } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
@@ -13,13 +13,16 @@ let textParams;
 let paymentParams;
 let imageParams;
 
-// export default function NewPost({ data, refresh }) {
 export default function NewPost({ navigation, route }) {
     let data = route.params.data;
     let refresh = route.params.refresh;
 
     let [images, setImages] = useState([]);
     let [imagesDescription, setImagesDescription] = useState("");
+
+    LogBox.ignoreLogs([
+        'Non-serializable values were found in the navigation state',
+    ]);
 
     const pickImages = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -61,7 +64,6 @@ export default function NewPost({ navigation, route }) {
                 })
         }
 
-        console.log(links)
         imageParams.source = links;
     }
 
@@ -151,7 +153,7 @@ export default function NewPost({ navigation, route }) {
     }, [])
 
 
-    let [type, setType] = React.useState("");
+    let [type, setType] = React.useState(route.params.type);
     let [pinned, setPinned] = React.useState(false);
     let [paymentDestinator, setpaymentDestinator] = React.useState("all");
 
@@ -161,12 +163,12 @@ export default function NewPost({ navigation, route }) {
         >
             <Text style={[styles.title]} >Crea un nuovo post</Text>
             <ScrollView style={{ width: "100%", padding: 20 }} >
-                <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text>
-                <ScrollView
+                {/* <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text> */}
+                {/* <ScrollView
                     horizontal={true}
                     style={{ paddingBottom: 10 }}
-                >
-                    <SegmentedButtons
+                > */}
+                {/* <SegmentedButtons
                         density="small"
                         style={{ fontFamily: font.montserrat }}
                         buttons={PostType}
@@ -174,8 +176,8 @@ export default function NewPost({ navigation, route }) {
                         value={type}
                         checkedColor={color.primary}
                     >
-                    </SegmentedButtons>
-                </ScrollView>
+                    </SegmentedButtons> */}
+                {/* </ScrollView> */}
                 {type == "text" ? <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
                 {type == "payments" ?
                     <>
@@ -476,24 +478,25 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         color: "black",
-        textAlign: "center",
-        marginTop: 20,
-        fontFamily: font.montserrat,
+        textAlign: "left",
+        marginLeft: 20,
+        marginTop: 5,
+        fontFamily: font.text,
     },
     subtitle: {
         fontSize: 16,
         color: "black",
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
     },
     input: {
         backgroundColor: "white",
         fontSize: 16,
-        marginTop: 20,
+        marginTop: 10,
         width: "100%",
         height: 50,
         marginBottom: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         borderBottomColor: color.secondary,
         borderBottomWidth: 2,
     },
@@ -507,7 +510,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: "white",
-        fontFamily: font.montserrat,
+        fontFamily: font.text_bold,
         fontSize: 18,
         textAlign: "center",
         lineHeight: 40,
@@ -515,11 +518,11 @@ const styles = StyleSheet.create({
     inputMultiline: {
         backgroundColor: "white",
         padding: 10,
-        marginTop: 10,
+        marginTop: 0,
         width: "100%",
         height: 100,
         marginBottom: 10,
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         borderBottomColor: color.secondary,
         borderBottomWidth: 2,
         borderTopColor: "lightgray",
