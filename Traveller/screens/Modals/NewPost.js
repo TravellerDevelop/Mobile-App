@@ -20,6 +20,14 @@ export default function NewPost({ navigation, route }) {
     let [images, setImages] = useState([]);
     let [imagesDescription, setImagesDescription] = useState("");
 
+    let [toDoParams, setToDoParams] = useState({
+        pinned: false,
+        creator: "",
+        description: "",
+        items: [{ key: 1, label: "", checked: false }],
+        travel: ""
+    })
+
     LogBox.ignoreLogs([
         'Non-serializable values were found in the navigation state',
     ]);
@@ -56,7 +64,6 @@ export default function NewPost({ navigation, route }) {
                 name: fileName,
             })
                 .then((res) => {
-                    console.log(res.data)
                     links.push(res.data)
                 })
                 .catch((err) => {
@@ -70,13 +77,6 @@ export default function NewPost({ navigation, route }) {
     let [user, setUser] = useState({});
 
     let [isLoading, setIsLoading] = useState(false);
-
-    let PostType = [
-        { label: "Testo", value: "text", icon: require('../../assets/image/icona-documento.png'), checkedColor: color.primary },
-        { label: "Sondaggio", value: "vote", icon: require('../../assets/image/icona-istogramma.png'), checkedColor: color.primary },
-        { label: "Pagamento", value: "payments", icon: require('../../assets/image/icona-wallet.png'), checkedColor: color.primary },
-        { label: "Immagini", value: "images", icon: require('../../assets/image/icona-immagine.png'), checkedColor: color.primary },
-    ]
 
     // Payment
     let [checked, setChecked] = useState(false);
@@ -132,6 +132,11 @@ export default function NewPost({ navigation, route }) {
                 source: [],
                 description: "",
             }
+
+            let ausToDoParams = toDoParams;
+            ausToDoParams.creator = aus.username;
+            ausToDoParams.travel = data._id;
+            setToDoParams(ausToDoParams);
 
             return aus;
         }
@@ -201,7 +206,7 @@ export default function NewPost({ navigation, route }) {
                             style={{ paddingBottom: 10 }}
                         >
                             <SegmentedButtons
-                                style={{ fontFamily: font.montserrat }}
+                                style={{ fontFamily: font.text }}
                                 buttons={[{ label: "Tutti", value: "all", checkedColor: color.primary }, { label: "Personalizzato", value: "custom", checkedColor: color.primary }, { label: "Personale", value: "me", checkedColor: color.primary }]}
                                 onValueChange={(value) => {
                                     setpaymentDestinator(value);
@@ -363,6 +368,70 @@ export default function NewPost({ navigation, route }) {
                     </View>
                 )}
 
+                {
+                    type == "todo" && (
+                        <>
+                            <TextInput style={styles.input} placeholder="Descrizione" onChangeText={(value) => {
+                                let aus = toDoParams;
+                                aus.description = value;
+                                setToDoParams(aus);
+                            }} />
+                            <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 0, marginTop: 5 }]}>Campi della lista:</Text>
+                            {
+                                toDoParams.items.map(item => (
+                                    <View style={styles.row} key={item.key}>
+                                        <TextInput
+                                            style={[styles.input, { width: "90%" }, (item.label == "") ? { borderBottomColor: "red" } : { borderBottomColor: "#4900FF" }]}
+                                            placeholder={"Campo " + item.key}
+                                            onChangeText={(text) => {
+                                                setToDoParams(prevState => ({
+                                                    ...prevState,
+                                                    items: prevState.items.map(i => {
+                                                        if (i.key === item.key) {
+                                                            return { ...i, label: text };
+                                                        }
+                                                        return i;
+                                                    })
+                                                }));
+                                            }}
+                                        />
+                                        <TouchableNativeFeedback
+                                            onPress={
+                                                () => {
+                                                    if (toDoParams.items.length != 1) {
+                                                        setToDoParams(prevState => ({
+                                                            ...prevState,
+                                                            items: prevState.items.filter(i => i.key !== item.key)
+                                                        }));
+                                                    }
+                                                }
+                                            }
+                                        >
+                                            <Image source={require('../../assets/image/icona-cestino.png')} style={styles.delete} />
+                                        </TouchableNativeFeedback>
+                                    </View>
+                                ))
+                            }
+
+                            <TouchableNativeFeedback
+                                onPress={
+                                    () => {
+                                        const newItem = { key: toDoParams.items[toDoParams.items.length - 1].key + 1, label: "", checked: false };
+                                        setToDoParams(prevState => ({
+                                            ...prevState,
+                                            items: [...prevState.items, newItem]
+                                        }));
+                                    }
+                                }
+                            >
+                                <View style={styles.add}>
+                                    <Text style={styles.addText}>+ Aggiungi campo</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                        </>
+                    )
+                }
+
 
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }} >
                     {
@@ -397,62 +466,72 @@ export default function NewPost({ navigation, route }) {
                 <TouchableNativeFeedback onPress={async () => {
                     setIsLoading(true);
                     let param = []
-                    if (type == "vote") {
-                        voteParams.pinned = pinned;
-                        voteParams.question = question;
-                        param = voteParams;
-                    }
-                    else if (type == "text") {
-                        textParams.pinned = pinned;
-                        param = textParams
-                    }
-                    else if (type == "payments") {
-                        paymentParams.pinned = pinned;
 
-                        if (paymentDestinator == "custom") {
-                            paymentParams.destinator = []
-                            checked.forEach(element => {
-                                if (element.selected) {
-                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
-                                }
-                            });
-                        }
-                        else if (paymentDestinator == "all") {
-                            paymentParams.destinator = []
-                            participants.forEach(element => {
-                                if (element.userid != user._id) {
-                                    paymentParams.destinator.push({ userid: element.userid, payed: false })
-                                }
-                            });
-                        }
-                        else if (paymentDestinator == "me") {
-                            paymentParams.destinator = []
-                            paymentParams.destinator.push({ userid: user._id, payed: false, personal: true })
-                        }
+                    switch (type) {
+                        case "vote":
+                            voteParams.pinned = pinned;
+                            voteParams.question = question;
+                            param = voteParams;
+                            break;
+                        case "text":
+                            textParams.pinned = pinned;
+                            param = textParams;
+                            break;
+                        case "payments":
+                            paymentParams.pinned = pinned;
 
-                        paymentParams.paymentType = paymentType;
-                        paymentParams.amount = amount;
-                        paymentParams.description = paymentDescription;
+                            switch (paymentDestinator) {
+                                case "custom":
+                                    paymentParams.destinator = [];
+                                    checked.forEach(element => {
+                                        if (element.selected) {
+                                            paymentParams.destinator.push({ userid: element.userid, payed: false });
+                                        }
+                                    });
+                                    break;
+                                case "all":
+                                    paymentParams.destinator = [];
+                                    participants.forEach(element => {
+                                        if (element.userid != user._id) {
+                                            paymentParams.destinator.push({ userid: element.userid, payed: false });
+                                        }
+                                    });
+                                    break;
+                                case "me":
+                                    paymentParams.destinator = [];
+                                    paymentParams.destinator.push({ userid: user._id, payed: false, personal: true });
+                                    break;
+                            }
 
-                        param = paymentParams
-                    }
-                    else if (type == "images") {
-                        await addImage()
-                        imageParams.pinned = pinned;
-                        imageParams.description = imagesDescription;
-                        param = imageParams
+                            paymentParams.paymentType = paymentType;
+                            paymentParams.amount = amount;
+                            paymentParams.description = paymentDescription;
+
+                            param = paymentParams;
+                            break;
+                        case "images":
+                            await addImage()
+                            imageParams.pinned = pinned;
+                            imageParams.description = imagesDescription;
+                            param = imageParams
+                            break;
+                        case "todo":
+                            let aus = toDoParams;
+                            aus.pinned = pinned;
+                            param = aus;
+                            break;
                     }
 
                     param.type = type;
 
                     if (param != []) {
                         axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
-                            setIsLoading(false)
-                            refresh(param)
-                            navigation.goBack()
+                            setIsLoading(false);
+                            refresh(param);
+                            navigation.goBack();
                         }).catch((error) => {
-                            setIsLoading(false)
-                            console.log(error)
+                            setIsLoading(false);
+                            console.log(error);
                         })
                     }
                 }} >
@@ -492,7 +571,6 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: "white",
         fontSize: 16,
-        marginTop: 10,
         width: "100%",
         height: 50,
         marginBottom: 10,
@@ -531,6 +609,30 @@ const styles = StyleSheet.create({
         borderLeftWidth: 1,
         borderRightColor: "lightgray",
         borderRightWidth: 1,
-        borderRadius: 10,
     },
+    add: {
+        borderWidth: 2,
+        height: 40,
+        borderColor: "#4900FF",
+        borderStyle: "dashed",
+        borderRadius: 5,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    addText: {
+        color: "#4900FF",
+        fontFamily: font.text_bold
+    },
+    row: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    delete: {
+        width: 25,
+        height: 25,
+        marginLeft: 5,
+        tintColor: "red"
+    }
 });

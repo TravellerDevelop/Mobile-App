@@ -1,23 +1,30 @@
-import React from "react";
-import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView, RefreshControl } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Text, Image, TouchableNativeFeedback, FlatList, ScrollView, RefreshControl, Dimensions } from "react-native";
 import { font, color, paddingTopPage, serverLink } from "../global/globalVariable";
 import { Avatar } from "@react-native-material/core";
 import AnimatedLottieView from "lottie-react-native";
 import { getData } from "../shared/data/localdata";
 import axios from "axios";
 import Card from "../shared/card";
+import SkeletonScreen from "../components/SkeletonScreen";
 
 export default function MyProfile({ navigation, route }) {
     let [user, setUser] = React.useState({});
-    let [ntravel, setNtravel] = React.useState("--");
+    let [ntravel, setNtravel] = React.useState(null);
     let [myTravel, setMyTravel] = React.useState([]);
+    let [isLoading, setIsLoading] = useState(true);
 
-    let [followed, setFollowed] = React.useState("--");
-    let [followers, setFollowers] = React.useState("--");
+    let [followed, setFollowed] = React.useState(null);
+    let [followers, setFollowers] = React.useState(null);
 
     let [refreshing, setRefreshing] = React.useState(false);
 
     async function getUserData() {
+        setIsLoading(true);
+        setNtravel(null);
+        setMyTravel([]);
+        setFollowers(null);
+        setFollowed(null);
         let data = await getData("user");
         axios.get(serverLink + "api/user/takeTravelsNum?username=" + data.username)
             .then((response) => {
@@ -31,7 +38,6 @@ export default function MyProfile({ navigation, route }) {
         axios.get(serverLink + "api/travel/takeByCreator?username=" + data.username)
             .then((response) => {
                 setMyTravel(response.data);
-                console.log(response.data);
             })
             .catch((error) => {
                 console.log(error);
@@ -52,12 +58,19 @@ export default function MyProfile({ navigation, route }) {
             .catch((error) => {
                 console.log(error);
             })
+
     }
-    
+
     React.useEffect(() => {
         getUserData();
     }, [])
-    
+
+    React.useEffect(() => {
+        if (ntravel != null && myTravel !== [] && followers != null && followed != null) {
+            setIsLoading(false);
+        }
+    }, [ntravel, myTravel, followers, followed])
+
     const onRefresh = async () => {
         setRefreshing(true);
         getUserData();
@@ -80,35 +93,93 @@ export default function MyProfile({ navigation, route }) {
                 </TouchableNativeFeedback>
                 <View style={styles.content}>
                     <View style={styles.avatarview}>
-                        <Avatar label={user.name + " " + user.surname} autoColor size={100} labelStyle={{ fontFamily: font.montserrat, fontSize: 50 }} style={styles.avatar} />
+                        {
+                            isLoading ?
+                                <SkeletonScreen width={100} height={100} borderRadius={100} />
+                                :
+                                <Avatar label={user.name + " " + user.surname} autoColor size={100} labelStyle={{ fontFamily: font.text, fontSize: 50 }} style={styles.avatar} />
+                        }
                     </View>
-                    <Text style={styles.name}>{user.name} {user.surname}</Text>
-                    <Text style={styles.nickname}>@{user.username}</Text>
+                    {
+                        isLoading ?
+                            <View style={{ display: "flex", flexDirection: "row" }}>
+                                <SkeletonScreen width={150} height={40} borderRadius={5} />
+                                <SkeletonScreen width={150} height={40} borderRadius={5} style={{ marginLeft: 20 }} />
+                            </View>
+                            :
+                            <Text style={styles.name}>{user.name} {user.surname}</Text>
+                    }
+                    {
+                        isLoading ?
+                            <SkeletonScreen width={100} height={25} borderRadius={5} style={{ marginTop: 10 }} />
+                            :
+                            <Text style={styles.nickname}>@{user.username}</Text>
+                    }
                     <View style={styles.row}>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext} >{ntravel}</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{ntravel}</Text>
+                                }
                                 <Text style={styles.subtext}>Viaggi</Text>
                             </View>
                         </TouchableNativeFeedback>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext}>{followers}</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{followers}</Text>
+                                }
                                 <Text style={styles.subtext}>Follower</Text>
                             </View>
                         </TouchableNativeFeedback>
                         <TouchableNativeFeedback>
                             <View style={styles.column}>
-                                <Text style={styles.subtext}>{followed}</Text>
+                                {
+                                    isLoading ? (
+                                        <SkeletonScreen
+                                            width={50}
+                                            height={30}
+                                            borderRadius={5}
+                                        />
+                                    )
+                                        :
+                                        <Text style={styles.subtext} >{followed}</Text>
+                                }
                                 <Text style={styles.subtext}>Seguiti</Text>
                             </View>
                         </TouchableNativeFeedback>
                     </View>
-                    <TouchableNativeFeedback>
-                        <View style={styles.button}>
-                            <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
-                        </View>
-                    </TouchableNativeFeedback>
+                    {
+                        isLoading ?
+                            <SkeletonScreen
+                                width={(Dimensions.get("window").width / 100) * 90}
+                                height={50}
+                                borderRadius={10}
+                                style={{ marginBottom: 20 }}
+                            />
+                            :
+                            <TouchableNativeFeedback>
+                                <View style={styles.button}>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 20, color: "#FFF" }}>Modifica profilo</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                    }
 
                     {
                         (ntravel == 0) ?
@@ -118,16 +189,18 @@ export default function MyProfile({ navigation, route }) {
                             </View>
                             :
                             <View style={{ width: "100%" }}>
-                                <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
+                                <Text style={{ fontFamily: font.text, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da te:</Text>
                                 {
-                                    (myTravel.length > 0) ?
-                                        <FlatList
-                                            scrollEnabled={false}
-                                            data={myTravel}
-                                            renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
-                                        />
-                                        :
-                                        null
+                                    (!isLoading) && (
+                                        (myTravel.length > 0) ?
+                                            <FlatList
+                                                scrollEnabled={false}
+                                                data={myTravel}
+                                                renderItem={({ item }) => <Card vertical={true} data={item} navigation={navigation} />}
+                                            />
+                                            :
+                                            null
+                                    )
                                 }
                             </View>
                     }
@@ -167,14 +240,14 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     name: {
-        fontFamily: font.montserratBold,
-        fontSize: 23,
-        color: color.secondary,
+        fontFamily: font.text_bold,
+        fontSize: 30,
+        color: "black",
     },
     nickname: {
-        fontFamily: font.montserrat,
-        fontSize: 15,
-        color: color.secondary,
+        fontFamily: font.text,
+        fontSize: 20,
+        color: "black",
     },
     row: {
         display: "flex",

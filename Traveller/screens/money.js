@@ -114,22 +114,22 @@ export default function Money() {
                         <View style={styles.topCard}>
                             <View style={styles.row}>
                                 <View style={styles.minicard}>
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
-                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
                                 </View>
                                 <View style={styles.minicard}>
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
-                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear}€</Text>
                                 </View>
                             </View>
                             <View style={styles.row}>
                                 <View style={styles.minicard}>
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
-                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{totalToPay}€</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{totalToPay}€</Text>
                                 </View>
                                 <View style={styles.minicard}>
-                                    <Text style={{ fontFamily: font.montserrat, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
-                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{totalToGet}€</Text>
+                                    <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{totalToGet}€</Text>
                                 </View>
                             </View>
                         </View>
@@ -137,7 +137,7 @@ export default function Money() {
                         {
                             (chartDataLoading == false) ?
                                 <View style={styles.bottomCard}>
-                                    <Text style={{ fontFamily: font.montserratBold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
                                     <BarChart
                                         data={barChartData}
                                         width={Dimensions.get("window").width - 20}
@@ -187,7 +187,7 @@ let styles = StyleSheet.create({
     title: {
         color: "black",
         textAlign: "center",
-        fontFamily: font.montserrat,
+        fontFamily: font.text,
         fontSize: 25,
         marginLeft: 10
     },

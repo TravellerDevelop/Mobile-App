@@ -5,6 +5,7 @@ import { color, font, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
+import ParticipantsLoading from "../components/loading/ParticipantsLoading";
 
 export default function TravelPartecipants({ navigation, route }) {
     let [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
@@ -28,7 +29,7 @@ export default function TravelPartecipants({ navigation, route }) {
         for (let item of route.params.participants) {
             if (item.creator == true) {
                 setCreator(item);
-                if(item.userid == myData._id){ setitscreator(true); }
+                if (item.userid == myData._id) { setitscreator(true); }
             }
         }
 
@@ -57,64 +58,61 @@ export default function TravelPartecipants({ navigation, route }) {
                 <Text style={styles.description} >{route.params.description}</Text>
                 <Text style={styles.subtext}>Codice di invito: {route.params.code}</Text>
                 <Text style={styles.subtext}>{(usersData.length == 1) ? usersData.length + " partecipante" : usersData.length + " partecipanti"}</Text>
-                <FlatList
-                    data={usersData}
-                    renderItem={({ item }) => (
-                        <TouchableNativeFeedback
-                            onPress={() => {
-                                if (item._id != myData._id)
-                                    navigation.navigate("OtherProfile", { userid: item._id })
-                            }}
-                        >
-                            <View style={styles.avatarContainer}>
-                                <View style={styles.borderAvatarContainer}>
-                                    <Avatar autoColor size={40} label={item.name + " " + item.surname} />
-                                </View>
-                                <View>
-                                    <Text style={styles.text}>{item.name} {item.surname}</Text>
-                                    <Text style={[styles.subtext, { marginBottom: 0, marginTop: 0, marginLeft: 10 }]}>@{item.username}</Text>
-                                </View>
-                                {
-                                    (creator.userid == item._id) &&
-                                    (
-                                        <View style={styles.flag}>
-                                            <Text style={styles.flagText}>Creatore</Text>
-                                        </View>
-                                    )
-                                }
-                                {
-                                    (itscreator == true && creator.userid != item._id) &&
-                                    (
-                                        <TouchableNativeFeedback
-                                            onPress={() => {
-                                                axios.post(serverLink + "api/travel/leave", { userid: item._id, travel: route.params._id })
-                                                    .then((response) => {
-                                                        if (response.status == 200) {
-                                                            update();
-                                                        }
-                                                    })
-                                                    .catch((error) => {
-                                                        console.log(error);
-                                                    })
-                                            }}
-                                        >
-                                            <View style={styles.flagRemove}>
-                                                <Text style={styles.flagText}>Rimuovi</Text>
-                                            </View>
-                                        </TouchableNativeFeedback>
-                                    )
-                                }
-                            </View>
-                        </TouchableNativeFeedback>
-                    )}
-                />
                 {
-                    (isLoadingParticipants) &&
-                    (
-                        <View style={{ justifyContent: "center", alignItems: "center" }}>
-                            <ActivityIndicator size="large" color={color.primary} />
-                        </View>
-                    )
+                    isLoadingParticipants ?
+                        <ParticipantsLoading />
+                        :
+                        <FlatList
+                            data={usersData}
+                            renderItem={({ item }) => (
+                                <TouchableNativeFeedback
+                                    onPress={() => {
+                                        if (item._id != myData._id)
+                                            navigation.navigate("OtherProfile", { userid: item._id })
+                                    }}
+                                >
+                                    <View style={styles.avatarContainer}>
+                                        <View style={styles.borderAvatarContainer}>
+                                            <Avatar autoColor size={40} label={item.name + " " + item.surname} />
+                                        </View>
+                                        <View>
+                                            <Text style={styles.text}>{item.name} {item.surname}</Text>
+                                            <Text style={[styles.subtext, { marginBottom: 0, marginTop: 0, marginLeft: 10 }]}>@{item.username}</Text>
+                                        </View>
+                                        {
+                                            (creator.userid == item._id) &&
+                                            (
+                                                <View style={styles.flag}>
+                                                    <Text style={styles.flagText}>Creatore</Text>
+                                                </View>
+                                            )
+                                        }
+                                        {
+                                            (itscreator == true && creator.userid != item._id) &&
+                                            (
+                                                <TouchableNativeFeedback
+                                                    onPress={() => {
+                                                        axios.post(serverLink + "api/travel/leave", { userid: item._id, travel: route.params._id })
+                                                            .then((response) => {
+                                                                if (response.status == 200) {
+                                                                    update();
+                                                                }
+                                                            })
+                                                            .catch((error) => {
+                                                                console.log(error);
+                                                            })
+                                                    }}
+                                                >
+                                                    <View style={styles.flagRemove}>
+                                                        <Text style={styles.flagText}>Rimuovi</Text>
+                                                    </View>
+                                                </TouchableNativeFeedback>
+                                            )
+                                        }
+                                    </View>
+                                </TouchableNativeFeedback>
+                            )}
+                        />
                 }
             </View>
             <TouchableNativeFeedback
@@ -197,7 +195,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontFamily: font.text_light,
         marginLeft: 20,
-        marginTop: 10,
         marginBottom: 10,
     },
     leave: {

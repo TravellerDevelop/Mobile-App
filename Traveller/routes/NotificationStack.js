@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavigationContainer } from '@react-navigation/native'
+import { NavigationContainer, Drawer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Home from '../screens/home'
 import Notifications from '../screens/notifications'
@@ -11,6 +11,7 @@ import PaymentInfo from '../screens/paymentsInfo'
 import OtherProfile from '../screens/otherProfile'
 import NewPost from '../screens/Modals/NewPost'
 import TicketModal from '../screens/Modals/ticketModal'
+import Tickets from '../screens/tickets'
 
 const Stack = createStackNavigator()
 

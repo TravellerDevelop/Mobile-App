@@ -65,24 +65,44 @@ export default function Card({ navigation, data, vertical, isLoading }) {
                         }
                     </TouchableNativeFeedback>
                     :
-                    <TouchableNativeFeedback style={{ zIndex: 10 }} onPress={() => navigation.navigate("TravelDetail", data)}>
-                        {
-                            (!vertical) ?
-                                <ImageBackground imageStyle={{ borderRadius: 10, opacity: 0.7 }} source={{ uri: serverLink + "userImage/" + data.image }} style={styles.containerWithBg}>
-                                    <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
-                                        <Text style={styles.cardTitle}>{data.name}</Text>
-                                        <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
-                                    </View>
-                                </ImageBackground>
-                                :
-                                <ImageBackground resizeMode="cover" imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }} source={{ uri: serverLink + "userImage/" + data.image }} style={styles.containerVerticalWithBg}>
-                                    <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
-                                        <Text style={styles.cardTitle}>{data.name}</Text>
-                                        <Text style={styles.cardSubtitle}>Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}</Text>
-                                    </View>
-                                </ImageBackground>
-                        }
+                    <TouchableNativeFeedback
+                        style={{ zIndex: 10 }}
+                        onPress={() => navigation.navigate("TravelDetail", data)}
+                    >
+                        {(!vertical) ? (
+                            <ImageBackground
+                                imageStyle={{ borderRadius: 10, opacity: 0.7 }}
+                                source={{ uri: serverLink + "userImage/" + data.image }}
+                                style={styles.containerWithBg}
+                            >
+                                <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
+                                    <Text style={styles.cardTitle} onPress={() => navigation.navigate("TravelDetail", data)}>
+                                        {data.name}
+                                    </Text>
+                                    <Text style={styles.cardSubtitle} onPress={() => navigation.navigate("TravelDetail", data)}>
+                                        Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}
+                                    </Text>
+                                </View>
+                            </ImageBackground>
+                        ) : (
+                            <ImageBackground
+                                resizeMode="cover"
+                                imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }}
+                                source={{ uri: serverLink + "userImage/" + data.image }}
+                                style={styles.containerVerticalWithBg}
+                            >
+                                <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 0 }}>
+                                    <Text style={styles.cardTitle} onPress={() => navigation.navigate("TravelDetail", data)}>
+                                        {data.name}
+                                    </Text>
+                                    <Text style={styles.cardSubtitle} onPress={() => navigation.navigate("TravelDetail", data)}>
+                                        Creato il {new Date(data.creation_date).toLocaleString('en-GB', { timeZone: 'UTC' }).substring(0, 10)} da {(creator == myData.username) ? "te" : creator}
+                                    </Text>
+                                </View>
+                            </ImageBackground>
+                        )}
                     </TouchableNativeFeedback>
+
             }
         </>
     )

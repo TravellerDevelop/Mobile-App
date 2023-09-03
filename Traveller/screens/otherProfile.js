@@ -105,19 +105,18 @@ export default function OtherProfile({ navigation, route }) {
                     </View>
                     {
                         isLoading ?
-                            <View style={{display: "flex", flexDirection: "row"}}>
+                            <View style={{ display: "flex", flexDirection: "row" }}>
                                 <SkeletonScreen width={150} height={40} borderRadius={5} />
-                                <SkeletonScreen width={150} height={40} borderRadius={5} style={{marginLeft: 20}} />
+                                <SkeletonScreen width={150} height={40} borderRadius={5} style={{ marginLeft: 20 }} />
                             </View>
                             :
                             <Text style={styles.name}>{user.name} {user.surname}</Text>
-                        }
+                    }
                     {
-                        isLoading ? 
-                        <SkeletonScreen width={100} height={25} borderRadius={5} style={{marginTop: 10}}/>
-                        :
-                        <Text style={styles.nickname}>@{user.username}</Text>
-
+                        isLoading ?
+                            <SkeletonScreen width={100} height={25} borderRadius={5} style={{ marginTop: 10 }} />
+                            :
+                            <Text style={styles.nickname}>@{user.username}</Text>
                     }
                     <View style={styles.row}>
                         <TouchableNativeFeedback>
@@ -276,12 +275,12 @@ const styles = StyleSheet.create({
     name: {
         fontFamily: font.text_bold,
         fontSize: 30,
-        color: color.secondary,
+        color: "black",
     },
     nickname: {
         fontFamily: font.text,
         fontSize: 20,
-        color: color.secondary,
+        color: "black",
     },
     row: {
         display: "flex",

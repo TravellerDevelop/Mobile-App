@@ -12,6 +12,7 @@ export default function MenuNewPost({ data, navigation, onAddData }) {
         { label: "Sondaggio", value: "vote", icon: require('../assets/image/icona-istogramma.png') },
         { label: "Pagamento", value: "payments", icon: require('../assets/image/icona-wallet.png') },
         { label: "Immagini", value: "images", icon: require('../assets/image/icona-immagine.png') },
+        { label: "To Do", value: "todo", icon: require("../assets/image/Icone/icona-check.png") }
     ]
 
     const buttonPositions = PostType.map(() => ({

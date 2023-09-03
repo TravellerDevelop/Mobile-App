@@ -5,16 +5,18 @@ import MainHeader from '../components/mainHeader';
 import InteractiveCard from '../components/interactiveCard';
 import { color, serverLink, font, appVersion } from '../global/globalVariable';
 import axios from 'axios';
-import { getData, storeJsonData, storeStringData, getStringData } from '../shared/data/localdata';
+import { getData, storeJsonData, storeStringData, getStringData, getStringDataWithState } from '../shared/data/localdata';
 import { Avatar } from '@react-native-material/core';
 import Swiper from 'react-native-swiper';
 import LoadingCard from '../shared/loadingCard';
+import LoginModal from "../screens/Modals/login";
 
 // Componenti
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
+import PostLoading from '../components/loading/PostLoading';
 
 export default function Home({ navigation }) {
     let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -31,6 +33,25 @@ export default function Home({ navigation }) {
     const [searchLoading, setSearchLoading] = useState(false);
 
     const [showNew, setShowNew] = useState(false);
+
+    let [openLogin, setOpenLogin] = React.useState(null);
+    let [user, setUser] = React.useState(null);
+
+    useEffect(() => {
+        getStringDataWithState('user', user, setUser);
+        verifyLog();
+    }, [])
+
+    const verifyLog = async () => {
+        let data = await getData("user");
+
+        if (data != null && JSON.stringify(data) != '{"_h":0,"_i":0,"_j":null,"_k":null}' && data != false && data != '') {
+            setOpenLogin(false)
+        } else {
+            setOpenLogin(true);
+            storeStringData('openLogin', 'false');
+        }
+    }
 
     useEffect(() => {
         verifyUserData();
@@ -147,6 +168,11 @@ export default function Home({ navigation }) {
                 />
             }
         >
+            <>
+                <LoginModal navigation={navigation} visibility={openLogin} setVisibility={setOpenLogin} />
+                <View style={styles.container}>
+                </View>
+            </>
             <SafeAreaView style={styles.container}>
                 {
                     (showNew) && (
@@ -360,64 +386,55 @@ export default function Home({ navigation }) {
                             )
                         }
                         {
-                            (joinedTravels != null && joinedTravels.length > 0) ?
-                                <FlatList
-                                    data={joinedTravels}
-                                    horizontal
-                                    renderItem={({ item }) => <Card isLoading={joinedTravelsLoading} data={item} navigation={navigation} />}
-                                />
-                                :
-                                null
+                            (joinedTravels != null && joinedTravels.length > 0 && !joinedTravelsLoading) &&
+                            <FlatList
+                                data={joinedTravels}
+                                horizontal
+                                renderItem={({ item }) => <Card isLoading={joinedTravelsLoading} data={item} navigation={navigation} />}
+                            />
                         }
                         {
-                            (joinedTravels == null || joinedTravels.length == 0) ?
-                                // (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
-                                <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
-                                    <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
-                                </View>
-                                :
-                                null
+                            ((joinedTravels == null || joinedTravels.length == 0) && !joinedTravelsLoading) &&
+                            // (!joinedTravelsLoading && joinedTravels == null || joinedTravels.length == 0) ?
+                            <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
+                                <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun viaggio trovato : /</Text>
+                            </View>
                         }
                         <InteractiveCard updatecards={loadJoinedTravels} setUserState={setUserData} userState={userData} />
                         <Text style={styles.subtitle}>Gli ultimi post dai tuoi viaggi:</Text>
                         {
                             (lastPostsLoading) && (
-                                <View style={{ height: 140, width: "100%", justifyContent: "center", alignItems: "center" }}>
-                                    <ActivityIndicator size="large" color={color.secondary} />
-                                </View>
+                                <PostLoading />
                             )
                         }
                         {
-                            (lastPosts != null && lastPosts.length > 0) ?
-                                <FlatList
-                                    scrollEnabled={false}
-                                    data={lastPosts[0]}
-                                    renderItem={({ item }) => (
-                                        <>
-                                            {(item.type == "text") ?
-                                                <TextComponent isLoading={lastPostsLoading} home={true} item={item} travel={lastPosts[1][item.travel]} />
+                            (lastPosts != null && lastPosts.length > 0 && !lastPostsLoading) &&
+                            <FlatList
+                                scrollEnabled={false}
+                                data={lastPosts[0]}
+                                renderItem={({ item }) => (
+                                    <>
+                                        {(item.type == "text") ?
+                                            <TextComponent isLoading={lastPostsLoading} home={true} item={item} travel={lastPosts[1][item.travel]} />
+                                            :
+                                            (item.type == "vote") ?
+                                                <Vote isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                 :
-                                                (item.type == "vote") ?
-                                                    <Vote isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
+                                                (item.type == "payments") ?
+                                                    <PaymentComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
                                                     :
-                                                    (item.type == "payments") ?
-                                                        <PaymentComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
-                                                        :
-                                                        (item.type == "images") && (
-                                                            <ImagesComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
-                                                        )
-                                            }
-                                        </>
-                                    )}
-                                />
-                                :
-                                null
+                                                    (item.type == "images") && (
+                                                        <ImagesComponent isLoading={lastPostsLoading} item={item} home={true} travel={lastPosts[1][item.travel]} />
+                                                    )
+                                        }
+                                    </>
+                                )}
+                            />
                         }
-                        {(lastPosts == null || lastPosts.length == 0) ?
+                        {(lastPosts == null || lastPosts.length == 0) &&
                             <View style={{ height: 140, alignItems: "center", justifyContent: "center" }} >
                                 <Text style={{ textAlign: "center", fontFamily: "montserrat-light", fontSize: 15 }}>Nessun post trovato : /</Text>
                             </View>
-                            : null
                         }
                     </View>
                     <View style={{ height: 75, backgroundColor: "#FFF", width: "100%" }} />

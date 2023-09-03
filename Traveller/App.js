@@ -11,12 +11,10 @@ import Tickets from './screens/tickets';
 import InitialModal from './screens/Modals/initialModal';
 import { getStringDataWithStateReverse, getData } from './shared/data/localdata';
 import Money from './screens/money';
-import WhitePage from './shared/white';
 import axios from 'axios';
 import TicketsPreview from './components/tickets/ticketsPreview';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import TicketModal from './screens/Modals/ticketModal';
-
 
 export const GlobalUserContext = createContext();
 
@@ -155,7 +153,7 @@ export default function App() {
         <GlobalUserContext.Provider value={{ globalUserInfo, setGlobalUserInfo }}>
           <NavigationContainer>
             <Tab.Navigator
-              initialRouteName="White"
+              initialRouteName="Home"
               screenOptions={({ route }) => ((Platform.OS === 'ios') ? {
                 tabBarVisibilityAnimationConfig: {
                   show: {
@@ -308,36 +306,22 @@ export default function App() {
                       iconName = focused ? require('./assets/image/icona-wallet.png') : require('./assets/image/icona-wallet.png');
                     }
 
-                    if (route.name != 'White' && focused)
+                    if (focused)
                       return (
                         <View style={{ height: 40, backgroundColor: "#4960FF40", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderRadius: 5 }}>
                           <Image style={{ width: 40, height: 30, tintColor: color, marginRight: 5, resizeMode: "contain" }} source={iconName} />
                           <Text style={{ color: color.primary, fontSize: 11, fontFamily: "montserrat-bold", textAlign: "center", color: "black", marginRight: 10 }}>{route.name}</Text>
                         </View>
                       )
-                    else
+                    else {
                       return (
                         <Image style={{ width: 40, height: 30, tintColor: color, marginRight: 5, resizeMode: "contain" }} source={iconName} />
                       )
+                    }
                   }
                 }
               )}
             >
-              <Tab.Screen
-                options={{
-                  headerShown: false,
-                  tabBarButton: (props) => null,
-                  tabBarStyle: { display: 'none' },
-                }}
-                name="White" component={WhitePage} />
-
-              <Tab.Screen name='TicketsModal' component={TicketModal}
-                options={{
-                  headerShown: false,
-                  tabBarButton: (props) => null,
-                  tabBarStyle: { display: 'none' },
-                }}
-              />
               <Tab.Screen
                 options={{
                   headerShown: false
@@ -358,6 +342,13 @@ export default function App() {
                   headerShown: false
                 }}
                 name="Money" component={Money} />
+              <Tab.Screen name='TicketsModal' component={TicketModal}
+                options={{
+                  headerShown: false,
+                  tabBarButton: (props) => null,
+                  tabBarStyle: { display: 'none' },
+                }}
+              />
             </Tab.Navigator>
           </NavigationContainer >
         </GlobalUserContext.Provider>

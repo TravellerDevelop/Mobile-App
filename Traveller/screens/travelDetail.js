@@ -15,6 +15,8 @@ import { IconButton, MD3Colors } from 'react-native-paper';
 import { io } from "socket.io-client";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import MenuNewPost from '../components/MenuNewPost';
+import PostLoading from '../components/loading/PostLoading';
+import ToDo from '../components/Travel-Componets/ToDo';
 
 // const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
 
@@ -139,14 +141,12 @@ export default function TravelDetail({ navigation, route }) {
 
                             {
                                 (postLoading) && (
-                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
-                                        <ActivityIndicator size="large" color="#4900FF" />
-                                    </View>
+                                    <PostLoading />
                                 )
                             }
 
                             {
-                                (postData.length > 0 && postData != null && !postLoading) ?
+                                (postData.length > 0 && postData != null && !postLoading) &&
                                     <FlatList
                                         scrollEnabled={false}
                                         style={{ marginTop: 20 }}
@@ -165,21 +165,18 @@ export default function TravelDetail({ navigation, route }) {
                                                             (item.type == "images") ?
                                                                 <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
                                                                 :
-                                                                null
+                                                                    (item.type == "todo") &&
+                                                                        <ToDo data={item}  loadPosts={loadPosts} home={false}/>
                                                 }
                                             </>
                                         )}
                                     />
-                                    :
-                                    null
                             }
                             {
-                                ((postData.length == 0 || postData == null) && !postLoading) ?
+                                ((postData.length == 0 || postData == null) && !postLoading) &&
                                     < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
                                         <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text_bold }}>Non ci sono post</Text>
                                     </View>
-                                    :
-                                    null
                             }
                         </View>
                     </View>

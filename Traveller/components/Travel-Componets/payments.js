@@ -116,7 +116,7 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                     </Modal>
 
                     {
-                        ((item.creator == userData.username) && !home) ?
+                        ((item.creator == userData.username) && !home) &&
                             <View
                                 style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}
                             >
@@ -128,21 +128,17 @@ export default function PaymentComponent({ navigation, item, home, travel, isLoa
                                     <Image source={require("../../assets/image/icona-more-cerchio.png")} style={{ width: 20, height: 20, tintColor: "lightgray" }} />
                                 </TouchableOpacity>
                             </View>
-                            : null
-
                     }
 
-                    {(item.pinned && !home) ?
+                    {(item.pinned && !home) &&
                         <View style={ComponentStyles.pinned}>
                             <Image source={require("../../assets/image/pin.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "lightgray" }} />
                             <Text style={ComponentStyles.pinnedText}>Fissato in alto</Text>
                         </View>
-                        : null
                     }
 
-                    {(home) ?
+                    {(home) &&
                         <Badge label={travel} style={ComponentStyles.Badge} labelStyle={ComponentStyles.BadgeText} />
-                        : null
                     }
 
                     {
