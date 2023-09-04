@@ -132,12 +132,7 @@ export default function TravelDetail({ navigation, route }) {
                                 )
                             } */}
 
-                            {
-                                (route.params.budget != null && route.params.budget != "") ?
-                                    <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} />
-                                    :
-                                    null
-                            }
+                            <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} />
 
                             {
                                 (postLoading) && (
@@ -147,36 +142,36 @@ export default function TravelDetail({ navigation, route }) {
 
                             {
                                 (postData.length > 0 && postData != null && !postLoading) &&
-                                    <FlatList
-                                        scrollEnabled={false}
-                                        style={{ marginTop: 20 }}
-                                        data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
-                                        renderItem={({ item }) => (
-                                            <>
-                                                {(item.type == "text") ?
-                                                    <TextComponent item={item} home={false} loadPosts={loadPosts} />
+                                <FlatList
+                                    scrollEnabled={false}
+                                    style={{ marginTop: 20 }}
+                                    data={([...postData].sort((a, b) => a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))}
+                                    renderItem={({ item }) => (
+                                        <>
+                                            {(item.type == "text") ?
+                                                <TextComponent item={item} home={false} loadPosts={loadPosts} />
+                                                :
+                                                (item.type == "vote") ?
+                                                    <Vote item={item} home={false} loadPosts={loadPosts} />
                                                     :
-                                                    (item.type == "vote") ?
-                                                        <Vote item={item} home={false} loadPosts={loadPosts} />
+                                                    (item.type == "payments") ?
+                                                        <PaymentComponent navigation={navigation} item={item} home={false} loadPosts={loadPosts} />
                                                         :
-                                                        (item.type == "payments") ?
-                                                            <PaymentComponent navigation={navigation} item={item} home={false} loadPosts={loadPosts} />
+                                                        (item.type == "images") ?
+                                                            <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
                                                             :
-                                                            (item.type == "images") ?
-                                                                <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
-                                                                :
-                                                                    (item.type == "todo") &&
-                                                                        <ToDo data={item}  loadPosts={loadPosts} home={false}/>
-                                                }
-                                            </>
-                                        )}
-                                    />
+                                                            (item.type == "todo") &&
+                                                            <ToDo data={item} loadPosts={loadPosts} home={false} />
+                                            }
+                                        </>
+                                    )}
+                                />
                             }
                             {
                                 ((postData.length == 0 || postData == null) && !postLoading) &&
-                                    < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
-                                        <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text_bold }}>Non ci sono post</Text>
-                                    </View>
+                                < View style={{ flex: 1, justifyContent: "center", alignItems: "center", height: 300 }}>
+                                    <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text_bold }}>Non ci sono post</Text>
+                                </View>
                             }
                         </View>
                     </View>
