@@ -1,39 +1,37 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
-    StyleSheet,
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    Dimensions,
-    TouchableNativeFeedback,
-    Modal,
-    TextInput,
-    PanResponder,
     Animated,
+    Dimensions,
+    Modal,
+    PanResponder,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableNativeFeedback,
     TouchableWithoutFeedback,
+    View
 } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import { font } from "../../global/globalVariable";
 
 export default function BudgetIndicator({ budget, spent, creator, personalbudget }) {
-    let [modalVisibility, setModalVisibility] = useState(true);
+    let [modalVisibility, setModalVisibility] = useState(false);
     const [selectedBudget, setselectedBudget] = useState("personal");
     const [translateY] = useState(new Animated.Value(-Dimensions.get("screen").height));
     let [heightModal, setheightmodal] = useState(0);
 
-    let percent = 0;
-    let personalPercent = 0;
+    let [percent, setPercent] = useState(0);
+    let [personalPercent, setPersonalPercent] = useState(0);
 
     React.useEffect(() => {
-        if (spent < budget) percent = spent / budget;
-        else percent = 1;
+        if (spent < budget) setPercent(spent / budget);
+        else setPercent(1);
 
-        if (spent < personalbudget) percent = spent / personalbudget;
-        else percent = 1;
-    }, []);
+        if (spent < personalbudget) setPersonalPercent(spent / personalbudget);
+        else setPersonalPercent(1);
+    }, [spent, budget]);
 
-    const ProgressBarWidth = (Dimensions.get("screen").width / 100) * 70;
+    const ProgressBarWidth = (Dimensions.get("screen").width / 100) * 60;
 
     const closeModal = () => {
         setModalVisibility(false);
@@ -233,11 +231,11 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                     (budget != "" && budget != null && !isNaN(budget)) ?
                         <>
                             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent}€</Text>
+                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent.toFixed(2)}€</Text>
                                 <ProgressBar progress={percent} color={(spent < budget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, width: ProgressBarWidth }} />
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{budget}€</Text>
+                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{budget.toFixed(2)}€</Text>
                             </View>
-                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget) + "€ 😥"}</Text>
+                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent).toFixed(2) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget).toFixed(2) + "€ 😥"}</Text>
                         </>
                         :
                         <>
@@ -254,14 +252,14 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
 
             {
                 (selectedBudget == "personal") && (
-                    (personalbudget != "" && personalbudget != null && !isNaN(personalbudget)) ?
+                    (personalbudget && !isNaN(personalbudget)) ?
                         <>
                             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                                 <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent}€</Text>
                                 <ProgressBar progress={personalPercent} color={(spent < personalbudget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, width: ProgressBarWidth }} />
                                 <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{personalbudget}€</Text>
                             </View>
-                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < personalbudget) ? "Hai ancora " + (personalbudget - spent) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - personalbudget) + "€ 😥"}</Text>
+                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < personalbudget) ? "Hai ancora " + (personalbudget - spent).toFixed(2) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - personalbudget).toFixed(2) + "€ 😥"}</Text>
                         </>
                         :
                         <>

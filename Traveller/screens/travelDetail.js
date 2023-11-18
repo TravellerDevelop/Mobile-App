@@ -1,22 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, ScrollView, FlatList, Text, RefreshControl, Image, Animated } from 'react-native';
-import { font, serverLink } from '../global/globalVariable';
-import HeaderTravelDetail from '../shared/headerTravelDetail';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
+import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
+import PaymentComponent from '../components/Travel-Componets/payments';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
-import PaymentComponent from '../components/Travel-Componets/payments';
-import axios from 'axios';
-import BudgetIndicator from '../components/Travel-Componets/BudgetIndicator';
-import { ActivityIndicator } from 'react-native-paper';
+import { font, serverLink, setStatusBarColor, statusBarColor } from '../global/globalVariable';
 import { getData } from '../shared/data/localdata';
-import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
+import HeaderTravelDetail from '../shared/headerTravelDetail';
 // import socketService from '../components/utils/socketServise';
-import { IconButton, MD3Colors } from 'react-native-paper';
-import { io } from "socket.io-client";
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import MenuNewPost from '../components/MenuNewPost';
-import PostLoading from '../components/loading/PostLoading';
 import ToDo from '../components/Travel-Componets/ToDo';
+import PostLoading from '../components/loading/PostLoading';
 
 // const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
 

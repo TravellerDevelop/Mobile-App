@@ -15,9 +15,21 @@ export const font = {
     text_black: "rubik-black",
 }   
 
+const myIp = "192.168.1.155";
+
 export const appVersion = "1.0.2";
-
 export const paddingTopPage = 15;
+export const ISDEBUG = true;
+export const ISBETA = true;
+export const serverLink = ISDEBUG ? "http://" + myIp + ":1337/" : "https://traveller-ttze.onrender.com/";
 
-export const serverLink = "http://192.168.1.126:1337/"
-// export const serverLink = "https://traveller-ttze.onrender.com/"
+export let statusBarColor = "#4960FF";
+
+export function setStatusBarColor(color){
+    statusBarColor = color;
+}
+
+/* ISTRUZIONI */
+// Prima di buildare
+// - Mettere is debug false altrementi non raggiungerà il server
+// - Impostare correttamente ISBETA
