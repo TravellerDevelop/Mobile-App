@@ -9,8 +9,15 @@ import {
 import { color, font, serverLink } from "../global/globalVariable";
 import { getData } from "./data/localdata";
 
-export default function Card({ navigation, data, vertical, isLoading }) {
-  let [myData, setMyData] = React.useState(false);
+interface CardProps {
+  navigation: any,
+  data: any,
+  vertical?: boolean,
+  isLoading?: boolean
+}
+
+export default function Card({ navigation, data, vertical, isLoading } : CardProps) {
+  let [myData, setMyData] : any = React.useState({});
 
   let creator = "";
 
@@ -206,7 +213,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
     marginBottom: 10,
-    marginTop: 10,
     marginLeft: "5%",
     marginRight: "5%",
     padding: 10,
@@ -226,7 +232,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
     marginBottom: 10,
-    marginTop: 10,
     marginLeft: "5%",
     marginRight: "5%",
     shadowColor: "#000",

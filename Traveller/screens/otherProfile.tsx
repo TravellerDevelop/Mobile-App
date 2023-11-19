@@ -7,61 +7,102 @@ import {
   TouchableNativeFeedback,
   FlatList,
   ScrollView,
-  RefreshControl,
   Dimensions,
 } from "react-native";
+import { Avatar } from "@react-native-material/core";
 import {
-  font,
   color,
+  font,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";
-import { Avatar } from "@react-native-material/core";
-import AnimatedLottieView from "lottie-react-native";
-import { getData } from "../shared/data/localdata";
 import axios from "axios";
+import { getData } from "../shared/data/localdata";
+import AnimatedLottieView from "lottie-react-native";
 import Card from "../shared/card";
 import SkeletonScreen from "../components/SkeletonScreen";
+import * as SecureStore from "expo-secure-store";
 
-export default function MyProfile({ navigation, route }) {
-  let [user, setUser] = React.useState({});
-  let [ntravel, setNtravel] = React.useState(null);
+export default function OtherProfile({ navigation, route }: any) {
+  let [myData, setMyData]: any = React.useState({});
+  let [user, setUser]: any = React.useState({});
+  let [requestStatus, setRequestStatus] = React.useState("");
   let [myTravel, setMyTravel] = React.useState([]);
-  let [isLoading, setIsLoading] = useState(true);
 
-  let [followed, setFollowed] = React.useState(null);
-  let [followers, setFollowers] = React.useState(null);
+  let [ntravel, setNtravel] = React.useState(0);
+  let [followed, setFollowed] = React.useState(0);
+  let [followers, setFollowers] = React.useState(0);
 
-  let [refreshing, setRefreshing] = React.useState(false);
+  let [isLoading, setIsLoading] = useState(false);
 
   async function getUserData() {
+    setMyData(await SecureStore.getItemAsync("user-info") as string);
+  }
+
+  React.useEffect(() => {
     setIsLoading(true);
-    setNtravel(null);
-    setMyTravel([]);
-    setFollowers(null);
-    setFollowed(null);
-    let data = await getData("user");
+    getUserData();
+
     axios
-      .get(serverLink + "api/user/takeTravelsNum?username=" + data.username)
+      .get(serverLink + "api/user/takeUserById?id=" + route.params.userid)
       .then((response) => {
-        setNtravel(response.data.count);
+        setUser(response.data[0]);
+
+        axios
+          .get(
+            serverLink +
+            "api/user/takeTravelsNum?username=" +
+            response.data[0].username
+          )
+          .then((response) => {
+            console.log(response.data);
+            setNtravel(response.data.count);
+
+            axios
+              .get(
+                serverLink +
+                "api/follow/takeFromTo?from=" +
+                myData._id +
+                "&to=" +
+                route.params.userid
+              )
+              .then((response) => {
+                if (response.data.length > 0) {
+                  if (response.data[0].accepted === false)
+                    setRequestStatus("Sent");
+                  else setRequestStatus("Followed");
+                } else if (response.data.length == 0) {
+                  setRequestStatus("Not sent");
+                }
+
+                setIsLoading(false);
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        axios
+          .get(
+            serverLink +
+            "api/travel/takeByCreator?username=" +
+            response.data[0].username
+          )
+          .then((response) => {
+            setMyTravel(response.data);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       })
       .catch((error) => {
         console.log(error);
       });
-    setUser(data);
-
     axios
-      .get(serverLink + "api/travel/takeByCreator?username=" + data.username)
-      .then((response) => {
-        setMyTravel(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    axios
-      .get(serverLink + "api/follow/takeFollowers?to=" + data._id)
+      .get(serverLink + "api/follow/takeFollowers?to=" + route.params.userid)
       .then((response) => {
         setFollowers(response.data.length);
       })
@@ -70,37 +111,17 @@ export default function MyProfile({ navigation, route }) {
       });
 
     axios
-      .get(serverLink + "api/follow/takeFollowings?from=" + data._id)
+      .get(serverLink + "api/follow/takeFollowings?from=" + route.params.userid)
       .then((response) => {
         setFollowed(response.data.length);
       })
       .catch((error) => {
         console.log(error);
       });
-  }
-  
-  React.useEffect(() => {
-    getUserData();
   }, []);
 
-  React.useEffect(() => {
-    if (ntravel != null && followers != null && followed != null) {
-      setIsLoading(false);
-    }
-  }, [ntravel, myTravel, followers, followed]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    getUserData();
-    setRefreshing(false);
-  };
-
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <ScrollView>
       <View style={styles.container}>
         <TouchableNativeFeedback
           onPress={() => {
@@ -122,7 +143,6 @@ export default function MyProfile({ navigation, route }) {
                 autoColor
                 size={100}
                 labelStyle={{ fontFamily: font.text, fontSize: 50 }}
-                style={styles.avatar}
               />
             )}
           </View>
@@ -169,7 +189,7 @@ export default function MyProfile({ navigation, route }) {
                 ) : (
                   <Text style={styles.subtext}>{followers}</Text>
                 )}
-                <Text style={styles.subtext}>Follower</Text>
+                <Text style={styles.subtext}>Followers</Text>
               </View>
             </TouchableNativeFeedback>
             <TouchableNativeFeedback>
@@ -183,29 +203,78 @@ export default function MyProfile({ navigation, route }) {
               </View>
             </TouchableNativeFeedback>
           </View>
-          {isLoading ? (
-            <SkeletonScreen
-              width={(Dimensions.get("window").width / 100) * 90}
-              height={50}
-              borderRadius={10}
-              style={{ marginBottom: 20 }}
-            />
-          ) : (
-            <TouchableNativeFeedback>
+          <TouchableNativeFeedback
+            onPress={() => {
+              if (requestStatus == "Sent" || requestStatus == "Followed") {
+                axios
+                  .post(serverLink + "api/follow/delete", {
+                    from: myData._id,
+                    to: user._id,
+                  })
+                  .then((response) => {
+                    setRequestStatus("Not sent");
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              } else if (requestStatus == "Not sent") {
+                axios
+                  .post(serverLink + "api/follow/create", {
+                    from: myData._id,
+                    to: user._id,
+                  })
+                  .then((response) => {
+                    setRequestStatus("Sent");
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+              }
+            }}
+          >
+            {isLoading ? (
+              <SkeletonScreen
+                width={(Dimensions.get("window").width / 100) * 90}
+                height={50}
+                borderRadius={10}
+                style={{ marginBottom: 20 }}
+              />
+            ) : (
               <View style={styles.button}>
-                <Text
-                  style={{
-                    fontFamily: font.text_bold,
-                    fontSize: 20,
-                    color: "#FFF",
-                  }}
-                >
-                  Modifica profilo
-                </Text>
+                {requestStatus == "Sent" ? (
+                  <Text
+                    style={{
+                      fontFamily: font.text,
+                      fontSize: 20,
+                      color: "#FFF",
+                    }}
+                  >
+                    Richiesta inviata
+                  </Text>
+                ) : requestStatus == "Followed" ? (
+                  <Text
+                    style={{
+                      fontFamily: font.text,
+                      fontSize: 20,
+                      color: "#FFF",
+                    }}
+                  >
+                    Segui già
+                  </Text>
+                ) : requestStatus == "Not sent" ? (
+                  <Text
+                    style={{
+                      fontFamily: font.text,
+                      fontSize: 20,
+                      color: "#FFF",
+                    }}
+                  >
+                    Inizia a seguire
+                  </Text>
+                ) : null}
               </View>
-            </TouchableNativeFeedback>
-          )}
-
+            )}
+          </TouchableNativeFeedback>
           {ntravel == 0 ? (
             <View
               style={{
@@ -225,31 +294,28 @@ export default function MyProfile({ navigation, route }) {
             </View>
           ) : (
             <View style={{ width: "100%" }}>
-              <Text
-                style={{
-                  fontFamily: font.text,
-                  fontSize: 20,
-                  color: "#000",
-                  textAlign: "left",
-                  marginLeft: "5%",
-                }}
-              >
-                I viaggi creati da te:
-              </Text>
-              {!isLoading &&
-                (myTravel.length > 0 ? (
-                  <FlatList
-                    scrollEnabled={false}
-                    data={myTravel}
-                    renderItem={({ item }) => (
-                      <Card
-                        vertical={true}
-                        data={item}
-                        navigation={navigation}
-                      />
-                    )}
-                  />
-                ) : null)}
+              {!isLoading && (
+                <Text
+                  style={{
+                    fontFamily: font.text,
+                    fontSize: 20,
+                    color: "#000",
+                    textAlign: "left",
+                    marginLeft: "5%",
+                  }}
+                >
+                  I viaggi creati da {user.name}:
+                </Text>
+              )}
+              {myTravel.length > 0 && !isLoading ? (
+                <FlatList
+                  scrollEnabled={false}
+                  data={myTravel}
+                  renderItem={({ item }) => (
+                    <Card vertical={true} data={item} navigation={navigation} />
+                  )}
+                />
+              ) : null}
             </View>
           )}
         </View>
@@ -311,8 +377,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   subtext: {
-    fontFamily: font.montserrat,
-    fontSize: 15,
+    fontFamily: font.text,
+    fontSize: 18,
     color: "#000",
   },
   button: {
@@ -325,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   err: {
-    fontFamily: font.montserrat,
+    fontFamily: font.text,
     fontSize: 20,
     color: "#000",
   },

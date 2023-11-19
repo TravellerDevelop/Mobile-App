@@ -1,7 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
-export default function SkeletonScreen({ width, height, borderRadius, style })
+interface SkeletonScreenProps{
+    width ?: number | string,
+    height ?: number | string,
+    borderRadius ?: number | string,
+    style ?: {},
+}
+
+export default function SkeletonScreen({ width, height, borderRadius, style } : SkeletonScreenProps)
 {
     const opacity = useRef(new Animated.Value(0.3));
 
@@ -24,7 +31,7 @@ export default function SkeletonScreen({ width, height, borderRadius, style })
 
     return (
         <Animated.View
-            style={[{opacity: opacity.current, height, width, borderRadius : borderRadius}, styles.skeleton, style]}
+            style={[{opacity: opacity.current, height, width, borderRadius : borderRadius} as any, styles.skeleton, style]}
         />
     )
 }
