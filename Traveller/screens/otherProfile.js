@@ -22,7 +22,7 @@ export default function OtherProfile({ navigation, route }) {
 
     async function getUserData() {
         setMyData(await getData("user"));
-        console.log(myData)
+        console.log(myData, " == ", getData("user"))
     }
 
     React.useEffect(() => {
@@ -222,7 +222,7 @@ export default function OtherProfile({ navigation, route }) {
                             :
                             <View style={{ width: "100%" }}>
                                 {
-                                    !isLoading && <Text style={{ fontFamily: font.montserrat, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da {user.name}:</Text>
+                                    !isLoading && <Text style={{ fontFamily: font.text, fontSize: 20, color: "#000", textAlign: "left", marginLeft: "5%" }}>I viaggi creati da {user.name}:</Text>
                                 }
                                 {
                                     (myTravel.length > 0 && !isLoading) ?

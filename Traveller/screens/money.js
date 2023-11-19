@@ -7,6 +7,7 @@ import axios from "axios";
 import { BarChart } from "react-native-chart-kit";
 import { ActivityIndicator } from "@react-native-material/core";
 import { SafeAreaView } from "react-native-safe-area-context";
+import SkeletonScreen from "../components/SkeletonScreen";
 
 export default function Money() {
     let [lastYear, setLastYear] = React.useState("-- ");
@@ -14,72 +15,36 @@ export default function Money() {
     let [totalToGet, setTotalToGet] = React.useState("-- ");
     let [payedGroupByTravel, setPayedGroupByTravel] = React.useState([]);
     let [barChartData, setBarChartData] = React.useState({});
-    let [chartDataLoading, setChartDataLoading] = React.useState(true);
+    let [isLoading, setIsLoading] = React.useState(true);
 
     useEffect(() => {
         takeUserData();
     }, [])
 
     async function takeUserData() {
+        setIsLoading(true)
         let aus = await getData("user");
 
-        axios.get(serverLink + "api/post/takeTotalExpenses?userid=" + aus._id)
-            .then((response) => {
-                if (response.status == 200) {
-                    setLastYear(response.data);
+        let endpoints = [
+            serverLink + "api/post/takeTotalExpenses?userid=" + aus._id,
+            serverLink + "api/post/takeTotalToPay?userid=" + aus._id,
+            serverLink + "api/post/takeTotalToReceive?username=" + aus.username + "&userid=" + aus._id,
+            serverLink + "api/post/takePayedGroupByTravel?userid=" + aus._id
+        ];
+
+        axios.all(endpoints.map((endpoint) => axios.get(endpoint))).then(
+            axios.spread(({ data: takeTotalExpenses }, { data: takeTotalToPay }, { data: takeTotalToReceive }, { data: takePayedGroupByTravel }) => {
+                setLastYear(takeTotalExpenses);
+                setTotalToPay(takeTotalToPay);
+                setTotalToGet(takeTotalToReceive);
+                let ausTPGBT = takePayedGroupByTravel, labels = [], chartData = [];
+                for (let item of ausTPGBT) {
+                    labels.push(item.name);
+                    chartData.push(item.total);
                 }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
-
-        axios.get(serverLink + "api/post/takeTotalToPay?userid=" + aus._id)
-            .then((response) => {
-                if (response.status == 200) {
-                    setTotalToPay(response.data);
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
-
-        axios.get(serverLink + "api/post/takeTotalToReceive?username=" + aus.username + "&userid=" + aus._id)
-            .then((response) => {
-                if (response.status == 200) {
-                    setTotalToGet(response.data);
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-
-        axios.get(serverLink + "api/post/takePayedGroupByTravel?userid=" + aus._id)
-            .then((response) => {
-                if (response.status == 200) {
-                    let aus = response.data;
-                    let labels = [];
-                    let data = [];
-
-                    for (let item of aus) {
-                        labels.push(item.name);
-                        data.push(item.total);
-                    }
-
-                    setBarChartData({
-                        labels: labels,
-                        datasets: [
-                            {
-                                data: data
-                            }
-                        ]
-                    })
-
-                    setChartDataLoading(false);
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+                setBarChartData({ labels: labels, datasets: [{ data: chartData }] });
+                setIsLoading(false);
+            }))
     }
 
     let [refreshing, setRefreshing] = React.useState(false);
@@ -93,9 +58,9 @@ export default function Money() {
     return (
         <>
             <ScrollView
-            style={{
-                backgroundColor: "#4960FF"
-            }}
+                style={{
+                    backgroundColor: "#4960FF"
+                }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -115,29 +80,53 @@ export default function Money() {
                             <View style={styles.row}>
                                 <View style={styles.minicard}>
                                     <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese degli ultimi 12 mesi</Text>
-                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear.toFixed(2)}€</Text>
+                                    {
+                                        isLoading ? (
+                                            <SkeletonScreen width={'80%'} height={30} borderRadius={5} style={{ marginTop: 20, marginLeft: '10%' }} />
+                                        )
+                                            :
+                                            <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{!isNaN(lastYear) && lastYear.toFixed(2)}€</Text>
+                                    }
                                 </View>
                                 <View style={styles.minicard}>
                                     <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Spese dell'ultimo mese</Text>
-                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{lastYear.toFixed(2)}€</Text>
+                                    {
+                                        isLoading ? (
+                                            <SkeletonScreen width={'80%'} height={30} borderRadius={5} style={{ marginTop: 20, marginLeft: '10%' }} />
+                                        )
+                                            :
+                                            <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>{!isNaN(lastYear) && lastYear.toFixed(2)}€</Text>
+                                    }
                                 </View>
                             </View>
                             <View style={styles.row}>
                                 <View style={styles.minicard}>
                                     <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da pagare</Text>
-                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{totalToPay.toFixed(2)}€</Text>
+                                    {
+                                        isLoading ? (
+                                            <SkeletonScreen width={'80%'} height={30} borderRadius={5} style={{ marginTop: 20, marginLeft: '10%' }} />
+                                        )
+                                            :
+                                            <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "red" }}>{!isNaN(totalToPay) && totalToPay.toFixed(2)}€</Text>
+                                    }
                                 </View>
                                 <View style={styles.minicard}>
                                     <Text style={{ fontFamily: font.text, fontSize: 16, textAlign: "center", marginTop: 20 }}>Soldi da ritirare</Text>
-                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{totalToGet.toFixed(2)}€</Text>
+                                    {
+                                        isLoading ? (
+                                            <SkeletonScreen width={'80%'} height={30} borderRadius={5} style={{ marginTop: 20, marginLeft: '10%' }} />
+                                        )
+                                            :
+                                            <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20, color: "green" }}>{!isNaN(totalToGet) && totalToGet.toFixed(2)}€</Text>
+                                    }
                                 </View>
                             </View>
                         </View>
 
-                        {
-                            (chartDataLoading == false) ?
-                                <View style={styles.bottomCard}>
-                                    <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                        <View style={styles.bottomCard}>
+                            <Text style={{ fontFamily: font.text_bold, fontSize: 25, textAlign: "center", marginTop: 20 }}>Spese per viaggio</Text>
+                            {
+                                (!isLoading) ?
                                     <BarChart
                                         data={barChartData}
                                         width={Dimensions.get("window").width - 20}
@@ -159,10 +148,10 @@ export default function Money() {
                                             borderRadius: 16,
                                         }}
                                     />
-                                </View>
-                                :
-                                <ActivityIndicator size={50} color={color.primary} style={{ marginTop: 50 }} />
-                        }
+                                    :
+                                    <SkeletonScreen height={220} width={340} borderRadius={5} style={{ marginTop: 10 }} />
+                            }
+                        </View>
                     </View>
                 </SafeAreaView>
             </ScrollView>

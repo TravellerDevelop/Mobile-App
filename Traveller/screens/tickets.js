@@ -8,6 +8,7 @@ import { getData } from "../shared/data/localdata";
 import { FlatList } from "react-native-gesture-handler";
 import { storeJsonData } from "../shared/data/localdata";
 import { SafeAreaView } from "react-native-safe-area-context";
+import TicketsLoading from "../components/loading/tiketsLoading";
 
 export default function Tickets({ navigation }) {
     let [data, setData] = useState([]);
@@ -66,7 +67,6 @@ export default function Tickets({ navigation }) {
                         }}
                         inputStyle={{ fontFamily: font.text }}
                     />
-
                     {
                         (data.length > 0 && !isLoading) ?
                             <FlatList
@@ -77,7 +77,10 @@ export default function Tickets({ navigation }) {
                             />
                             :
                             (isLoading) ?
-                                <ActivityIndicator size="large" color={color.primary} style={{ marginTop: (Dimensions.get("window").height / 4) }} />
+                                <>
+                                    <TicketsLoading />
+                                    <TicketsLoading />
+                                </>
                                 :
                                 <Text style={{ fontFamily: font.text, fontSize: 20, marginTop: 20, textAlign: "center", marginLeft: 20, marginRight: 20 }}>Non hai ancora acquistato nessun biglietto</Text>
                     }
@@ -93,6 +96,7 @@ const styles = StyleSheet.create({
         backgroundColor: color.primary,
     },
     input: {
+        marginBottom: 10,
         width: 300,
         marginTop: 20,
         fontFamily: font.text,

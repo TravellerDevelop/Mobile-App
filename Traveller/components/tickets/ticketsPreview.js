@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
         height: 175,
         width: 300,
         borderRadius: 15,
-        marginTop: 20,
-        marginBottom: 20,
+        marginTop: 10,
+        marginBottom: 10,
     },
     left: {
         position: "absolute",
