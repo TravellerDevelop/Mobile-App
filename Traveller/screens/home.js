@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView, RefreshControl, TextInput, Dimensions, ActivityIndicator, TouchableOpacity, Alert, Linking, Modal, Image, SafeAreaView } from 'react-native';
-import Card from '../shared/card';
-import MainHeader from '../components/mainHeader';
-import InteractiveCard from '../components/interactiveCard';
-import { color, serverLink, font, appVersion } from '../global/globalVariable';
-import axios from 'axios';
-import { getData, storeJsonData, storeStringData, getStringData, getStringDataWithState } from '../shared/data/localdata';
 import { Avatar } from '@react-native-material/core';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Linking, Modal, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-swiper';
-import LoadingCard from '../shared/loadingCard';
+import InteractiveCard from '../components/interactiveCard';
+import MainHeader from '../components/mainHeader';
+import { appVersion, color, font, serverLink } from '../global/globalVariable';
 import LoginModal from "../screens/Modals/login";
+import Card from '../shared/card';
+import { getData, getStringData, getStringDataWithState, storeJsonData, storeStringData } from '../shared/data/localdata';
+import LoadingCard from '../shared/loadingCard';
 
 // Componenti
+import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
+import PaymentComponent from '../components/Travel-Componets/payments';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
-import PaymentComponent from '../components/Travel-Componets/payments';
-import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
 import PostLoading from '../components/loading/PostLoading';
 
 export default function Home({ navigation }) {
