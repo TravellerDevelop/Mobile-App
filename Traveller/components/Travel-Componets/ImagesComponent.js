@@ -91,6 +91,8 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
     const responseListener = useRef();
 
     useEffect(() => {
+        // registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
         // notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
         //     setNotification(notification);
         // });
