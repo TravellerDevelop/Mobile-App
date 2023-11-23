@@ -28,7 +28,6 @@ import axios from "axios";
 import TicketsPreview from "./components/tickets/ticketsPreview";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import TicketModal from "./screens/Modals/ticketModal";
-import * as SecureStore from 'expo-secure-store';
 
 export const GlobalUserContext = createContext();
 
@@ -47,21 +46,18 @@ export default function App() {
 
   let [offlineTickets, setOfflineTickets] = useState([]);
 
-
   let [statusBarColorApp, setStatusBarColorApp] = useState(statusBarColor);
-  
+
   useEffect(() => {
     setStatusBarColorApp(statusBarColor);
-  }, [statusBarColor])
+  }, [statusBarColor]);
 
   async function saveUserData() {
-    let aus = await getData("user")
-    await SecureStore.setItemAsync("user-info", JSON.stringify(aus));
+    let aus = await getData("user");
   }
 
   useEffect(() => {
     verifyConnection();
-    saveUserData();
   }, []);
 
   async function verifyConnection() {

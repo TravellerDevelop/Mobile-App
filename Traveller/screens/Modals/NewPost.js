@@ -527,6 +527,7 @@ export default function NewPost({ navigation, route }) {
                     if (param != []) {
                         axios.post(serverLink + "api/post/create", { param: param }).then((response) => {
                             setIsLoading(false);
+                            console.log(response)
                             refresh(param);
                             navigation.goBack();
                         }).catch((error) => {
