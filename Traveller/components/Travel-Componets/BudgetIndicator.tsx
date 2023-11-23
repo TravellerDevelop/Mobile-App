@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
     Animated,
     Dimensions,
@@ -14,7 +14,17 @@ import {
 import { ProgressBar } from "react-native-paper";
 import { font } from "../../global/globalVariable";
 
-export default function BudgetIndicator({ budget, spent, creator, personalbudget }) {
+interface BudgetIndicatorProps{
+    budget:number,
+    spent: number,
+    creator:boolean,
+    personalbudget:number,
+    setPersonalBudget:any
+}
+
+export default function BudgetIndicator({ budget, spent, creator, personalbudget, setPersonalBudget } : BudgetIndicatorProps) {
+    let budgetInput : any = useRef<TextInput>(null);
+    // personalbudget = 20;
     let [modalVisibility, setModalVisibility] = useState(false);
     const [selectedBudget, setselectedBudget] = useState("personal");
     const [translateY] = useState(new Animated.Value(-Dimensions.get("screen").height));
@@ -51,7 +61,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
         }).start();
     };
 
-    const panResponder = PanResponder.create({
+    const panResponder : any = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderMove: (event, gestureState) => {
@@ -154,7 +164,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
             justifyContent: "flex-end",
         }
     });
-    
+
 
     return (
         <View style={styles.card}>
@@ -183,15 +193,22 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                         var { x, y, width, height } = event.nativeEvent.layout;
                         setheightmodal(y)
                     }}>
-                        {/* Contenuto della modale */}
+                        {/* Contenuto della modale impostazione budget personale */}
                         <Text style={styles.title}>Imposta budget personale</Text>
                         <Text style={{ color: "gray", fontSize: 13, textAlign: "left", fontFamily: font.text, marginBottom: 10, marginLeft: 10 }}>Imposta un budget unico per te</Text>
-                        <TextInput style={styles.input} placeholder="Scrivi il budget" inputMode="decimal" />
+                        <TextInput style={styles.input} ref={budgetInput} placeholder="Scrivi il budget" inputMode="decimal"  />
                         <View style={styles.rowRight}>
-                            <TouchableNativeFeedback>
+                            <TouchableNativeFeedback onPress={() => {
+                                budgetInput.current.value = '';
+                                setModalVisibility(false);
+                            }}>
                                 <View style={[styles.btn, { backgroundColor: "white", marginTop: 0 }]}><Text style={[styles.btnText, { color: "black" }]}>Annulla</Text></View>
                             </TouchableNativeFeedback>
-                            <TouchableNativeFeedback>
+                            <TouchableNativeFeedback onPress={() => {
+                                console.log(budgetInput.current._lastNativeText)
+                                setPersonalBudget(parseInt(budgetInput.current._lastNativeText));
+                                setModalVisibility(false)
+                            }}>
                                 <View style={[styles.btn, { marginTop: 0 }]}><Text style={styles.btnText}>Conferma</Text></View>
                             </TouchableNativeFeedback>
                         </View>
@@ -228,7 +245,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
 
             {
                 (selectedBudget == "travel") && (
-                    (budget != "" && budget != null && !isNaN(budget)) ?
+                    (!budget && !isNaN(budget)) ?
                         <>
                             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                                 <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent.toFixed(2)}€</Text>

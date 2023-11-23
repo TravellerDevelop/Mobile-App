@@ -17,7 +17,7 @@ import PostLoading from '../components/loading/PostLoading';
 // const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
 
 export default function TravelDetail({ navigation, route }) {
-
+    let [personalBudget, setPersonalBudget] = useState(0)
     let [newPost, setNewPost] = useState(false);
     let [postLoading, setPostLoading] = useState(true);
 
@@ -128,7 +128,7 @@ export default function TravelDetail({ navigation, route }) {
                                 )
                             } */}
 
-                            <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} />
+                            <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} personalbudget={personalBudget} setPersonalBudget={setPersonalBudget} creator={false} />
 
                             {
                                 (postLoading) && (
