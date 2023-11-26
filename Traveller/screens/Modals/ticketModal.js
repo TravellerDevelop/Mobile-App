@@ -119,7 +119,7 @@ export default function TicketModal({ navigation, route }) {
           {data.surname} {data.name}
         </Text>
         <Text style={modalstyles.destination}>
-          Da{from} a{to}
+          Da {data.from.name} a {data.to.name}
         </Text>
         <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
         <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, createContext } from "react";
+import React, { useEffect, useState, createContext } from "react";
 import Font from "./components/font";
 import { color, font, statusBarColor } from "./global/globalVariable";
 import {
@@ -26,39 +26,57 @@ import {
 import Money from "./screens/money";
 import axios from "axios";
 import TicketsPreview from "./components/tickets/ticketsPreview";
-import { FlatList, ScrollView } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
 import TicketModal from "./screens/Modals/ticketModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const GlobalUserContext = createContext();
+import {
+  iconConfig,
+  tabBarStyle,
+  textInputStyle,
+  focusedIconContainerStyle,
+  focusedTextStyle,
+  bottomBarImage,
+  bottomBarImageFocus,
+} from "./global/bottombarConfig";
 
 export default function App() {
   let [globalUserInfo, setGlobalUserInfo] = useState({});
-
   let [isLoading, setIsLoading] = useState(false);
-
   let fontLoaded = Font();
   let [modalVisible, setModalVisible] = useState(false);
   let [connection, setConnection] = useState(false);
-
   let [ticketsModalVisibility, setTicketsVisibility] = useState(false);
-
   getStringDataWithStateReverse("initialModal", modalVisible, setModalVisible);
-
   let [offlineTickets, setOfflineTickets] = useState([]);
-
   let [statusBarColorApp, setStatusBarColorApp] = useState(statusBarColor);
 
   useEffect(() => {
     setStatusBarColorApp(statusBarColor);
   }, [statusBarColor]);
 
-  async function saveUserData() {
-    let aus = await getData("user");
-  }
-
   useEffect(() => {
+    updateUserInfo();
     verifyConnection();
   }, []);
+
+  async function updateUserInfo() {
+    let userData = await AsyncStorage.getItem("user");
+    if (userData) {
+      userData = JSON.parse(userData);
+      if (userData._id) {
+        axios
+          .get(serverLink + "api/user/takeUserById?id=" + userData._id)
+          .then(async (response) => {
+            await AsyncStorage.setItem("user", JSON.stringify(response.data[0]));
+          })
+          .catch((ex) => {
+            console.error(ex.message);
+          });
+      }
+    }
+  }
 
   async function verifyConnection() {
     await setOfflineTickets(await getData("tickets"));
@@ -83,6 +101,27 @@ export default function App() {
         setIsLoading(false);
       });
   }
+
+  const TabBarIcon = ({ focused, color, size, route }) => {
+    return (
+      <View
+        style={[
+          focusedIconContainerStyle,
+          focused && { backgroundColor: "#4960FF40" },
+        ]}
+      >
+        <Image
+          style={[
+            bottomBarImage,
+            { tintColor: color },
+            !focused && bottomBarImageFocus,
+          ]}
+          source={iconConfig[route.name]}
+        />
+        {focused && <Text style={focusedTextStyle}>{route.name}</Text>}
+      </View>
+    );
+  };
 
   if (!fontLoaded || !connection) {
     return <Loading />;
@@ -230,271 +269,39 @@ export default function App() {
           <NavigationContainer>
             <Tab.Navigator
               initialRouteName="Home"
-              screenOptions={({ route }) =>
-                Platform.OS === "ios"
-                  ? {
-                      tabBarVisibilityAnimationConfig: {
-                        show: {
-                          animation: "timing",
-                          config: {
-                            duration: 300,
-                          },
-                        },
-                        hide: {
-                          animation: "timing",
-                          config: {
-                            duration: 300,
-                          },
-                        },
-                      },
-                      animationEnabled: true,
-                      tabBarShowLabel: false,
-                      activeTintColor: "#4900FF",
-                      topBarActiveTintColor: "#4900FF",
-                      tabBarLabelStyle: {
-                        fontFamily: "montserrat-regular",
-                        fontSize: 12,
-                        color: "black",
-                        textAlign: "center",
-                        marginTop: 5,
-                        position: "absolute",
-                        left: 75,
-                      },
-                      tabBarStyle: {
-                        flexDirection: "row",
-                        padding: 0,
-                        height: 55,
-                        width: "85%",
-                        left: "7.5%",
-                        position: "absolute",
-                        bottom: 20,
-                        borderRadius: 10,
-                        alignItems: "center",
-                        justifyContent: "space-evenly",
-                        backgroundColor: "white",
-                        shadowColor: "#000000FF",
-                        shadowOffset: {
-                          width: 0,
-                          height: 2,
-                        },
-                        shadowOpacity: 0.23,
-                        shadowRadius: 2.62,
-                        elevation: 3,
-                      },
-                      tabBarIcon: ({ focused, color, size }) => {
-                        let iconName;
-
-                        if (route.name === "Home") {
-                          iconName = focused
-                            ? require("./assets/image/icona-home.png")
-                            : require("./assets/image/icona-home.png");
-                        } else if (route.name === "Settings") {
-                          iconName = focused
-                            ? require("./assets/image/icona-user.png")
-                            : require("./assets/image/icona-user.png");
-                        } else if (route.name === "Tickets") {
-                          iconName = focused
-                            ? require("./assets/image/icona-biglietto-1.png")
-                            : require("./assets/image/icona-biglietto-1.png");
-                        } else if (route.name === "Travels") {
-                          iconName = focused
-                            ? require("./assets/image/airplane.png")
-                            : require("./assets/image/airplane.png");
-                        } else if (route.name === "Money") {
-                          iconName = focused
-                            ? require("./assets/image/icona-wallet.png")
-                            : require("./assets/image/icona-wallet.png");
-                        }
-
-                        if (route.name != "White" && focused)
-                          return (
-                            <View
-                              style={{
-                                height: 40,
-                                backgroundColor: "#4960FF40",
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                borderRadius: 5,
-                                position: "absolute",
-                                top: -1.5,
-                              }}
-                            >
-                              <Image
-                                style={{
-                                  width: 40,
-                                  height: 30,
-                                  tintColor: color,
-                                  marginRight: 5,
-                                  resizeMode: "contain",
-                                }}
-                                source={iconName}
-                              />
-                              <Text
-                                style={{
-                                  color: color.primary,
-                                  fontSize: 11,
-                                  fontFamily: "montserrat-bold",
-                                  textAlign: "center",
-                                  color: "black",
-                                  marginRight: 10,
-                                }}
-                              >
-                                {route.name}
-                              </Text>
-                            </View>
-                          );
-                        else
-                          return (
-                            <Image
-                              style={{
-                                width: 40,
-                                height: 30,
-                                tintColor: color,
-                                marginRight: 5,
-                                resizeMode: "contain",
-                                position: "absolute",
-                                top: -1.5,
-                              }}
-                              source={iconName}
-                            />
-                          );
-                      },
-                    }
-                  : {
-                      tabBarVisibilityAnimationConfig: {
-                        show: {
-                          animation: "timing",
-                          config: {
-                            duration: 300,
-                          },
-                        },
-                        hide: {
-                          animation: "timing",
-                          config: {
-                            duration: 300,
-                          },
-                        },
-                      },
-                      animationEnabled: true,
-                      tabBarShowLabel: false,
-                      activeTintColor: "#4900FF",
-                      topBarActiveTintColor: "#4900FF",
-                      tabBarLabelStyle: {
-                        fontFamily: "montserrat-regular",
-                        fontSize: 12,
-                        color: "black",
-                        textAlign: "center",
-                        marginTop: 5,
-                        position: "absolute",
-                        left: 75,
-                      },
-                      tabBarStyle: {
-                        flexDirection: "row",
-                        padding: 0,
-                        height: 55,
-                        width: "85%",
-                        left: "7.5%",
-                        position: "absolute",
-                        bottom: 20,
-                        borderRadius: 10,
-                        alignItems: "center",
-                        justifyContent: "space-evenly",
-                        backgroundColor: "white",
-                        shadowColor: "#000000FF",
-                        shadowOffset: {
-                          width: 0,
-                          height: 2,
-                        },
-                        shadowOpacity: 0.23,
-                        shadowRadius: 2.62,
-                        elevation: 3,
-                      },
-                      tabBarIcon: ({ focused, color, size }) => {
-                        let iconName;
-
-                        if (route.name === "Home") {
-                          iconName = focused
-                            ? require("./assets/image/icona-home.png")
-                            : require("./assets/image/icona-home.png");
-                        } else if (route.name === "Settings") {
-                          iconName = focused
-                            ? require("./assets/image/icona-user.png")
-                            : require("./assets/image/icona-user.png");
-                        } else if (route.name === "Tickets") {
-                          iconName = focused
-                            ? require("./assets/image/icona-biglietto-1.png")
-                            : require("./assets/image/icona-biglietto-1.png");
-                        } else if (route.name === "Travels") {
-                          iconName = focused
-                            ? require("./assets/image/airplane.png")
-                            : require("./assets/image/airplane.png");
-                        } else if (route.name === "Money") {
-                          iconName = focused
-                            ? require("./assets/image/icona-wallet.png")
-                            : require("./assets/image/icona-wallet.png");
-                        }
-
-                        if (focused)
-                          return (
-                            <View
-                              style={{
-                                height: 40,
-                                backgroundColor: "#4960FF40",
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                borderRadius: 5,
-                              }}
-                            >
-                              <Image
-                                style={{
-                                  width: 40,
-                                  height: 30,
-                                  tintColor: color,
-                                  marginRight: 5,
-                                  resizeMode: "contain",
-                                }}
-                                source={iconName}
-                              />
-                              <Text
-                                style={{
-                                  color: color.primary,
-                                  fontSize: 11,
-                                  fontFamily: "montserrat-bold",
-                                  textAlign: "center",
-                                  color: "black",
-                                  marginRight: 10,
-                                }}
-                              >
-                                {route.name}
-                              </Text>
-                            </View>
-                          );
-                        else {
-                          return (
-                            <Image
-                              style={{
-                                width: 40,
-                                height: 30,
-                                tintColor: color,
-                                marginRight: 5,
-                                resizeMode: "contain",
-                              }}
-                              source={iconName}
-                            />
-                          );
-                        }
-                      },
-                    }
-              }
+              screenOptions={({ route }) => ({
+                tabBarVisibilityAnimationConfig: {
+                  show: {
+                    animation: "timing",
+                    config: {
+                      duration: 300,
+                    },
+                  },
+                  hide: {
+                    animation: "timing",
+                    config: {
+                      duration: 300,
+                    },
+                  },
+                },
+                animationEnabled: true,
+                tabBarShowLabel: false,
+                activeTintColor: "#4900FF",
+                topBarActiveTintColor: "#4900FF",
+                tabBarLabelStyle: textInputStyle,
+                tabBarStyle: tabBarStyle,
+                tabBarIcon: ({ focused, color, size }) => (
+                  <TabBarIcon
+                    focused={focused}
+                    color={color}
+                    size={size}
+                    route={route}
+                  />
+                ),
+              })}
             >
               <Tab.Screen
-                options={{
-                  headerShown: false,
-                }}
+                options={{ headerShown: false }}
                 name="Home"
                 component={Nav}
               />
@@ -505,11 +312,6 @@ export default function App() {
                 name="Tickets"
                 component={Tickets}
               />
-              {/* <Tab.Screen
-                options={{
-                  headerShown: false
-                }}
-                name="Travels" component={Travels} /> */}
               <Tab.Screen
                 options={{
                   headerShown: false,

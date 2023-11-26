@@ -1,0 +1,7 @@
+List of items in storage:
+-------------------------
+
+SecureStorage by React Native (MAX. 2048 byte):
+notifToken: Unique device ID for notifications
+
+react-native-async-storage:

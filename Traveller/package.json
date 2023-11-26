@@ -49,7 +49,8 @@
     "react-native-swiper": "^1.6.0",
     "react-native-swiper-flatlist": "^3.2.2",
     "socket.io-client": "^4.7.2",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "expo-constants": "~14.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
