@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "929921621338",
+    "project_id": "traveller-dfbc6",
+    "storage_bucket": "traveller-dfbc6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:929921621338:android:8e42181701aa8e875f6763",
+        "android_client_info": {
+          "package_name": "com.pietrobossolasco.Traveller"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDZe89-9ivTBdTg2PLr33PtaOsJtopT9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
