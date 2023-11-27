@@ -25,7 +25,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4960FF"
       },
-      "package": "com.pietrobossolasco.Traveller"
+      "package": "com.pietrobossolasco.Traveller",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
