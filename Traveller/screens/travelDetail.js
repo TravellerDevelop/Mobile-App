@@ -6,7 +6,7 @@ import ImagesComponent from '../components/Travel-Componets/ImagesComponent';
 import PaymentComponent from '../components/Travel-Componets/payments';
 import TextComponent from '../components/Travel-Componets/textcomponent';
 import Vote from '../components/Travel-Componets/vote';
-import { font, serverLink, setStatusBarColor, statusBarColor } from '../global/globalVariable';
+import { font, serverLink } from '../global/globalVariable';
 import { getData } from '../shared/data/localdata';
 import HeaderTravelDetail from '../shared/headerTravelDetail';
 // import socketService from '../components/utils/socketServise';
