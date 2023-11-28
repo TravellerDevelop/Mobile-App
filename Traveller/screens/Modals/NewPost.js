@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback, Modal, ScrollView, TextInput, ActivityIndicator, Image, SafeAreaView, LogBox } from "react-native";
+import { View, Text, StyleSheet, TouchableNativeFeedback, ScrollView, ActivityIndicator, Image, SafeAreaView, LogBox } from "react-native";
 import { font, color, serverLink } from "../../global/globalVariable";
-import { Button, Checkbox, SegmentedButtons } from "react-native-paper";
+import { TextInput, Checkbox, SegmentedButtons } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";
 import { getData } from "../../shared/data/localdata";
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from "react-native";
+import { globalStyleComponent } from "../../global/globalStyleComponent";
 
 let voteParams;
 let textParams;
@@ -183,18 +184,18 @@ export default function NewPost({ navigation, route }) {
                     >
                     </SegmentedButtons> */}
                 {/* </ScrollView> */}
-                {type == "text" ? <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline placeholder="Testo del post" onChangeText={(value) => textParams.content = value} /> : null}
-                {type == "payments" ?
+                {type == "text" && <TextInput placeholderTextColor={"gray"} underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={[globalStyleComponent.input, { height: 120 }]} multiline label="Testo del post" onChangeText={(value) => textParams.content = value} />}
+                {type == "payments" &&
                     <>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            <TextInput placeholderTextColor={"gray"} style={[styles.input, { width: "90%" }]} inputMode="numeric" placeholder="Importo del pagamento"
+                            <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={[globalStyleComponent.input, { width: "90%" }]} inputMode="numeric" label="Importo del pagamento"
                                 onChangeText={(value) => {
                                     setAmount(parseFloat(value))
                                 }}
                             />
                             <Text style={[styles.title, { marginLeft: 10 }]}>€</Text>
                         </View>
-                        <TextInput placeholderTextColor={"gray"} style={styles.inputMultiline} multiline={true} placeholder="Note del pagamento"
+                        <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={[globalStyleComponent.input, { height: 150 }]} multiline label="Note del pagamento"
                             onChangeText={(value) => {
                                 setPaymentDescription(value)
                             }}
@@ -294,24 +295,21 @@ export default function NewPost({ navigation, route }) {
                                     </>
                                     : null
                         } */}
-                    </>
-                    : null}
+                    </>}
 
 
-                {type == "vote" ?
+                {type == "vote" &&
                     <>
-                        <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Domanda" onChangeText={(value) => { setQuestion(value) }} />
-
-
+                        <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={globalStyleComponent.input} label="Domanda" onChangeText={(value) => { setQuestion(value) }} />
                         <Text style={[styles.subtitle, { marginTop: 30 }]}>Risposte:</Text>
                         <FlatList
                             data={answers}
                             scrollEnabled={false}
                             extraData={ausState}
                             renderItem={({ item }) => (
-                                <TextInput placeholderTextColor={"gray"} style={styles.input} onChangeText={(value) => {
+                                <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={globalStyleComponent.input} onChangeText={(value) => {
                                     voteParams.content[item.key - 1] = value
-                                }} placeholder={"Risposta " + item.key} />
+                                }} label={"Risposta " + item.key} />
                             )}
                         />
 
@@ -329,7 +327,6 @@ export default function NewPost({ navigation, route }) {
                             </View>
                         </TouchableNativeFeedback>
                     </>
-                    : null
                 }
 
                 {type == "images" && (
@@ -339,7 +336,7 @@ export default function NewPost({ navigation, route }) {
                                 <Text style={styles.buttonText} >+ Aggiungi immagini</Text>
                             </View>
                         </TouchableNativeFeedback>
-                        <TextInput style={styles.input} placeholder="Descrizone immagini" onChangeText={(text) => setImagesDescription(text)} />
+                        <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={globalStyleComponent.input} label="Descrizone immagini" onChangeText={(text) => setImagesDescription(text)} />
                         <View>
                             {
                                 (images.length > 0) && (
@@ -371,7 +368,7 @@ export default function NewPost({ navigation, route }) {
                 {
                     type == "todo" && (
                         <>
-                            <TextInput style={styles.input} placeholder="Descrizione" onChangeText={(value) => {
+                            <TextInput underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={globalStyleComponent.input} label="Descrizione" onChangeText={(value) => {
                                 let aus = toDoParams;
                                 aus.description = value;
                                 setToDoParams(aus);
@@ -381,8 +378,9 @@ export default function NewPost({ navigation, route }) {
                                 toDoParams.items.map(item => (
                                     <View style={styles.row} key={item.key}>
                                         <TextInput
-                                            style={[styles.input, { width: "90%" }, (item.label == "") ? { borderBottomColor: "red" } : { borderBottomColor: "#4900FF" }]}
-                                            placeholder={"Campo " + item.key}
+                                            underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }}
+                                            style={[globalStyleComponent.input, (item.label == "") && { borderBottomColor: "red" }]}
+                                            label={"Campo " + item.key}
                                             onChangeText={(text) => {
                                                 setToDoParams(prevState => ({
                                                     ...prevState,
@@ -394,21 +392,19 @@ export default function NewPost({ navigation, route }) {
                                                     })
                                                 }));
                                             }}
-                                        />
-                                        <TouchableNativeFeedback
-                                            onPress={
-                                                () => {
-                                                    if (toDoParams.items.length != 1) {
-                                                        setToDoParams(prevState => ({
-                                                            ...prevState,
-                                                            items: prevState.items.filter(i => i.key !== item.key)
-                                                        }));
+                                            right={
+                                                <TextInput.Icon icon="delete" onPress={
+                                                    () => {
+                                                        if (toDoParams.items.length != 1) {
+                                                            setToDoParams(prevState => ({
+                                                                ...prevState,
+                                                                items: prevState.items.filter(i => i.key !== item.key)
+                                                            }));
+                                                        }
                                                     }
-                                                }
+                                                } />
                                             }
-                                        >
-                                            <Image source={require('../../assets/image/icona-cestino.png')} style={styles.delete} />
-                                        </TouchableNativeFeedback>
+                                        />
                                     </View>
                                 ))
                             }

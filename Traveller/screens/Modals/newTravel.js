@@ -111,7 +111,7 @@ export default function NewTravel({
         }}
       >
         <ScrollView style={{ flex: 1, width: "100%" }}>
-          <View style={{ width: "80%", marginLeft: "10%" }}>
+          <View style={{ marginLeft: 20, marginRight:20 }}>
             <TouchableOpacity
               style={{ position: "absolute", top: 20, right: 0 }}
               onPress={() => setNewTravelVisibility(false)}
@@ -469,8 +469,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 30,
     marginBottom: 30,
-    marginLeft: 20,
-    marginRight: 20,
+    // marginLeft: 20,
+    // marginRight: 20,
   },
   cardTitle: {
     color: "white",
