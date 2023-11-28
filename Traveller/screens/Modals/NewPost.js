@@ -380,7 +380,7 @@ export default function NewPost({ navigation, route }) {
                                         <TextInput
                                             underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }}
                                             style={[globalStyleComponent.input, (item.label == "") && { borderBottomColor: "red" }]}
-                                            label={"Campo " + item.key}
+                                            label={`Campo ${item.key}`}
                                             onChangeText={(text) => {
                                                 setToDoParams(prevState => ({
                                                     ...prevState,
@@ -393,7 +393,7 @@ export default function NewPost({ navigation, route }) {
                                                 }));
                                             }}
                                             right={
-                                                <TextInput.Icon icon="delete" onPress={
+                                                <TextInput.Icon icon="delete" color={'#FF0000'} rippleColor='#4960FF' onPress={
                                                     () => {
                                                         if (toDoParams.items.length != 1) {
                                                             setToDoParams(prevState => ({
