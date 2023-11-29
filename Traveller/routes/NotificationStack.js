@@ -12,6 +12,7 @@ import OtherProfile from '../screens/otherProfile'
 import NewPost from '../screens/Modals/NewPost'
 import TicketModal from '../screens/Modals/ticketModal'
 import Tickets from '../screens/tickets'
+import EditTravel from '../screens/Modals/edittravel'
 
 const Stack = createStackNavigator()
 

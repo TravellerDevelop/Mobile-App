@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Dimensions,
   Modal,
@@ -19,13 +19,27 @@ export default function EditTravel({ item, visible, setVisible }) {
   let [description, setDescription] = React.useState(item.description);
   let [budget, setBudget] = React.useState(item.budget);
 
-  const [scrollY, setScrollY] = useState(0);
+  // const [scrollY, setScrollY] = useState(0);
+  const [scrollY] = useState(new Animated.Value(0));
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    scrollViewRef.current.scrollTo({ y: 100, animated: true });
+  }, [])
 
   const handleScroll = (event) => {
-    const { y } = event.nativeEvent.contentOffset;
-    setScrollY(y > 180 ? 180 : y);
+    Animated.event(
+      [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+      { useNativeDriver: false }
+    );
+  }
+  const handleScrollEndDrag = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    if (offsetY < 100) {
+      // Abilita lo scroll solo se la posizione è inferiore a 100px
+      scrollViewRef.current.scrollTo({ y: 100, animated: true });
+    }
   };
-
   return (
     <Modal animationType="slide" visible={visible}>
       <View style={{ height: 220, position: "absolute", zIndex: 0 }}>
@@ -40,10 +54,13 @@ export default function EditTravel({ item, visible, setVisible }) {
         ></ImageBackground>
       </View>
       <ScrollView
+        ref={scrollViewRef}
         scrollEventThrottle={16}
-        scrollEnabled={scrollY >= 180 ? false : true}
         onScroll={handleScroll}
+        onScrollEndDrag={handleScrollEndDrag}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={scrollY._value >= 180 ? false : true}
+        contentContainerStyle={{ marginTop: 160 }}
       >
         <View
           style={{
@@ -51,6 +68,7 @@ export default function EditTravel({ item, visible, setVisible }) {
             alignItems: "center",
             backgroundColor: "white",
             marginTop: 180,
+            marginBottom: 20,
             height: Dimensions.get("screen").height - 0,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
