@@ -7,14 +7,19 @@ import {
   TouchableOpacity,
   View,
   ImageBackground,
-  Animated,
+  SafeAreaView,
 } from "react-native";
+// Animated,
 import { TextInput } from "react-native-paper";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import { color, font, serverLink } from "../../global/globalVariable";
 import { ScrollView } from "react-native-gesture-handler";
+import Animated, { EasingNode } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function EditTravel({ item, visible, setVisible }) {
+export default function EditTravel({ navigation, route }) {
+  let item = route.params;
+  const grayBarWidth = useRef(new Animated.Value(0)).current;
   let [name, setName] = React.useState(item.name);
   let [description, setDescription] = React.useState(item.description);
   let [budget, setBudget] = React.useState(item.budget);
@@ -22,36 +27,73 @@ export default function EditTravel({ item, visible, setVisible }) {
   // const [scrollY, setScrollY] = useState(0);
   const [scrollY] = useState(new Animated.Value(0));
   const scrollViewRef = useRef(null);
+  const expand = () => {
+    Animated.timing(grayBarWidth, {
+      toValue: 100,
+      duration: 300,
+      easing: EasingNode.linear,
+    }).start();
+  };
+
+  const reduce = () => {
+    Animated.timing(grayBarWidth, {
+      toValue: 70, // Cambia da 100 a 0 per restringere
+      duration: 100,
+      easing: EasingNode.linear,
+    }).start();
+  };
 
   useEffect(() => {
     scrollViewRef.current.scrollTo({ y: 100, animated: true });
-  }, [])
+  }, []);
 
   const handleScroll = (event) => {
-    Animated.event(
-      [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-      { useNativeDriver: false }
-    );
-  }
+    Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+      useNativeDriver: false,
+    });
+    if (event.nativeEvent.contentOffset.y < 100) {
+      expand();
+    } else {
+      reduce();
+    }
+  };
   const handleScrollEndDrag = (event) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     if (offsetY < 100) {
-      // Abilita lo scroll solo se la posizione è inferiore a 100px
       scrollViewRef.current.scrollTo({ y: 100, animated: true });
+      expand();
     }
   };
+
+  const buttonStyle = {
+    borderRadius: 50,
+    height: 50,
+    padding: 10,
+    marginTop: 20,
+    width: Dimensions.get("screen").width - 40,
+  };
   return (
-    <Modal animationType="slide" visible={visible}>
+    <SafeAreaView>
       <View style={{ height: 220, position: "absolute", zIndex: 0 }}>
-        <ImageBackground
-          style={{
-            height: "100%",
-            width: Dimensions.get("screen").width,
-            backgroundColor: "#000",
-          }}
-          source={{ uri: serverLink + "userImage/" + item.image }}
-          imageStyle={{ opacity: 0.85 }}
-        ></ImageBackground>
+        {typeof item.image === "string" ? (
+          <ImageBackground
+            style={{
+              height: 450,
+              width: Dimensions.get("screen").width,
+              backgroundColor: "#000",
+            }}
+            source={{ uri: serverLink + "userImage/" + item.image }}
+            imageStyle={{ opacity: 0.85 }}
+          ></ImageBackground>
+        ) : (
+          <LinearGradient
+            colors={["#4960FF", "#4900FF"]}
+            style={{
+              width: Dimensions.get("screen").width,
+              height: Dimensions.get("screen").height,
+            }}
+          />
+        )}
       </View>
       <ScrollView
         ref={scrollViewRef}
@@ -82,44 +124,16 @@ export default function EditTravel({ item, visible, setVisible }) {
               alignItems: "center",
             }}
           >
-            <View
+            <Animated.View
               style={{
-                width: 70,
+                width: grayBarWidth,
                 height: 5,
                 backgroundColor: "gray",
                 borderRadius: 5,
                 marginTop: 15,
               }}
-            ></View>
+            ></Animated.View>
           </View>
-          <Text
-            style={{
-              color: color.primary,
-              fontSize: 24,
-              fontFamily: font.text_bold,
-              textAlign: "center",
-              marginTop: 50,
-            }}
-          >
-            Modifica viaggio
-          </Text>
-
-          <TouchableOpacity
-            style={{ position: "absolute", top: 20, right: 20 }}
-            onPress={() => {
-              setVisible(false);
-            }}
-          >
-            <Text
-              style={{
-                color: color.primary,
-                fontSize: 18,
-                fontFamily: font.text,
-              }}
-            >
-              Annulla
-            </Text>
-          </TouchableOpacity>
           <TextInput
             underlineStyle={{
               borderColor: "white",
@@ -173,13 +187,7 @@ export default function EditTravel({ item, visible, setVisible }) {
             </Text>
           </View>
           <TouchableOpacity
-            style={{
-              backgroundColor: color.primary,
-              borderRadius: 10,
-              padding: 10,
-              marginTop: 20,
-              width: "80%",
-            }}
+            style={[buttonStyle, { backgroundColor: color.secondary }]}
             onPress={() => {
               axios
                 .post(serverLink + "api/travel/update", {
@@ -191,7 +199,7 @@ export default function EditTravel({ item, visible, setVisible }) {
                   },
                 })
                 .then((res) => {
-                  setVisible(false);
+                  navigation.goBack();
                 })
                 .catch((err) => {
                   console.log(err);
@@ -211,20 +219,19 @@ export default function EditTravel({ item, visible, setVisible }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={{
-              backgroundColor: "white",
-              borderRadius: 10,
-              padding: 10,
-              marginTop: 20,
-              width: "80%",
-              borderColor: "red",
-              borderWidth: 1,
-            }}
+            style={[
+              buttonStyle,
+              {
+                backgroundColor: "white",
+                borderColor: "red",
+                borderWidth: 1,
+              },
+            ]}
             onPress={() => {
               axios
                 .post(serverLink + "api/travel/close", { id: item._id })
                 .then((res) => {
-                  setVisible(false);
+                  navigation.goBack();
                 })
                 .catch((err) => {
                   console.log(err);
@@ -244,18 +251,17 @@ export default function EditTravel({ item, visible, setVisible }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={{
-              backgroundColor: "red",
-              borderRadius: 10,
-              padding: 10,
-              marginTop: 20,
-              width: "80%",
-            }}
+            style={[
+              buttonStyle,
+              {
+                backgroundColor: "red",
+              },
+            ]}
             onPress={() => {
               axios
                 .post(serverLink + "api/travel/delete", { id: item._id })
                 .then((res) => {
-                  setVisible(false);
+                  navigation.goBack();
                 })
                 .catch((err) => {
                   console.log(err);
@@ -275,6 +281,6 @@ export default function EditTravel({ item, visible, setVisible }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </Modal>
+    </SafeAreaView>
   );
 }

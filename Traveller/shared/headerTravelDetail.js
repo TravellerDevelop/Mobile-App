@@ -56,16 +56,9 @@ export default function HeaderTravelDetail({ navigation, data }) {
           <SafeAreaView>
             {creator == username && (
               <>
-                {editVisibility ? (
-                  <EditTravel
-                    visible={editVisibility}
-                    setVisible={setEditVisibility}
-                    item={data}
-                  />
-                ) : null}
                 <TouchableOpacity
                   onPress={() => {
-                    setEditVisibility(true);
+                    navigation.navigate('EditTravel', data)
                   }}
                   style={{ zIndex: 100 }}
                 >
@@ -139,16 +132,9 @@ export default function HeaderTravelDetail({ navigation, data }) {
           <SafeAreaView>
             {creator == username ? (
               <>
-                {editVisibility ? (
-                  <EditTravel
-                    visible={editVisibility}
-                    setVisible={setEditVisibility}
-                    item={data}
-                  />
-                ) : null}
                 <TouchableOpacity
                   onPress={() => {
-                    setEditVisibility(true);
+                    navigation.navigate('EditTravel', data)
                   }}
                   style={{ zIndex: 100 }}
                 >

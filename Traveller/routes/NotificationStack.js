@@ -75,6 +75,12 @@ export default function Navigator() {
           }}
         />
 
+        <Stack.Screen name='EditTravel' component={EditTravel}
+          options={{
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen name='TicketsModal' component={TicketModal}
           options={{
             headerShown: false,

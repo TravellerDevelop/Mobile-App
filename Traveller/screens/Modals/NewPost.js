@@ -169,21 +169,6 @@ export default function NewPost({ navigation, route }) {
         >
             <Text style={[styles.title]} >Crea un nuovo post</Text>
             <ScrollView style={{ width: "100%", padding: 20 }} >
-                {/* <Text style={[styles.subtitle, { textAlign: "left", marginBottom: 10 }]}>Tipologia del post:</Text> */}
-                {/* <ScrollView
-                    horizontal={true}
-                    style={{ paddingBottom: 10 }}
-                > */}
-                {/* <SegmentedButtons
-                        density="small"
-                        style={{ fontFamily: font.montserrat }}
-                        buttons={PostType}
-                        onValueChange={(value) => { setType(value) }}
-                        value={type}
-                        checkedColor={color.primary}
-                    >
-                    </SegmentedButtons> */}
-                {/* </ScrollView> */}
                 {type == "text" && <TextInput placeholderTextColor={"gray"} underlineStyle={{ borderColor: "white", backgroundColor: "transparent", }} style={[globalStyleComponent.input, { height: 120 }]} multiline label="Testo del post" onChangeText={(value) => textParams.content = value} />}
                 {type == "payments" &&
                     <>
