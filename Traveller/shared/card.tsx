@@ -13,14 +13,12 @@ interface CardProps {
   navigation: any,
   data: any,
   vertical?: boolean,
-  isLoading?: boolean
+  isLoading?: boolean,
+  username: string
 }
 
-export default function Card({ navigation, data, vertical, isLoading } : CardProps) {
-  let [myData, setMyData] : any = React.useState({});
-
+export default function Card({ navigation, data, vertical, isLoading, username }: CardProps) {
   let creator = "";
-
   let i = 0;
   while (creator == "" && i < data.participants.length) {
     if (data.participants[i].creator === true) {
@@ -28,15 +26,6 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
     }
     i++;
   }
-
-  useEffect(() => {
-    getCreator();
-
-    async function getCreator() {
-      let getMyData = await getData("user");
-      setMyData(getMyData);
-    }
-  }, []);
 
   return (
     <>
@@ -53,7 +42,7 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
             }
 
             if (found) {
-              navigation.navigate("TravelDetail", data);
+              navigation.navigate("TravelDetail", { data:data, username:username});
             }
           }}
         >
@@ -66,7 +55,7 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
                   {new Date(data.creation_date)
                     .toLocaleString("en-GB", { timeZone: "UTC" })
                     .substring(0, 10)}{" "}
-                  da {creator == myData.username ? "te" : creator}
+                  da {creator == username ? "te" : creator}
                 </Text>
               </View>
               <View style={{ position: "absolute", bottom: 10, right: 30 }}>
@@ -82,7 +71,7 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
                   {new Date(data.creation_date)
                     .toLocaleString("en-GB", { timeZone: "UTC" })
                     .substring(0, 10)}{" "}
-                  da {creator == myData.username ? "te" : creator}
+                  da {creator == username ? "te" : creator}
                 </Text>
               </View>
               <View
@@ -94,18 +83,15 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
       ) : (
         <TouchableNativeFeedback
           style={{ zIndex: 10 }}
-          onPress={async () => {
-            let myD = await getData("user");
+          onPress={() => {
             let found = false;
-
             for (let item of data.participants) {
-              if (item.username == myD.username) {
+              if (item.username == username) {
                 found = true;
               }
             }
-
             if (found) {
-              navigation.navigate("TravelDetail", data);
+              navigation.navigate("TravelDetail", {data:data, username:username});
             }
           }}
         >
@@ -120,19 +106,19 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
               >
                 <Text
                   style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", data)}
+                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
                 >
                   {data.name}
                 </Text>
                 <Text
                   style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", data)}
+                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
                 >
                   Creato il{" "}
                   {new Date(data.creation_date)
                     .toLocaleString("en-GB", { timeZone: "UTC" })
                     .substring(0, 10)}{" "}
-                  da {creator == myData.username ? "te" : creator}
+                  da {creator == username ? "te" : creator}
                 </Text>
               </View>
             </ImageBackground>
@@ -148,19 +134,19 @@ export default function Card({ navigation, data, vertical, isLoading } : CardPro
               >
                 <Text
                   style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", data)}
+                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
                 >
                   {data.name}
                 </Text>
                 <Text
                   style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", data)}
+                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
                 >
                   Creato il{" "}
                   {new Date(data.creation_date)
                     .toLocaleString("en-GB", { timeZone: "UTC" })
                     .substring(0, 10)}{" "}
-                  da {creator == myData.username ? "te" : creator}
+                  da {creator == username ? "te" : creator}
                 </Text>
               </View>
             </ImageBackground>

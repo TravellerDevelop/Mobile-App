@@ -1,21 +1,20 @@
 import axios from "axios";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
   ImageBackground,
   SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 // Animated,
+import { LinearGradient } from "expo-linear-gradient";
+import { ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";
+import Animated, { EasingNode } from "react-native-reanimated";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import { color, font, serverLink } from "../../global/globalVariable";
-import { ScrollView } from "react-native-gesture-handler";
-import Animated, { EasingNode } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function EditTravel({ navigation, route }) {
   let item = route.params;

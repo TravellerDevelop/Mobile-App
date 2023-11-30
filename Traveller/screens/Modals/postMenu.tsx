@@ -1,7 +1,6 @@
 import axios from "axios";
-import { useState } from "react";
 import * as MediaLibrary from "expo-media-library";
-import React from "react";
+import React, { useState } from "react";
 import {
     Image,
     Modal,
@@ -19,20 +18,19 @@ interface PostMenuProps {
     item: any,
     showMenu: boolean,
     setShowMenu: (bool: boolean) => void,
-    type: 'text' | 'quest' | 'payment' | 'image' | 'todo',
+    type: 'text' | 'vote' | 'payments' | 'images' | 'todo',
     loadPosts: (param: any) => void
 }
 
 export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts }: PostMenuProps) {
     const [savedIntoGallery, setSavedIntoGallery] = useState(false);
-
     return (
         <Modal transparent visible={showMenu} animationType="slide">
             <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
                 <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
                     <View style={ComponentStyles.editContent}>
                         {
-                            type === 'image' &&
+                            type === 'images' &&
                             <TouchableOpacity
                                 onPress={async () => {
                                     if (!savedIntoGallery) {
@@ -148,7 +146,7 @@ export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts 
                         <TouchableOpacity
                             onPress={() => {
                                 axios
-                                    .post(serverLink + "api/post/deletePost", { id: item._id })
+                                    .post(serverLink + "api/post/deletePost", { id: item._id, travel: item.travel })
                                     .then((response) => {
                                         setShowMenu(false);
                                         loadPosts(item.travel);

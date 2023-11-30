@@ -4,8 +4,9 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { font, serverLink } from "../../global/globalVariable";
 import axios from "axios";
+import PostCard from "./PostCard";
 
-export default function ToDo({ data, home, loadPosts }) {
+export default function ToDo({ data, home, travel, loadPosts, username }) {
     let [temp, setTemp] = useState(data);
 
     const handleCheckboxPress = async (itemKey) => {
@@ -30,19 +31,7 @@ export default function ToDo({ data, home, loadPosts }) {
 
 
     return (
-        <View style={ComponentStyles.card}>
-            <View style={ComponentStyles.headerContainer}>
-                {(data.pinned && !home) &&
-                    <View style={ComponentStyles.pinned}>
-                        <Image source={require("../../assets/image/pin.png")} style={{ width: 20, height: 20, marginRight: 5, tintColor: "lightgray" }} />
-                        <Text style={ComponentStyles.pinnedText}>Fissato in alto</Text>
-                    </View>
-                }
-                <View style={ComponentStyles.nameContainer}>
-                    <Text style={ComponentStyles.nameText}>@{data.creator}</Text>
-                </View>
-                <Text style={ComponentStyles.datetimeText} >{data.dateTime}</Text>
-            </View>
+        <PostCard item={data} home={home} travel={travel} loadPosts={loadPosts} username={username}>
             <Text style={styles.description} >{data.description}</Text>
             <View style={{}}>
                 {
@@ -58,7 +47,7 @@ export default function ToDo({ data, home, loadPosts }) {
                     ))
                 }
             </View>
-        </View>
+        </PostCard>
     )
 }
 

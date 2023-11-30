@@ -41,6 +41,7 @@ import Vote from "../components/Travel-Componets/vote";
 import PostLoading from "../components/loading/PostLoading";
 import * as SecureStore from "expo-secure-store";
 import * as Notifications from "expo-notifications";
+import ToDo from "../components/Travel-Componets/ToDo";
 
 export default function Home({ navigation }) {
   let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -137,11 +138,11 @@ export default function Home({ navigation }) {
 
     if (data && data._id) {
       storeStringData("username", data.username);
-      setLogged(true)
+      setLogged(true);
       axios
         .get(serverLink + "api/user/takeUserById?id=" + data._id)
         .then(async (response) => {
-          await setUserData(response.data);
+          await setUserData(response.data[0]);
           globalData = response.data;
           await loadJoinedTravels(
             response.data[0].username,
@@ -550,7 +551,7 @@ export default function Home({ navigation }) {
                     data={serchData}
                     renderItem={({ item }) => (
                       <>
-                        {userData[0]._id != item._id ? (
+                        {userData._id != item._id && (
                           <TouchableOpacity
                             onPress={() => {
                               navigation.navigate("OtherProfile", {
@@ -600,7 +601,7 @@ export default function Home({ navigation }) {
                               </View>
                             </View>
                           </TouchableOpacity>
-                        ) : null}
+                        )}
                       </>
                     )}
                   />
@@ -636,7 +637,7 @@ export default function Home({ navigation }) {
               )}
               {joinedTravels != null &&
                 joinedTravels.length > 0 &&
-                !joinedTravelsLoading && (
+                !joinedTravelsLoading && userData.username && (
                   <FlatList
                     data={joinedTravels}
                     horizontal
@@ -645,6 +646,7 @@ export default function Home({ navigation }) {
                         isLoading={joinedTravelsLoading}
                         data={item}
                         navigation={navigation}
+                        username={userData.username}
                       />
                     )}
                   />
@@ -688,32 +690,39 @@ export default function Home({ navigation }) {
                       <>
                         {item.type == "text" ? (
                           <TextComponent
-                            isLoading={lastPostsLoading}
                             home={true}
                             item={item}
                             travel={lastPosts[1][item.travel]}
+                            username={userData.username}
                           />
                         ) : item.type == "vote" ? (
                           <Vote
-                            isLoading={lastPostsLoading}
                             item={item}
                             home={true}
                             travel={lastPosts[1][item.travel]}
+                            username={userData.username}
                           />
                         ) : item.type == "payments" ? (
                           <PaymentComponent
-                            isLoading={lastPostsLoading}
                             item={item}
                             home={true}
                             travel={lastPosts[1][item.travel]}
+                            username={userData.username}
+                          />
+                        ) : item.type == "images" ? (
+                          <ImagesComponent
+                            item={item}
+                            home={true}
+                            travel={lastPosts[1][item.travel]}
+                            username={userData.username}
                           />
                         ) : (
-                          item.type == "images" && (
-                            <ImagesComponent
-                              isLoading={lastPostsLoading}
-                              item={item}
+                          item.type === "todo" && (
+                            <ToDo
+                              data={item}
                               home={true}
                               travel={lastPosts[1][item.travel]}
+                              username={userData.username}
                             />
                           )
                         )}
@@ -754,7 +763,7 @@ export default function Home({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   title: {
     fontSize: 30,

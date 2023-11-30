@@ -18,32 +18,28 @@ import PostLoading from '../components/loading/PostLoading';
 
 export default function TravelDetail({ navigation, route }) {
     let [personalBudget, setPersonalBudget] = useState(0)
-    let [newPost, setNewPost] = useState(false);
     let [postLoading, setPostLoading] = useState(true);
-
+    let [userData, setUserData] = useState({});
     let [postData, setPostData] = useState([]);
-
-    // console.log(PostType)
+    let username = route.params.username;
 
     useEffect(() => {
-        loadPosts(route.params._id);
+        loadPosts(route.params.data._id);
     }, [])
 
     const [refreshing, setRefreshing] = useState(false);
-
     const [spent, setSpent] = useState(0);
 
     const onRefresh = async () => {
         setPostLoading(true);
         setRefreshing(true);
-        loadPosts(route.params._id);
+        loadPosts(route.params.data._id);
         setRefreshing(false);
     };
 
-
     async function loadPosts(travelId) {
         let aus = await getData("user");
-
+        setUserData(aus);
         setPostData([]);
         axios.get(serverLink + "api/post/take?travel=" + travelId)
             .then(async (response) => {
@@ -84,17 +80,15 @@ export default function TravelDetail({ navigation, route }) {
     }
 
     function onAddData(data) {
-        loadPosts(route.params._id);
+        loadPosts(route.params.data._id);
     }
-
-
 
     return (
         <>
             <View style={styles.container}>
                 <MenuNewPost
                     navigation={navigation}
-                    data={route.params}
+                    data={route.params.data}
                     onAddData={onAddData}
                 />
                 <ScrollView
@@ -109,26 +103,11 @@ export default function TravelDetail({ navigation, route }) {
                         />
                     }
                 >
-                    <HeaderTravelDetail navigation={navigation} data={route.params} />
+                    <HeaderTravelDetail navigation={navigation} data={route.params.data} />
 
-                    <View style={(route.params.image) ? { flex: 1, backgroundColor: "#000" } : { flex: 1, backgroundColor: "#4960FF" }}>
+                    <View style={(route.params.data.image) ? { flex: 1, backgroundColor: "#000" } : { flex: 1, backgroundColor: "#4960FF" }}>
                         <View style={styles.contentContainer}>
-                            {/* {
-                                (!route.params.closed) && (
-                                    <TouchableNativeFeedback
-                                        onPress={() => {
-                                            navigation.navigate("NewPost", { data: route.params, refresh: onAddData })
-                                        }
-                                        }
-                                    >
-                                        <View style={[styles.cardButton, { marginTop: 30, marginBottom: 0 }]}>
-                                            <Text style={[styles.cardButtonText, { fontSize: 18 }]}>+ Aggiungi un nuovo post</Text>
-                                        </View>
-                                    </TouchableNativeFeedback>
-                                )
-                            } */}
-
-                            <BudgetIndicator budget={parseFloat(route.params.budget)} spent={spent} personalbudget={personalBudget} setPersonalBudget={setPersonalBudget} creator={false} />
+                            <BudgetIndicator budget={parseFloat(route.params.data.budget)} spent={spent} personalbudget={personalBudget} setPersonalBudget={setPersonalBudget} creator={false} />
 
                             {
                                 (postLoading) && (
@@ -145,19 +124,19 @@ export default function TravelDetail({ navigation, route }) {
                                     renderItem={({ item }) => (
                                         <>
                                             {(item.type == "text") ?
-                                                <TextComponent item={item} home={false} loadPosts={loadPosts} />
+                                                <TextComponent item={item} home={false} loadPosts={loadPosts} username={username} />
                                                 :
                                                 (item.type == "vote") ?
-                                                    <Vote item={item} home={false} loadPosts={loadPosts} />
+                                                    <Vote item={item} home={false} loadPosts={loadPosts} username={username} />
                                                     :
                                                     (item.type == "payments") ?
-                                                        <PaymentComponent navigation={navigation} item={item} home={false} loadPosts={loadPosts} />
+                                                        <PaymentComponent navigation={navigation} item={item} home={false} loadPosts={loadPosts} username={username} />
                                                         :
                                                         (item.type == "images") ?
-                                                            <ImagesComponent item={item} home={false} loadPosts={loadPosts} />
+                                                            <ImagesComponent item={item} home={false} loadPosts={loadPosts} username={username}/>
                                                             :
                                                             (item.type == "todo") &&
-                                                            <ToDo data={item} loadPosts={loadPosts} home={false} />
+                                                            <ToDo data={item} loadPosts={loadPosts} home={false} username={username}/>
                                             }
                                         </>
                                     )}
