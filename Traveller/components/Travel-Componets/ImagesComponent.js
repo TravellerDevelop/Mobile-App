@@ -1,27 +1,21 @@
-import React, { useState, useRef, useEffect } from "react";
+import { Badge } from "@react-native-material/core";
+import * as FileSystem from "expo-file-system";
+import * as Notifications from "expo-notifications";
+import React, { useState } from "react";
 import {
+  Dimensions,
+  Image,
   StyleSheet,
   Text,
-  View,
-  Image,
-  Dimensions,
-  Modal,
-  TouchableWithoutFeedback,
   TouchableOpacity,
-  SafeAreaView,
-  Platform,
+  View
 } from "react-native";
-import { Badge } from "@react-native-material/core";
-import { getData } from "../../shared/data/localdata";
-import { ComponentStyles } from "./componentStyle";
-import { font, serverLink } from "../../global/globalVariable";
 import { FlatList } from "react-native-gesture-handler";
-import axios from "axios";
-import * as MediaLibrary from "expo-media-library";
-import * as FileSystem from "expo-file-system";
-import { isFilePresent, savePostToGallery } from "../utils/fileSystem";
-import * as Notifications from "expo-notifications";
-import * as SecureStore from "expo-secure-store";
+import { font, serverLink } from "../../global/globalVariable";
+import { getData } from "../../shared/data/localdata";
+import { isFilePresent } from "../utils/fileSystem";
+import { ComponentStyles } from "./componentStyle";
+import PostMenu from "../../screens/Modals/postMenu";
 
 const styles = StyleSheet.create({
   description: {
@@ -51,8 +45,6 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [userData, setUserData] = useState(false);
-
-  const [savedIntoGallery, setSavedIntoGallery] = useState(false);
   const [ausItems, setAusItems] = useState({});
 
   async function getUserData() {
@@ -85,211 +77,9 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
     getUserData();
   }, []);
 
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
-
-  const setNotificationT = async () => {
-    let notificationToken = await SecureStore.getItemAsync("notif-token");
-    if (notificationToken) {
-      notificationListener.current =
-        Notifications.addNotificationReceivedListener((notification) => {
-          setNotification(notification);
-        });
-
-      responseListener.current =
-        Notifications.addNotificationResponseReceivedListener((response) => {
-          console.log(response);
-        });
-        
-      Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldShowAlert: true,
-          shouldPlaySound: false,
-          shouldSetBadge: false,
-        }),
-      });
-
-      return () => {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
-        Notifications.removeNotificationSubscription(responseListener.current);
-      };
-    }
-  };
-
-  useEffect(() => {
-    setNotificationT();
-  }, []);
-
-  // schedulePushNotification()
-
   return (
     <View style={[ComponentStyles.card]}>
-      <Modal transparent visible={showMenu} animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-          <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}>
-            <View style={ComponentStyles.editContent}>
-              <TouchableOpacity
-                onPress={async () => {
-                  if (!savedIntoGallery) {
-                    try {
-                      const { status } =
-                        await MediaLibrary.requestPermissionsAsync();
-                      if (status === "granted") {
-                        try {
-                          for (let i of item.source) {
-                            await savePostToGallery(i.source);
-                          }
-                          setSavedIntoGallery(true);
-                          schedulePushNotification();
-                        } catch (error) {
-                          console.error(
-                            "Error saving image to gallery:",
-                            error
-                          );
-                        }
-                      } else {
-                        console.log("Permission denied");
-                      }
-                    } catch (error) {
-                      console.error("Error requesting permission:", error);
-                    }
-                  }
-                }}
-              >
-                <View
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: "lightgray",
-                    paddingBottom: 10,
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                  }}
-                >
-                  <Image
-                    source={
-                      savedIntoGallery
-                        ? require("../../assets/image/icona-check.png")
-                        : require("../../assets/image/icona-download.png")
-                    }
-                    style={{
-                      width: 22,
-                      height: 22,
-                      tintColor: savedIntoGallery ? "green" : "gray",
-                      marginRight: 10,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontFamily: font.text,
-                      fontSize: 20,
-                      color: savedIntoGallery ? "green" : "black",
-                    }}
-                  >
-                    {savedIntoGallery
-                      ? "Salvato nella galleria!"
-                      : "Salva nella galleria"}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  item.pinned = !item.pinned;
-
-                  axios
-                    .post(serverLink + "api/post/updatePinPost", {
-                      param: item,
-                    })
-                    .then((response) => {
-                      setShowMenu(false);
-                      loadPosts(item.travel);
-                    })
-                    .catch((error) => {
-                      console.log(error);
-                    });
-                }}
-              >
-                <View
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: "lightgray",
-                    paddingBottom: 10,
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                    paddingTop: 10,
-                  }}
-                >
-                  <Image
-                    source={require("../../assets/image/pin.png")}
-                    style={{
-                      width: 22,
-                      height: 22,
-                      tintColor: "lightgray",
-                      marginRight: 10,
-                    }}
-                  />
-                  {item.pinned ? (
-                    <Text style={{ fontFamily: font.text, fontSize: 20 }}>
-                      Rimuovi pin
-                    </Text>
-                  ) : (
-                    <Text style={{ fontFamily: font.text, fontSize: 20 }}>
-                      Aggiungi pin
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  axios
-                    .post(serverLink + "api/post/deletePost", { id: item._id })
-                    .then((response) => {
-                      setShowMenu(false);
-                      loadPosts(item.travel);
-                    })
-                    .catch((error) => {
-                      console.log(error);
-                    });
-                }}
-              >
-                <View
-                  style={{
-                    paddingTop: 10,
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                  }}
-                >
-                  <Image
-                    source={require("../../assets/image/icona-cestino.png")}
-                    style={{
-                      width: 22,
-                      height: 22,
-                      tintColor: "red",
-                      marginRight: 10,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontFamily: font.text,
-                      fontSize: 20,
-                      color: "red",
-                    }}
-                  >
-                    Elimina post
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </TouchableWithoutFeedback>
-      </Modal>
-
+      <PostMenu item={item} showMenu={showMenu} setShowMenu={setShowMenu} type="image" loadPosts={loadPosts} />
       {home ? (
         <Badge
           label={travel}
@@ -300,12 +90,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
 
       {item.creator == userData.username && !home ? (
         <View style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}>
-          <TouchableOpacity
-            style={{ position: "absolute", top: 5, right: 5, zIndex: 100 }}
-            onPress={() => {
-              showMenu ? setShowMenu(false) : setShowMenu(true);
-            }}
-          >
+          <TouchableOpacity style={{ position: "absolute", top: 5, right: 5, zIndex: 100 }} onPress={() => { setShowMenu(!showMenu) }} >
             <Image
               source={require("../../assets/image/icona-more-cerchio.png")}
               style={{ width: 20, height: 20, tintColor: "lightgray" }}
@@ -344,7 +129,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
           setCurrentIndex(
             Math.round(
               e.nativeEvent.contentOffset.x /
-                ((Dimensions.get("screen").width / 100) * 88)
+              ((Dimensions.get("screen").width / 100) * 88)
             )
           );
         }}
@@ -395,15 +180,4 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
       <Text style={styles.description}>{item.description}</Text>
     </View>
   );
-}
-
-async function schedulePushNotification() {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Immagine scaricata! 🚀🚀",
-      body: "Apri la galleria per vedere l'immagine",
-      data: { data: "goes here" },
-    },
-    trigger: { seconds: 0 },
-  });
 }
