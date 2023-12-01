@@ -21,7 +21,7 @@ import {
 import Swiper from "react-native-swiper";
 import InteractiveCard from "../components/interactiveCard";
 import MainHeader from "../components/mainHeader";
-import { appVersion, color, font, serverLink } from "../global/globalVariable";
+import { appVersion, color, font, serverLink, setUserInfo, userInfo } from "../global/globalVariable";
 import LoginModal from "../screens/Modals/login";
 import Card from "../shared/card";
 import {
@@ -135,13 +135,14 @@ export default function Home({ navigation }) {
   async function verifyUserData() {
     let data = await getData("user");
     await setUserData(await data);
-
+    setUserInfo(data)
     if (data && data._id) {
       storeStringData("username", data.username);
       setLogged(true);
       axios
         .get(serverLink + "api/user/takeUserById?id=" + data._id)
         .then(async (response) => {
+          setUserInfo(response.data[0])
           await setUserData(response.data[0]);
           globalData = response.data;
           await loadJoinedTravels(
@@ -693,28 +694,24 @@ export default function Home({ navigation }) {
                             home={true}
                             item={item}
                             travel={lastPosts[1][item.travel]}
-                            username={userData.username}
                           />
                         ) : item.type == "vote" ? (
                           <Vote
                             item={item}
                             home={true}
                             travel={lastPosts[1][item.travel]}
-                            username={userData.username}
                           />
                         ) : item.type == "payments" ? (
                           <PaymentComponent
                             item={item}
                             home={true}
                             travel={lastPosts[1][item.travel]}
-                            username={userData.username}
                           />
                         ) : item.type == "images" ? (
                           <ImagesComponent
                             item={item}
                             home={true}
                             travel={lastPosts[1][item.travel]}
-                            username={userData.username}
                           />
                         ) : (
                           item.type === "todo" && (
@@ -722,7 +719,6 @@ export default function Home({ navigation }) {
                               data={item}
                               home={true}
                               travel={lastPosts[1][item.travel]}
-                              username={userData.username}
                             />
                           )
                         )}

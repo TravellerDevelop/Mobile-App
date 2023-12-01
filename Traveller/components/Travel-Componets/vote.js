@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { ProgressBar, RadioButton } from "react-native-paper";
-import { color, font, serverLink } from "../../global/globalVariable";
+import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
 import PostCard from "./PostCard";
 import { ComponentStyles } from "./componentStyle";
@@ -17,15 +17,14 @@ import { ComponentStyles } from "./componentStyle";
 let percent = {};
 let ausItem;
 let totalVotes;
-let username = "";
 
-export default function Vote({ item, home, travel, loadPosts, username }) {
+export default function Vote({ item, home, travel, loadPosts }) {
   let [checkDisabled, setCheckDisabled] = React.useState(false);
   let [numVote, setNumVote] = React.useState({});
 
   useEffect(() => {
     const test = async () => {
-      let aus = await getData("user");
+      let aus = getUserInfo();
       username = aus.username;
       ausItem = item;
       let i = 0;
@@ -71,7 +70,7 @@ export default function Vote({ item, home, travel, loadPosts, username }) {
   }
 
   return (
-    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts}>
       <Text style={ComponentStyles.questionText}>{item.question}</Text>
       <FlatList
         data={item.content}

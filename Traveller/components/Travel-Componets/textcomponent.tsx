@@ -8,10 +8,9 @@ export default function TextComponent({
   home,
   travel,
   loadPosts,
-  username
-}:any) {
+}: any) {
   return (
-    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts}>
       <Text style={ComponentStyles.contentText}>{item.content}</Text>
     </PostCard>
   );

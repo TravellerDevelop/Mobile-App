@@ -3,10 +3,11 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import PostMenu from '../../screens/Modals/postMenu';
 import { ComponentStyles } from './componentStyle';
+import { getUserInfo } from '../../global/globalVariable';
 
-const PostCard = ({ children, item, home, travel, loadPosts, username }: any) => {
+const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
     let [showMenu, setShowMenu] = React.useState(false);
-
+    let username = (getUserInfo() as any).username;
     return (
         <View style={ComponentStyles.card}>
             <PostMenu

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { StyleSheet, View, Text, Dimensions, ScrollView, RefreshControl } from "react-native";
-import { font, color, serverLink } from "../global/globalVariable";
+import { font, color, serverLink, getUserInfo } from "../global/globalVariable";
 import { getData } from "../shared/data/localdata";
 import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
@@ -18,12 +18,8 @@ export default function Money() {
     let [isLoading, setIsLoading] = React.useState(true);
 
     useEffect(() => {
-        takeUserData();
-    }, [])
-
-    async function takeUserData() {
         setIsLoading(true)
-        let aus = await getData("user");
+        let aus = getUserInfo();
 
         let endpoints = [
             serverLink + "api/post/takeTotalExpenses?userid=" + aus._id,
@@ -45,7 +41,7 @@ export default function Money() {
                 setBarChartData({ labels: labels, datasets: [{ data: chartData }] });
                 setIsLoading(false);
             }))
-    }
+    }, [])
 
     let [refreshing, setRefreshing] = React.useState(false);
 

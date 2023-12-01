@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-import { font } from "../../global/globalVariable";
-import { getData } from "../../shared/data/localdata";
+import { font, getUserInfo } from "../../global/globalVariable";
 import PostCard from "./PostCard";
 import { ComponentStyles } from "./componentStyle";
 
@@ -11,7 +10,6 @@ export default function PaymentComponent({
   home,
   travel,
   loadPosts,
-  username
 }) {
   let [info, setInfo] = React.useState([]);
   let [isMine, setIsMine] = React.useState(false);
@@ -21,8 +19,7 @@ export default function PaymentComponent({
 
   useEffect(() => {
     const test = async () => {
-      let aus = await getData("user");
-
+      let aus = getUserInfo();
       if (aus.username == item.creator && item.paymentType == "normal") {
         setIsMine(true);
         setIsCreator(true);
@@ -57,7 +54,7 @@ export default function PaymentComponent({
           }
         }}
       >
-        <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+        <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts}>
           {info.payed && !isCreator ? (
             <View style={[styles.status, { backgroundColor: "green" }]}>
               <Text style={styles.statusText}>Pagato</Text>

@@ -1,86 +1,57 @@
+import { Avatar } from "@react-native-material/core";
+import axios from "axios";
+import AnimatedLottieView from "lottie-react-native";
 import React, { useState } from "react";
 import {
-  View,
+  Dimensions,
+  FlatList,
+  Image,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
-  Image,
   TouchableNativeFeedback,
-  FlatList,
-  ScrollView,
-  RefreshControl,
-  Dimensions,
+  View,
 } from "react-native";
+import SkeletonScreen from "../components/SkeletonScreen";
 import {
-  font,
   color,
+  font,
+  getUserInfo,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";
-import { Avatar } from "@react-native-material/core";
-import AnimatedLottieView from "lottie-react-native";
-import { getData } from "../shared/data/localdata";
-import axios from "axios";
 import Card from "../shared/card";
-import SkeletonScreen from "../components/SkeletonScreen";
 
 export default function MyProfile({ navigation, route }) {
-  let [user, setUser] = React.useState({});
   let [ntravel, setNtravel] = React.useState(null);
   let [myTravel, setMyTravel] = React.useState([]);
   let [isLoading, setIsLoading] = useState(true);
-
   let [followed, setFollowed] = React.useState(null);
   let [followers, setFollowers] = React.useState(null);
-
   let [refreshing, setRefreshing] = React.useState(false);
+  let user = getUserInfo();
 
-  async function getUserData() {
+  const getData = () => {
     setIsLoading(true);
-    setNtravel(null);
-    setMyTravel([]);
-    setFollowers(null);
-    setFollowed(null);
-    let data = await getData("user");
-    axios
-      .get(serverLink + "api/user/takeTravelsNum?username=" + data.username)
-      .then((response) => {
-        setNtravel(response.data.count);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    setUser(data);
+    let endpoints = [
+      serverLink + "api/user/takeTravelsNum?username=" + user.username,
+      serverLink + "api/travel/takeByCreator?username=" + user.username,
+      serverLink + "api/follow/takeFollowers?to=" + user._id,
+      serverLink + "api/follow/takeFollowings?from=" + user._id
+    ]
 
-    axios
-      .get(serverLink + "api/travel/takeByCreator?username=" + data.username)
-      .then((response) => {
-        setMyTravel(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    axios
-      .get(serverLink + "api/follow/takeFollowers?to=" + data._id)
-      .then((response) => {
-        setFollowers(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    axios
-      .get(serverLink + "api/follow/takeFollowings?from=" + data._id)
-      .then((response) => {
-        setFollowed(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    axios.all(endpoints.map((endpoint) => axios.get(endpoint))).then(
+      axios.spread(({ data: takeTravelsNum }, { data: takeByCreator }, { data: takeFollowers }, { data: takeFollowings }) => {
+        setNtravel(takeTravelsNum.count);
+        setMyTravel(takeByCreator);
+        setFollowers(takeFollowers.length);
+        setFollowed(takeFollowings.length);
+      }));
   }
-  
+
   React.useEffect(() => {
-    getUserData();
+    getData();
   }, []);
 
   React.useEffect(() => {
@@ -91,7 +62,7 @@ export default function MyProfile({ navigation, route }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    getUserData();
+    getData();
     setRefreshing(false);
   };
 

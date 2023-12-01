@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { ComponentStyles } from "./componentStyle";
-import { View, Text, StyleSheet, Image } from "react-native";
+import axios from "axios";
+import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { font, serverLink } from "../../global/globalVariable";
-import axios from "axios";
 import PostCard from "./PostCard";
 
-export default function ToDo({ data, home, travel, loadPosts, username }) {
+export default function ToDo({ data, home, travel, loadPosts }) {
     let [temp, setTemp] = useState(data);
 
     const handleCheckboxPress = async (itemKey) => {
@@ -31,7 +30,7 @@ export default function ToDo({ data, home, travel, loadPosts, username }) {
 
 
     return (
-        <PostCard item={data} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+        <PostCard item={data} home={home} travel={travel} loadPosts={loadPosts}>
             <Text style={styles.description} >{data.description}</Text>
             <View style={{}}>
                 {

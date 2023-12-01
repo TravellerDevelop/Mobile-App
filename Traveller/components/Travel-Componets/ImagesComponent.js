@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { font, serverLink } from "../../global/globalVariable";
-import { getData } from "../../shared/data/localdata";
 import { isFilePresent } from "../utils/fileSystem";
 import PostCard from "./PostCard";
 
@@ -31,7 +30,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function ImagesComponent({ item, home, loadPosts, travel, username }) {
+export default function ImagesComponent({ item, home, loadPosts, travel }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [ausItems, setAusItems] = useState({});
 
@@ -61,7 +60,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel, usernam
   }, []);
 
   return (
-    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+    <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts}>
       <FlatList
         data={ausItems.source}
         renderItem={({ item }) => (
