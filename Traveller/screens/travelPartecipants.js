@@ -1,7 +1,7 @@
 import { Avatar } from "@react-native-material/core";
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback, Image, ActivityIndicator } from "react-native";
-import { color, font, serverLink } from "../global/globalVariable";
+import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 import axios from "axios";
 import { getData } from "../shared/data/localdata";
@@ -9,22 +9,12 @@ import ParticipantsLoading from "../components/loading/ParticipantsLoading";
 
 export default function TravelPartecipants({ navigation, route }) {
     let [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
-
-    let num = route.params.participants.length;
     let [usersData, setUsersData] = useState([]);
-    let [myData, setMyData] = useState({});
-
+    let myData = getUserInfo();
     let [itscreator, setitscreator] = useState(false);
-
-    async function getUserData() {
-        let data = await getData("user");
-        await setMyData(data);
-    }
-
     let [creator, setCreator] = React.useState({});
 
     async function update() {
-        await getUserData();
         setIsLoadingParticipants(true);
         for (let item of route.params.participants) {
             if (item.creator == true) {

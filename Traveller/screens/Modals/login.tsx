@@ -6,20 +6,18 @@ import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginTopShape from "../../assets/image/shapes/loginTopShape";
 import SkeletonScreen from "../../components/SkeletonScreen";
-import { color, font, serverLink } from "../../global/globalVariable";
+import { color, font, serverLink, setUserInfo } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 import Signup from "./registration";
 
 interface LoginModalProps {
-    navigation: any,
-    visibility: boolean,
-    setVisibility: (bool: boolean) => void,
-    setHomeContent: (bool:boolean) => void,
+    setLogged: (bool: boolean) => void
 }
 
-export default function LoginModal({ navigation, visibility, setVisibility, setHomeContent }: LoginModalProps) {
+export default function LoginModal({ setLogged }: LoginModalProps) {
     let [signup, setSignup] = useState(false)
     let [isLoading, setIsLoading] = useState(false)
+    let [visibility, setVisibility] = useState(true);
 
     let [username, setUsername] = useState("");
     let [password, setPassword] = useState("");
@@ -30,7 +28,7 @@ export default function LoginModal({ navigation, visibility, setVisibility, setH
 
     return (
         <>
-            {signup ? <Signup visibility={signup} navigation={navigation} setVisibility={setSignup} setLoginVisibility={setVisibility} /> : null}
+            {signup && <Signup visibility={signup}  setVisibility={setSignup} setLoginVisibility={setVisibility} setLogged={setLogged} />}
 
             <Modal visible={visibility} animationType={'slide'} >
                 <SafeAreaView style={{ flex: 1 }}>
@@ -40,7 +38,7 @@ export default function LoginModal({ navigation, visibility, setVisibility, setH
                     <LoginTopShape mode="top" />
                     <View style={styles.container}>
                         <Text style={styles.loginText}>Login</Text>
-                        {error != null ? <Text style={{ color: "red", fontSize: 15, textAlign: "center" }}>{error}</Text> : null}
+                        {error && <Text style={{ color: "red", fontSize: 15, textAlign: "center" }}>{error}</Text>}
                         <TextInput underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" label="Username" style={styles.input} onChangeText={(value) => { username_(value) }} />
                         <TextInput
                             label="Password"
@@ -75,10 +73,9 @@ export default function LoginModal({ navigation, visibility, setVisibility, setH
 
                                                     if (response.status == 200) {
                                                         storeJsonData('user', response.data[0]);
+                                                        setUserInfo(response.data[0])
+                                                        setLogged(true);
                                                         storeStringData('openLogin', "true");
-                                                        setVisibility(false);
-                                                        setHomeContent(true)
-                                                        navigation.navigate("Home");
                                                     }
                                                     else {
                                                         setError(response.data);

@@ -1,30 +1,27 @@
-import React, { useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Badge } from "@react-native-material/core";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  TouchableNativeFeedback,
   Image,
   ImageBackground,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
   color,
   font,
+  getUserInfo,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { getData } from "./data/localdata";
-import { Badge } from "@react-native-material/core";
-import EditTravel from "../screens/Modals/edittravel";
-import { SafeAreaView } from "react-native";
 
 export default function HeaderTravelDetail({ navigation, data }) {
-  let top = paddingTopPage - 20;
-  let [username, setUsername] = React.useState();
-
+  let username = getUserInfo().username
   let creator = "";
 
   for (let item of data.participants) {
@@ -32,18 +29,6 @@ export default function HeaderTravelDetail({ navigation, data }) {
       creator = item.username;
     }
   }
-
-  useEffect(() => {
-    const test = async () => {
-      let aus = await getData("user");
-      setUsername(aus.username);
-      return aus;
-    };
-
-    test();
-  }, []);
-
-  let [editVisibility, setEditVisibility] = React.useState(false);
 
   return (
     <>

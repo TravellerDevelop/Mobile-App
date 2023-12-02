@@ -1,27 +1,26 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, ScrollView, ActivityIndicator, Platform, Dimensions, Image, SafeAreaView, KeyboardAvoidingView } from "react-native";
-import { TextInput } from "react-native-paper";
-import { font, color, serverLink } from "../../global/globalVariable";
-import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 import axios from "axios";
 import * as Crypto from 'expo-crypto';
+import React from "react";
+import { Dimensions, Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
+import { TextInput } from "react-native-paper";
 import SkeletonScreen from "../../components/SkeletonScreen";
+import { color, font, serverLink, setUserInfo } from "../../global/globalVariable";
+import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 
 interface SignupProps {
-    navigation: any,
     visibility: boolean,
     setVisibility: (bool: boolean) => void,
-    setLoginVisibility: (bool: boolean) => void
+    setLoginVisibility: (bool: boolean) => void,
+    setLogged: (bool: boolean) => void,
 }
 
-export default function Signup({ navigation, visibility, setVisibility, setLoginVisibility }: SignupProps) {
+export default function Signup({ visibility, setVisibility, setLoginVisibility, setLogged }: SignupProps) {
     let [name, setName] = React.useState("");
     let [surname, setSurname] = React.useState("");
     let [username, setUsername] = React.useState("");
     let [email, setEmail] = React.useState("");
     let [password, setPassword] = React.useState("");
     let [loading, setLoading] = React.useState(false);
-    let [isPasswordFocus, setIsPasswordFocus] = React.useState(false);
     const registerUser = async () => {
         (async () => {
             if (loading) return;
@@ -39,10 +38,11 @@ export default function Signup({ navigation, visibility, setVisibility, setLogin
                             axios.get(serverLink + "api/user/info?username=" + username)
                                 .then(async (response) => {
                                     storeStringData("openLogin", "true");
+                                    setUserInfo(response.data[0])
                                     await storeJsonData("user", response.data[0]);
                                     setVisibility(false);
                                     setLoginVisibility(false);
-                                    navigation.navigate("Home");
+                                    setLogged(true);
                                 })
                                 .catch((error) => {
                                     console.log("Errore nel recupero dati: ", error);
@@ -82,7 +82,7 @@ export default function Signup({ navigation, visibility, setVisibility, setLogin
                             <TextInput underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" textContentType="middleName" label="Cognome" style={styles.input} autoCorrect={false} onChangeText={(value) => { surname_(value) }} />
                             <TextInput underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" textContentType="nickname" autoCapitalize="none" label="Username" style={styles.input} autoCorrect={false} onChangeText={(value) => { username_(value) }} />
                             <TextInput underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" textContentType="emailAddress" autoCapitalize="none" label="Email" style={styles.input} autoCorrect={false} keyboardType='email-address' inputMode='email' onChangeText={(value) => { email_(value) }} />
-                            <TextInput onFocus={() => { setIsPasswordFocus(true) }} onBlur={() => setIsPasswordFocus(false)} underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" textContentType="password" autoCapitalize="none" secureTextEntry label="Password" autoCorrect={false} style={styles.input} onChangeText={(value) => { password_(value) }} />
+                            <TextInput underlineStyle={{ borderColor: "white", backgroundColor: 'transparent' }} activeUnderlineColor="#4960FF" textContentType="password" autoCapitalize="none" secureTextEntry label="Password" autoCorrect={false} style={styles.input} onChangeText={(value) => { password_(value) }} />
                             <View style={styles.signupButtonContainer}>
                                 {
                                     loading ?

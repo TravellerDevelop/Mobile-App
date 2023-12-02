@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,7 @@ import {
   SafeAreaView,
   LogBox,
 } from "react-native";
-import { font, color, serverLink } from "../../global/globalVariable";
+import { font, color, serverLink, getUserInfo } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
 import QrCodeModal from "./qrCodeModal";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
@@ -55,7 +55,7 @@ export default function TicketModal({ navigation, route }) {
     setTo(route.params.data.to.name.split(",")[1]);
 
     async function uData() {
-      let aus = await getData("user");
+      let aus = getUserInfo();
 
       axios
         .get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)
@@ -118,9 +118,7 @@ export default function TicketModal({ navigation, route }) {
         <Text style={modalstyles.name}>
           {data.surname} {data.name}
         </Text>
-        <Text style={modalstyles.destination}>
-          Da {data.from.name} a {data.to.name}
-        </Text>
+        <Text style={modalstyles.destination}>{`Da ${JSON.stringify(data)!='{}' && data.from.name} a ${JSON.stringify(data)!='{}' && data.to.name}`}</Text>
         <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
         <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>
         <View style={modalstyles.row}>
@@ -218,8 +216,7 @@ export default function TicketModal({ navigation, route }) {
                     <TouchableOpacity
                       style={{ position: "absolute", right: 10 }}
                       onPress={async () => {
-                        let aus = await getData("user");
-
+                        let aus = getUserInfo();
                         axios
                           .post(serverLink + "api/tickets/share", {
                             userid: item._id,

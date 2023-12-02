@@ -68,6 +68,6 @@ export const bottomBarImage = {
 }
 
 export const bottomBarImageFocus = {
-    position: Platform.OS === 'ios' ? "absolute" : 'relative',
+    position: 'relative',
     top: Platform.OS === 'ios' ? -1.5 : -0,
 }

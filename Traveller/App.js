@@ -1,6 +1,6 @@
 import React, { useEffect, useState, createContext } from "react";
 import Font from "./components/font";
-import { color, font, statusBarColor } from "./global/globalVariable";
+import { color, font, setUserInfo, statusBarColor } from "./global/globalVariable";
 import {
   Image,
   View,
@@ -40,6 +40,7 @@ import {
   bottomBarImage,
   bottomBarImageFocus,
 } from "./global/bottombarConfig";
+import LoginModal from "./screens/Modals/login";
 
 export default function App() {
   let [globalUserInfo, setGlobalUserInfo] = useState({});
@@ -51,6 +52,7 @@ export default function App() {
   getStringDataWithStateReverse("initialModal", modalVisible, setModalVisible);
   let [offlineTickets, setOfflineTickets] = useState([]);
   let [statusBarColorApp, setStatusBarColorApp] = useState(statusBarColor);
+  let [logged, setLogged] = useState(false);
 
   useEffect(() => {
     setStatusBarColorApp(statusBarColor);
@@ -64,17 +66,22 @@ export default function App() {
   async function updateUserInfo() {
     let userData = await AsyncStorage.getItem("user");
     if (userData) {
+      setLogged(true);
       userData = JSON.parse(userData);
       if (userData._id) {
         axios
-          .get(serverLink + "api/user/takeUserById?id=" + userData._id)
-          .then(async (response) => {
-            await AsyncStorage.setItem("user", JSON.stringify(response.data[0]));
-          })
-          .catch((ex) => {
-            console.error(ex.message);
-          });
+        .get(serverLink + "api/user/takeUserById?id=" + userData._id)
+        .then(async (response) => {
+          setUserInfo(response.data[0])
+          await AsyncStorage.setItem("user", JSON.stringify(response.data[0]));
+        })
+        .catch((ex) => {
+          console.error(ex.message);
+        });
       }
+    }
+    else{
+      setLogged(false);
     }
   }
 
@@ -251,7 +258,16 @@ export default function App() {
         </TouchableOpacity>
       </View>
     );
-  } else if (fontLoaded && connection) {
+  }
+  else if(fontLoaded && connection && !logged){
+    return (
+      <>
+        <StatusBar backgroundColor={color.primary} barStyle="white-content" />
+        <LoginModal setLogged={setLogged} />
+      </>
+    )
+  }
+  else if (fontLoaded && connection && logged) {
     const Tab = createBottomTabNavigator();
 
     return (

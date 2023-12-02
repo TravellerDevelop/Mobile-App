@@ -8,6 +8,21 @@ import { getUserInfo } from '../../global/globalVariable';
 const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
     let [showMenu, setShowMenu] = React.useState(false);
     let username = (getUserInfo() as any).username;
+
+    function stringToColor(string: string) {
+        let hash = 0;
+        let i;
+        for (i = 0; i < string.length; i += 1) {
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (i = 0; i < 3; i += 1) {
+            const value = (hash >> (i * 8)) & 0xff;
+            color += `00${value.toString(16)}`.slice(-2);
+        }
+        return color;
+    }
+
     return (
         <View style={ComponentStyles.card}>
             <PostMenu
@@ -58,7 +73,7 @@ const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
 
             <View>
                 <View style={ComponentStyles.nameContainer}>
-                    <Text style={ComponentStyles.nameText}>@{item.creator}</Text>
+                    <Text style={[ComponentStyles.nameText, {color:stringToColor(item.creator)}]}>{(item.creator === username) ? "Tu" : item.creator}</Text>
                 </View>
                 <Text style={ComponentStyles.datetimeText}>
                     {item.dateTime.substring(0, item.dateTime.length - 3)}

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import { font } from "../../global/globalVariable";
+import { ComponentStyles } from "./componentStyle";
 
 interface BudgetIndicatorProps{
     budget:number,
@@ -83,15 +84,6 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
     });
 
     const styles = StyleSheet.create({
-        card: {
-            backgroundColor: "#FFF",
-            borderRadius: 10,
-            margin: 10,
-            marginTop: 20,
-            marginBottom: 0,
-            padding: 10,
-            elevation: 5,
-        },
         row: {
             display: "flex",
             flexDirection: "row",
@@ -167,7 +159,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
 
 
     return (
-        <View style={styles.card}>
+        <View style={ComponentStyles.card}>
             <Modal
                 animationType="slide"
                 transparent={true}

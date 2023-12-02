@@ -1,6 +1,7 @@
 import { Avatar } from "@react-native-material/core";
 import axios from "axios";
-import React, { useEffect, useState, useRef } from "react";
+import Constants from "expo-constants";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -21,27 +22,30 @@ import {
 import Swiper from "react-native-swiper";
 import InteractiveCard from "../components/interactiveCard";
 import MainHeader from "../components/mainHeader";
-import { appVersion, color, font, serverLink, setUserInfo, userInfo } from "../global/globalVariable";
+import {
+  appVersion,
+  color,
+  font,
+  getUserInfo,
+  serverLink
+} from "../global/globalVariable";
 import LoginModal from "../screens/Modals/login";
 import Card from "../shared/card";
 import {
-  getData,
   getStringData,
-  storeJsonData,
-  storeStringData,
+  storeStringData
 } from "../shared/data/localdata";
 import LoadingCard from "../shared/loadingCard";
-import Constants from "expo-constants";
 
 // Componenti
+import * as Notifications from "expo-notifications";
+import * as SecureStore from "expo-secure-store";
 import ImagesComponent from "../components/Travel-Componets/ImagesComponent";
+import ToDo from "../components/Travel-Componets/ToDo";
 import PaymentComponent from "../components/Travel-Componets/payments";
 import TextComponent from "../components/Travel-Componets/textcomponent";
 import Vote from "../components/Travel-Componets/vote";
 import PostLoading from "../components/loading/PostLoading";
-import * as SecureStore from "expo-secure-store";
-import * as Notifications from "expo-notifications";
-import ToDo from "../components/Travel-Componets/ToDo";
 
 export default function Home({ navigation }) {
   let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -61,7 +65,7 @@ export default function Home({ navigation }) {
 
   // Verifica se l'utente ha abilitato le notifiche e se sono presenti su DB
   const verifyNotifications = async () => {
-    let data = await getData("user");
+    let data = getUserInfo();
     // setOpenLogin(false);
     let notificationToken = await SecureStore.getItemAsync("notif-token");
     if (!notificationToken) {
@@ -132,38 +136,14 @@ export default function Home({ navigation }) {
     }
   };
 
-  async function verifyUserData() {
-    let data = await getData("user");
-    await setUserData(await data);
-    setUserInfo(data)
-    if (data && data._id) {
-      storeStringData("username", data.username);
-      setLogged(true);
-      axios
-        .get(serverLink + "api/user/takeUserById?id=" + data._id)
-        .then(async (response) => {
-          setUserInfo(response.data[0])
-          await setUserData(response.data[0]);
-          globalData = response.data;
-          await loadJoinedTravels(
-            response.data[0].username,
-            response.data[0]._id
-          );
-          await takePost(response.data[0]._id, response.data[0].username);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      verifyNotifications();
-    } else {
-      setOpenLogin(true);
-      storeJsonData("user", "");
-      storeStringData("openLogin", "false");
-    }
-  }
-
   useEffect(() => {
-    verifyUserData();
+    let data = getUserInfo();
+    setUserData(data);
+    storeStringData("username", data.username);
+    setLogged(true);
+    loadJoinedTravels(data.username, data._id);
+    takePost(data._id, data.username);
+    verifyNotifications();
 
     axios
       .get(serverLink + "api/takeVersion")
@@ -206,7 +186,7 @@ export default function Home({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    let data = await getData("user");
+    let data = getUserInfo();
     loadJoinedTravels(data.username, data._id);
     takePost(data._id, data.username);
     setRefreshing(false);
@@ -638,7 +618,8 @@ export default function Home({ navigation }) {
               )}
               {joinedTravels != null &&
                 joinedTravels.length > 0 &&
-                !joinedTravelsLoading && userData.username && (
+                !joinedTravelsLoading &&
+                userData.username && (
                   <FlatList
                     data={joinedTravels}
                     horizontal

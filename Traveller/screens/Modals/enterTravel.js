@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from "react-native";
-import { color, font, serverLink } from "../../global/globalVariable";
+import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
 import axios from "axios";
 import { getData } from "../../shared/data/localdata";
 import { ActivityIndicator } from "react-native-paper";
@@ -22,14 +22,13 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
                 <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Codice invito" maxLength={5} onChangeText={(value) => setCode(value)} />
                 <TouchableOpacity style={[{ borderRadius: 10, padding: 10, width: "80%" }, (code.length < 5) ? { backgroundColor: "lightGray" } : { backgroundColor: color.primary, }, (loading) ? { opacity: 0, height: 0 } : { opacity: 100 }]} onPress={async () => {
                     if (code.length == 5) {
-                        let userData = await getData("user");
+                        let userData = getUserInfo();
                         let param = { userid: userData._id, code: code, username: userData.username }
 
                         setLoading(true);
                         axios.post(serverLink + "api/travel/join", param).then(async (response) => {
                             console.log(response.data)
                             if (response.status == 200) {
-                                let userData = await getData("user");
                                 updateJoinTravels(userData.username, userData._id);
                                 setVisibility(false);
                                 setLoading(false);
