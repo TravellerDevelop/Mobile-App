@@ -3,11 +3,13 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import PostMenu from '../../screens/Modals/postMenu';
 import { ComponentStyles } from './componentStyle';
-import { getUserInfo } from '../../global/globalVariable';
+import { font, getUserInfo } from '../../global/globalVariable';
+import { Avatar } from 'react-native-paper';
 
 const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
     let [showMenu, setShowMenu] = React.useState(false);
     let username = (getUserInfo() as any).username;
+    let user:any = getUserInfo();
 
     function stringToColor(string: string) {
         let hash = 0;
@@ -32,7 +34,7 @@ const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
                 type={item.type}
                 loadPosts={loadPosts}
             />
-            {item.creator == username && !home && (
+            {item.creatorData[0]._id == user._id && !home && (
                 <View style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}>
                     <TouchableOpacity
                         style={{ position: "absolute", top: 5, right: 5, zIndex: 100 }}
@@ -71,13 +73,16 @@ const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
                 />
             )}
 
-            <View>
-                <View style={ComponentStyles.nameContainer}>
-                    <Text style={[ComponentStyles.nameText, {color:stringToColor(item.creator)}]}>{(item.creator === username) ? "Tu" : item.creator}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <Avatar.Text style={{ backgroundColor: stringToColor(item.creatorData[0].name + " " + item.creatorData[0].surname), marginRight: 10 }} labelStyle={{fontFamily:font.text}} color='white' size={30} label={item.creatorData[0].name[0] + item.creatorData[0].surname[0]} />
+                <View>
+                    <View style={ComponentStyles.nameContainer}>
+                        <Text style={ComponentStyles.nameText}>{(item.creatorData[0].username === username) ? "Tu" : item.creatorData[0].username}</Text>
+                    </View>
+                    <Text style={ComponentStyles.datetimeText}>
+                        {item.dateTime.substring(0, item.dateTime.length - 3)}
+                    </Text>
                 </View>
-                <Text style={ComponentStyles.datetimeText}>
-                    {item.dateTime.substring(0, item.dateTime.length - 3)}
-                </Text>
             </View>
             {children}
         </View>

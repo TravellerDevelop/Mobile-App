@@ -66,13 +66,15 @@ export default function App() {
   async function updateUserInfo() {
     let userData = await AsyncStorage.getItem("user");
     if (userData) {
-      setLogged(true);
       userData = JSON.parse(userData);
       if (userData._id) {
+        console.log("Userdata: ", userData)
+        console.log("userdata _id: ", userData._id)
         axios
         .get(serverLink + "api/user/takeUserById?id=" + userData._id)
         .then(async (response) => {
           setUserInfo(response.data[0])
+          setLogged(true);
           await AsyncStorage.setItem("user", JSON.stringify(response.data[0]));
         })
         .catch((ex) => {

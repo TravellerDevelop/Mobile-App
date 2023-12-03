@@ -30,6 +30,7 @@ let imageParams;
 
 export default function NewPost({ navigation, route }) {
   let data = route.params.data;
+  let userData = getUserInfo();
   let refresh = route.params.refresh;
 
   let [images, setImages] = useState([]);
@@ -113,20 +114,20 @@ export default function NewPost({ navigation, route }) {
         content: [""],
         votes: [[]],
         pinned: false,
-        creator: aus.username,
+        creator: userData._id,
         travel: data._id,
       };
 
       textParams = {
         content: "",
         pinned: false,
-        creator: aus.username,
+        creator: userData._id,
         travel: data._id,
       };
 
       paymentParams = {
         pinned: false,
-        creator: aus.username,
+        creator: userData._id,
         travel: data._id,
         amount: "",
         destinator: [],
@@ -136,14 +137,14 @@ export default function NewPost({ navigation, route }) {
 
       imageParams = {
         pinned: false,
-        creator: aus.username,
+        creator: userData._id,
         travel: data._id,
         source: [],
         description: "",
       };
 
       let ausToDoParams = toDoParams;
-      ausToDoParams.creator = aus.username;
+      ausToDoParams.creator = userData._id;
       ausToDoParams.travel = data._id;
       setToDoParams(ausToDoParams);
     };
@@ -324,13 +325,13 @@ export default function NewPost({ navigation, route }) {
                 Tutti i partecipanti del viaggio riceveranno la richiesta di
                 pagamento
               </Text>
-            ) : paymentDestinator == "me" ? (
+            ) : paymentDestinator == "me" && (
               <Text
                 style={[styles.subtitle, { marginTop: 10, textAlign: "left" }]}
               >
                 Solo tu riceverai la richiesta di pagamento.
               </Text>
-            ) : null}
+            )}
 
             {/* <Text style={[styles.subtitle, { textAlign: "left", marginTop: 20, marginBottom: 10 }]}>Tipologia di pagamento:</Text> */}
             {/* 
@@ -659,7 +660,6 @@ export default function NewPost({ navigation, route }) {
                 .post(serverLink + "api/post/create", { param: param })
                 .then((response) => {
                   setIsLoading(false);
-                  console.log(response);
                   refresh(param);
                   navigation.goBack();
                 })
@@ -680,7 +680,7 @@ export default function NewPost({ navigation, route }) {
             <View
               style={[
                 styles.button,
-                type == "" ? { backgroundColor: "lightgray" } : null,
+                type == "" && { backgroundColor: "lightgray" },
               ]}
             >
               <Text style={styles.buttonText}>Crea</Text>

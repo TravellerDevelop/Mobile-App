@@ -238,6 +238,7 @@ export default function Home({ navigation }) {
               }
             }
           }
+          console.log(response.data)
           await setLastPosts(response.data);
           await setLastPostsLoading(false);
         }

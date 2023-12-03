@@ -45,9 +45,8 @@ export default function TravelDetail({ navigation, route }) {
   };
 
   async function loadPosts(travelId) {
-    let aus = getUserInfo()
+    let aus = getUserInfo();
     setUserData(aus);
-    setPostData([]);
     axios
       .get(serverLink + "api/post/take?travel=" + travelId)
       .then(async (response) => {
@@ -97,7 +96,12 @@ export default function TravelDetail({ navigation, route }) {
   }
 
   function onAddData(data) {
-    loadPosts(route.params.data._id);
+    // loadPosts(route.params.data._id);
+    data["creatorData"] = [getUserInfo()];
+    data["dateTime"] = new Date().toLocaleString("it-IT", {
+      timeZone: "Europe/Andorra",
+    });
+    setPostData([data, ...postData]);
   }
 
   return (

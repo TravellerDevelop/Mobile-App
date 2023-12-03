@@ -58,6 +58,7 @@ export default function ToDo({ data, home, travel, loadPosts }) {
             ) : (
               <Checkbox
                 status={item.checked ? "checked" : "unchecked"}
+                disabled={home}
                 onPress={() => {
                     if(!home){
                         handleCheckboxPress(item.key);

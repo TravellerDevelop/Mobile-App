@@ -46,12 +46,12 @@ export const ComponentStyles = StyleSheet.create({
         textAlign: "left",
         fontFamily: font.text_bold,
         marginRight: 5,
+        lineHeight:15
     },
     datetimeText: {
         color: "#000",
         fontSize: 12,
         fontFamily: font.text_light,
-        marginBottom: 5,
     },
     rowVote: {
         flexDirection: "row",
