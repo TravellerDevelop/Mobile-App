@@ -208,7 +208,7 @@ export default function MyProfile({ navigation, route }) {
                 I viaggi creati da te:
               </Text>
               {!isLoading &&
-                (myTravel.length > 0 ? (
+                (myTravel.length > 0 && (
                   <FlatList
                     scrollEnabled={false}
                     data={myTravel}
@@ -220,7 +220,7 @@ export default function MyProfile({ navigation, route }) {
                       />
                     )}
                   />
-                ) : null)}
+                ))}
             </View>
           )}
         </View>
