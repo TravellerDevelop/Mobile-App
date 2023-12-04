@@ -89,7 +89,7 @@ export default function MyProfile({ navigation, route }) {
               <SkeletonScreen width={100} height={100} borderRadius={100} />
             ) : (
               <Avatar
-                label={user.name + " " + user.surname}
+                label={`${user.name} ${user.surname}`}
                 autoColor
                 size={100}
                 labelStyle={{ fontFamily: font.text, fontSize: 50 }}
@@ -108,9 +108,7 @@ export default function MyProfile({ navigation, route }) {
               />
             </View>
           ) : (
-            <Text style={styles.name}>
-              {user.name} {user.surname}
-            </Text>
+            <Text style={styles.name}>{user.name} {user.surname}</Text>
           )}
           {isLoading ? (
             <SkeletonScreen

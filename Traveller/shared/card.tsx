@@ -6,7 +6,7 @@ import {
   TouchableNativeFeedback,
   ImageBackground,
 } from "react-native";
-import { color, font, serverLink } from "../global/globalVariable";
+import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
 import { getData } from "./data/localdata";
 
 interface CardProps {
@@ -31,8 +31,8 @@ export default function Card({ navigation, data, vertical, isLoading, username }
     <>
       {data.image == null || data.image == undefined || data.image == "" ? (
         <TouchableNativeFeedback
-          onPress={async () => {
-            let myD = await getData("user");
+          onPress={() => {
+            let myD = getUserInfo() as any;
             let found = false;
 
             for (let item of data.participants) {

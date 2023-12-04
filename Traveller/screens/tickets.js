@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Text, ScrollView, TextInput, RefreshControl, Dimensions, ActivityIndicator } from "react-native";
-import { color, paddingTopPage, font, serverLink } from "../global/globalVariable";
+import { color, paddingTopPage, font, serverLink, getUserInfo } from "../global/globalVariable";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
 import TicketsPreview from "../components/tickets/ticketsPreview";
 import axios from "axios";
@@ -24,7 +24,7 @@ export default function Tickets({ navigation }) {
 
     async function takeInfo() {
         setIsLoading(true);
-        personalData = await getData("user");
+        personalData = getUserInfo();
         axios.get(serverLink + "api/tickets/take?userid=" + personalData._id)
             .then(res => {
                 setData(res.data);

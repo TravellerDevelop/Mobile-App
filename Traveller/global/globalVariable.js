@@ -29,7 +29,7 @@ export const font = {
 const myIp = "192.168.1.155";
 
 export const appVersion = "1.0.2";
-export const paddingTopPage = 15;
+export const paddingTopPage = 0;
 export const ISDEBUG = false;
 export const ISBETA = false;
 export const serverLink = ISDEBUG ? "http://" + myIp + ":1337/" : "https://traveller-ttze.onrender.com/";

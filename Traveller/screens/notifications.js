@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { color, font, serverLink } from '../global/globalVariable';
+import { color, font, getUserInfo, serverLink } from '../global/globalVariable';
 import axios from 'axios';
 import { getData } from '../shared/data/localdata';
 
@@ -8,14 +8,12 @@ export default function Notifications({ navigation, route }) {
     let data = route.params.notification;
 
     let [users, setUsers] = React.useState([]);
-    let [myInfo, setMyInfo] = React.useState({});
+    let myInfo = getUserInfo();
 
     let aus = [];
 
-    async function getUserData() {
-        let data = await getData("user");
-        setMyInfo(data);
-        getNotification(data._id);
+    function getUserData() {
+        getNotification(myInfo._id);
     }
 
     function getNotification(myid) {

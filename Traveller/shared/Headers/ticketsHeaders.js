@@ -1,33 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { Camera, CameraType } from 'expo-camera';
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
-import { color, font, serverLink } from "../../global/globalVariable.js";
-import { LinearGradient } from "expo-linear-gradient";
-import { Badge } from "@react-native-material/core";
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Badge } from "@react-native-material/core";
 import axios from "axios";
-import { getData, storeJsonData } from "../data/localdata.js";
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Camera, CameraType } from 'expo-camera';
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useState } from "react";
+import { Dimensions, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { color, font, getUserInfo, serverLink } from "../../global/globalVariable.js";
+import { getData } from "../data/localdata.js";
 
 export default function TicketsHeader({ update }) {
-
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
-
     const [modalVisible, setModalVisible] = useState(false);
     const [qrVisible, setQrVisible] = useState(false);
-
     const [scanned, setScaned] = useState(false);
     const [data, setData] = useState(null);
-
     const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
-
     let [dateOfTicket, setDateOfTicket] = useState("");
-
     const [ticketTitle, setTicketTitle] = useState("");
-
-    const [userInfo, setUserInfo] = useState({});
+    let userInfo = getUserInfo();
 
     const toggleDatePicker = () => {
         setShowPicker(!showPicker);
@@ -60,15 +53,6 @@ export default function TicketsHeader({ update }) {
     function toggleCameraType() {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
     }
-
-    async function getUserData(){
-        let aus = await getData("user");
-        setUserInfo(aus);
-    }
-
-    useEffect(() => {
-        getUserData();
-    }, [])
 
     return (
         <>
@@ -232,9 +216,7 @@ export default function TicketsHeader({ update }) {
 
                         <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
                             <View style={modalstyles.button}>
-                                <Text style={modalstyles.buttonText}>
-                                    ← Torna indietro
-                                </Text>
+                                <Text style={modalstyles.buttonText}>← Torna indietro</Text>
                             </View>
                         </TouchableNativeFeedback >
                     </View>

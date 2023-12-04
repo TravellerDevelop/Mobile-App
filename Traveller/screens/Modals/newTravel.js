@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";
-import { color, font, serverLink } from "../../global/globalVariable";
+import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 
@@ -80,7 +80,7 @@ export default function NewTravel({
   ];
 
   async function getUserData() {
-    let aus = await getData("user");
+    let aus = getUserInfo();
     setCreator({ userid: aus._id, username: aus.username, creator: true });
 
     axios
@@ -377,8 +377,8 @@ export default function NewTravel({
                           image: response.data,
                           closed: false,
                         })
-                        .then(async function (response) {
-                          let aus = await getData("user");
+                        .then(function (response) {
+                          let aus = getUserInfo()
 
                           if (response.status == 200) {
                             updatecards(creator.username, aus._id);
@@ -408,8 +408,8 @@ export default function NewTravel({
                       code: generateCode(),
                       closed: false,
                     })
-                    .then(async function (response) {
-                      let aus = await getData("user");
+                    .then(function (response) {
+                      let aus = getUserInfo();
 
                       if (response.status == 200) {
                         updatecards(creator.username, aus._id);
