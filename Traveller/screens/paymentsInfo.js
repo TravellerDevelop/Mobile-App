@@ -159,6 +159,7 @@ export default function PaymentInfo({ navigation, route }) {
                 .post(serverLink + "api/post/updatePayment", {
                   id: items._id,
                   destinator: aus2,
+                  travelid:items.travel
                 })
                 .then((response) => {
                   if (response.status == 200) {

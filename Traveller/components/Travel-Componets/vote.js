@@ -138,6 +138,7 @@ export default function Vote({ item, home, travel, loadPosts }) {
               .post(serverLink + "api/post/updateVote", {
                 id: item._id,
                 vote: aus,
+                travelid: item.travel
               })
               .then((res) => {
                 setCheckDisabled(true);

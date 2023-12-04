@@ -20,18 +20,31 @@ import HeaderTravelDetail from "../shared/headerTravelDetail";
 import MenuNewPost from "../components/MenuNewPost";
 import ToDo from "../components/Travel-Componets/ToDo";
 import PostLoading from "../components/loading/PostLoading";
+import { io } from "socket.io-client";
 
-// const socket = io('http://192.168.1.127:1337'); // Assicurati di sostituire con il tuo indirizzo IP o dominio
-
+let socket = null;
 export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);
   let [postLoading, setPostLoading] = useState(true);
   let [userData, setUserData] = useState({});
   let [postData, setPostData] = useState([]);
   let username = route.params.username;
-
   useEffect(() => {
     loadPosts(route.params.data._id);
+    socket = io(serverLink);
+
+    socket.on("connect", () => {
+      console.log(socket.id);
+      socket.emit("joinTravel", {
+        userid: getUserInfo()._id,
+        travelId: route.params.data._id,
+      });
+    });
+
+    socket.on("NewPostFromServer", (data)=>{
+      console.log([data, ...postData])
+      setPostData([data, ...postData]);
+    })
   }, []);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -101,7 +114,7 @@ export default function TravelDetail({ navigation, route }) {
     data["dateTime"] = new Date().toLocaleString("it-IT", {
       timeZone: "Europe/Andorra",
     });
-    setPostData([data, ...postData]);
+    socket.emit('newpost', data);
   }
 
   return (

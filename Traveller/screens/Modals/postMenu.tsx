@@ -24,6 +24,7 @@ interface PostMenuProps {
 
 export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts }: PostMenuProps) {
     const [savedIntoGallery, setSavedIntoGallery] = useState(false);
+    let userData: any = getUserInfo();
     return (
         <Modal transparent visible={showMenu} animationType="slide">
             <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
@@ -146,7 +147,7 @@ export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts 
                         <TouchableOpacity
                             onPress={() => {
                                 axios
-                                    .post(serverLink + "api/post/deletePost", { id: item._id, travel: item.travel })
+                                    .post(serverLink + "api/post/deletePost", { id: item._id, travel: item.travel, userid: userData._id })
                                     .then((response) => {
                                         setShowMenu(false);
                                         loadPosts(item.travel);
