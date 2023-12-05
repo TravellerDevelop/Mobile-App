@@ -46,6 +46,7 @@ import PaymentComponent from "../components/Travel-Componets/payments";
 import TextComponent from "../components/Travel-Componets/textcomponent";
 import Vote from "../components/Travel-Componets/vote";
 import PostLoading from "../components/loading/PostLoading";
+import { startSocket } from "../global/socket";
 
 export default function Home({ navigation }) {
   let [joinedTravelsLoading, setJoinedTravelsLoading] = useState(true);
@@ -144,7 +145,7 @@ export default function Home({ navigation }) {
     loadJoinedTravels(data.username, data._id);
     takePost(data._id, data.username);
     verifyNotifications();
-
+    startSocket();
     axios
       .get(serverLink + "api/takeVersion")
       .then(async (response) => {

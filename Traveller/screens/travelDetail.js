@@ -20,32 +20,31 @@ import HeaderTravelDetail from "../shared/headerTravelDetail";
 import MenuNewPost from "../components/MenuNewPost";
 import ToDo from "../components/Travel-Componets/ToDo";
 import PostLoading from "../components/loading/PostLoading";
-import { io } from "socket.io-client";
+import { joinTravelSocket, leaveTravelSocket, takeSocket } from "../global/socket";
 
-let socket = null;
 export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);
   let [postLoading, setPostLoading] = useState(true);
-  let [userData, setUserData] = useState({});
   let [postData, setPostData] = useState([]);
   let username = route.params.username;
   useEffect(() => {
     loadPosts(route.params.data._id);
-    socket = io(serverLink);
 
-    socket.on("connect", () => {
-      console.log(socket.id);
-      socket.emit("joinTravel", {
-        userid: getUserInfo()._id,
-        travelId: route.params.data._id,
-      });
-    });
+    joinTravelSocket(route.params.data._id)
 
-    socket.on("NewPostFromServer", (data)=>{
-      console.log([data, ...postData])
+    takeSocket().on("NewPostFromServer", (data) => {
       setPostData([data, ...postData]);
     })
   }, []);
+
+  React.useEffect(
+    // Prima di uscire dalla pagina esce dalla room del socket
+    () =>
+      navigation.addListener('beforeRemove', (e) => {
+        leaveTravelSocket();
+      }),
+    [navigation]
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const [spent, setSpent] = useState(0);
@@ -58,7 +57,7 @@ export default function TravelDetail({ navigation, route }) {
   };
 
   async function loadPosts(travelId) {
-    let aus = getUserInfo();
+    let aus = 
     setUserData(aus);
     axios
       .get(serverLink + "api/post/take?travel=" + travelId)
@@ -93,10 +92,10 @@ export default function TravelDetail({ navigation, route }) {
     axios
       .get(
         serverLink +
-          "api/post/takeTotalPayedByTravel?travel=" +
-          travelId +
-          "&userid=" +
-          aus._id
+        "api/post/takeTotalPayedByTravel?travel=" +
+        travelId +
+        "&userid=" +
+        aus._id
       )
       .then(async (response) => {
         if (response.status == 200) {
@@ -114,7 +113,7 @@ export default function TravelDetail({ navigation, route }) {
     data["dateTime"] = new Date().toLocaleString("it-IT", {
       timeZone: "Europe/Andorra",
     });
-    socket.emit('newpost', data);
+    takeSocket().emit('newpost', data);
   }
 
   return (
