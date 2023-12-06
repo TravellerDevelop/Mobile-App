@@ -1,7 +1,9 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
+  Dimensions,
   FlatList,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -13,8 +15,7 @@ import ImagesComponent from "../components/Travel-Componets/ImagesComponent";
 import PaymentComponent from "../components/Travel-Componets/payments";
 import TextComponent from "../components/Travel-Componets/textcomponent";
 import Vote from "../components/Travel-Componets/vote";
-import { font, getUserInfo, serverLink } from "../global/globalVariable";
-import { getData } from "../shared/data/localdata";
+import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
 import HeaderTravelDetail from "../shared/headerTravelDetail";
 // import socketService from '../components/utils/socketServise';
 import MenuNewPost from "../components/MenuNewPost";
@@ -26,14 +27,19 @@ export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);
   let [postLoading, setPostLoading] = useState(true);
   let [postData, setPostData] = useState([]);
+  let UserData = getUserInfo()
   let username = route.params.username;
+  let [newPost, setNewPost] = useState(false);
+
   useEffect(() => {
     loadPosts(route.params.data._id);
 
     joinTravelSocket(route.params.data._id)
 
     takeSocket().on("NewPostFromServer", (data) => {
-      setPostData([data, ...postData]);
+      let datas = [data, ...postData]
+      setPostData(datas);
+      setNewPost(true)
     })
   }, []);
 
@@ -57,8 +63,6 @@ export default function TravelDetail({ navigation, route }) {
   };
 
   async function loadPosts(travelId) {
-    let aus = 
-    setUserData(aus);
     axios
       .get(serverLink + "api/post/take?travel=" + travelId)
       .then(async (response) => {
@@ -95,7 +99,7 @@ export default function TravelDetail({ navigation, route }) {
         "api/post/takeTotalPayedByTravel?travel=" +
         travelId +
         "&userid=" +
-        aus._id
+        UserData._id
       )
       .then(async (response) => {
         if (response.status == 200) {
@@ -116,6 +120,8 @@ export default function TravelDetail({ navigation, route }) {
     takeSocket().emit('newpost', data);
   }
 
+  const scrollViewRef = useRef(null);
+
   return (
     <>
       <View style={styles.container}>
@@ -124,7 +130,27 @@ export default function TravelDetail({ navigation, route }) {
           data={route.params.data}
           onAddData={onAddData}
         />
+        <Pressable
+          style={{
+            position: 'absolute', zIndex: 100, top: 20,
+            left: Dimensions.get('screen').width / 2 - 75,
+            display: (newPost) ? 'flex' : 'none'
+          }}
+          onPress={() => {
+            scrollViewRef.current.scrollTo({ y: 150, animated: true });
+            setNewPost(false);
+          }}>
+          <View style={{
+            backgroundColor: color.secondary,
+            height: 30,
+            width: 150,
+            borderRadius: 20,
+          }}>
+            <Text style={{ color: 'white', lineHeight: 30, textAlign: 'center', fontFamily: font.text, fontSize: 16 }}>Nuovo post ↑</Text>
+          </View>
+        </Pressable>
         <ScrollView
+          ref={scrollViewRef}
           style={{
             flex: 1,
           }}
@@ -136,6 +162,7 @@ export default function TravelDetail({ navigation, route }) {
             navigation={navigation}
             data={route.params.data}
           />
+
 
           <View
             style={
