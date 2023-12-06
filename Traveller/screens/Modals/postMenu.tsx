@@ -13,6 +13,7 @@ import {
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
 import { savePostToGallery } from "../../components/utils/fileSystem";
 import { font, getUserInfo, serverLink } from "../../global/globalVariable";
+import { takeSocket } from "../../global/socket";
 
 interface PostMenuProps {
     item: any,
