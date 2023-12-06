@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,17 +7,16 @@ import {
   ImageBackground,
 } from "react-native";
 import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
-import { getData } from "./data/localdata";
 
 interface CardProps {
   navigation: any,
   data: any,
   vertical?: boolean,
   isLoading?: boolean,
-  username: string
 }
 
-export default function Card({ navigation, data, vertical, isLoading, username }: CardProps) {
+export default function Card({ navigation, data, vertical, isLoading }: CardProps) {
+  let username = (getUserInfo() as any)._id;
   let creator = "";
   let i = 0;
   while (creator == "" && i < data.participants.length) {

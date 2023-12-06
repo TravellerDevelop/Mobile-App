@@ -146,11 +146,12 @@ export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts 
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => {
+                                takeSocket().emit('delete', item._id)
+                                setShowMenu(false);
+                                loadPosts(item.travel);
                                 axios
                                     .post(serverLink + "api/post/deletePost", { id: item._id, travel: item.travel, userid: userData._id })
                                     .then((response) => {
-                                        setShowMenu(false);
-                                        loadPosts(item.travel);
                                     })
                                     .catch((error) => {
                                         console.log(error);

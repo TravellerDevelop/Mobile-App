@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Image,
-    LogBox,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -44,9 +43,9 @@ export default function NewPost({ navigation, route }) {
     travel: "",
   });
 
-  LogBox.ignoreLogs([
-    "Non-serializable values were found in the navigation state",
-  ]);
+  // LogBox.ignoreLogs([
+  //   "Non-serializable values were found in the navigation state",
+  // ]);
 
   const pickImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
