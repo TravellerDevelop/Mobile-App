@@ -14,6 +14,7 @@ import { ComponentStyles } from "../../components/Travel-Componets/componentStyl
 import { savePostToGallery } from "../../components/utils/fileSystem";
 import { font, serverLink } from "../../global/globalVariable";
 import { getUserInfo } from "../../controllers/userData";
+import { takeSocket } from "../../global/socket";
 
 interface PostMenuProps {
     item: any,

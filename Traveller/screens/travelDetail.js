@@ -25,9 +25,9 @@ import {
   leaveTravelSocket,
   takeSocket,
 } from "../global/socket";
+import { getUserInfo } from "../controllers/userData";
 
 const DISTANCETOTOP = 150;
-import { getUserInfo } from "../controllers/userData";
 
 export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);
