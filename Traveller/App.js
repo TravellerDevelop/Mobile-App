@@ -1,6 +1,11 @@
 import React, { useEffect, useState, createContext } from "react";
 import Font from "./components/font";
-import { color, font, setUserInfo, statusBarColor } from "./global/globalVariable";
+import {
+  color,
+  font,
+  setUserInfo,
+  statusBarColor,
+} from "./global/globalVariable";
 import {
   Image,
   View,
@@ -31,15 +36,7 @@ import TicketModal from "./screens/Modals/ticketModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const GlobalUserContext = createContext();
-import {
-  iconConfig,
-  tabBarStyle,
-  textInputStyle,
-  focusedIconContainerStyle,
-  focusedTextStyle,
-  bottomBarImage,
-  bottomBarImageFocus,
-} from "./global/bottombarConfig";
+import { iconConfig, bottomBarStyle } from "./global/bottombarConfig";
 import LoginModal from "./screens/Modals/login";
 
 export default function App() {
@@ -68,21 +65,23 @@ export default function App() {
     if (userData) {
       userData = JSON.parse(userData);
       if (userData._id) {
-        console.log("Userdata: ", userData)
-        console.log("userdata _id: ", userData._id)
+        console.log("Userdata: ", userData);
+        console.log("userdata _id: ", userData._id);
         axios
-        .get(serverLink + "api/user/takeUserById?id=" + userData._id)
-        .then(async (response) => {
-          setUserInfo(response.data[0])
-          setLogged(true);
-          await AsyncStorage.setItem("user", JSON.stringify(response.data[0]));
-        })
-        .catch((ex) => {
-          console.error(ex.message);
-        });
+          .get(serverLink + "api/user/takeUserById?id=" + userData._id)
+          .then(async (response) => {
+            setUserInfo(response.data[0]);
+            setLogged(true);
+            await AsyncStorage.setItem(
+              "user",
+              JSON.stringify(response.data[0])
+            );
+          })
+          .catch((ex) => {
+            console.error(ex.message);
+          });
       }
-    }
-    else{
+    } else {
       setLogged(false);
     }
   }
@@ -115,19 +114,19 @@ export default function App() {
     return (
       <View
         style={[
-          focusedIconContainerStyle,
+          bottomBarStyle.focusedIconContainerStyle,
           focused && { backgroundColor: "#4960FF40" },
         ]}
       >
         <Image
           style={[
-            bottomBarImage,
+            bottomBarStyle.bottomBarImage,
             { tintColor: color },
-            !focused && bottomBarImageFocus,
+            !focused && bottomBarStyle.bottomBarImageFocus,
           ]}
           source={iconConfig[route.name]}
         />
-        {focused && <Text style={focusedTextStyle}>{route.name}</Text>}
+        {focused && <Text style={bottomBarStyle.focusedTextStyle}>{route.name}</Text>}
       </View>
     );
   };
@@ -260,16 +259,14 @@ export default function App() {
         </TouchableOpacity>
       </View>
     );
-  }
-  else if(fontLoaded && connection && !logged){
+  } else if (fontLoaded && connection && !logged) {
     return (
       <>
         <StatusBar backgroundColor={color.primary} barStyle="white-content" />
         <LoginModal setLogged={setLogged} />
       </>
-    )
-  }
-  else if (fontLoaded && connection && logged) {
+    );
+  } else if (fontLoaded && connection && logged) {
     const Tab = createBottomTabNavigator();
 
     return (
@@ -306,8 +303,8 @@ export default function App() {
                 tabBarShowLabel: false,
                 activeTintColor: "#4900FF",
                 topBarActiveTintColor: "#4900FF",
-                tabBarLabelStyle: textInputStyle,
-                tabBarStyle: tabBarStyle,
+                tabBarLabelStyle: bottomBarStyle.textInputStyle,
+                tabBarStyle: bottomBarStyle.tabBarStyle,
                 tabBarIcon: ({ focused, color, size }) => (
                   <TabBarIcon
                     focused={focused}

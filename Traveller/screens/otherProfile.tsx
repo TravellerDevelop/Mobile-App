@@ -51,8 +51,8 @@ export default function OtherProfile({ navigation, route }: any) {
         axios
           .get(
             serverLink +
-            "api/user/takeTravelsNum?username=" +
-            response.data[0].username
+            "api/user/takeTravelsNum?userid=" +
+            response.data[0]._id
           )
           .then((response) => {
             console.log(response.data);

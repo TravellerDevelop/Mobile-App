@@ -11,7 +11,7 @@ import {
   Dimensions,
   TextInput,
   SafeAreaView,
-  LogBox,
+  // LogBox,
 } from "react-native";
 import { font, color, serverLink, getUserInfo } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
@@ -32,10 +32,10 @@ export default function TicketModal({ navigation, route }) {
   let [showMenu, setShowMenu] = React.useState(false);
   let [showShare, setShowShare] = React.useState(false);
 
-  LogBox.ignoreLogs([
-    "Non-serializable values were found in the navigation state",
-    "Cannot update a component",
-  ]);
+  // LogBox.ignoreLogs([
+  //   "Non-serializable values were found in the navigation state",
+  //   "Cannot update a component",
+  // ]);
 
   let [searchFriend, setSearchFriend] = useState("");
   let [extraData, setExtraData] = useState(false);
