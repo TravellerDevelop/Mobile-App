@@ -15,13 +15,13 @@ import ImagesComponent from "../components/Travel-Componets/ImagesComponent";
 import PaymentComponent from "../components/Travel-Componets/payments";
 import TextComponent from "../components/Travel-Componets/textcomponent";
 import Vote from "../components/Travel-Componets/vote";
-import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
+import { color, font, serverLink } from "../global/globalVariable";
 import HeaderTravelDetail from "../shared/headerTravelDetail";
-// import socketService from '../components/utils/socketServise';
 import MenuNewPost from "../components/MenuNewPost";
 import ToDo from "../components/Travel-Componets/ToDo";
 import PostLoading from "../components/loading/PostLoading";
 import { joinTravelSocket, leaveTravelSocket, takeSocket } from "../global/socket";
+import { getUserInfo } from "../controllers/userData";
 
 export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);

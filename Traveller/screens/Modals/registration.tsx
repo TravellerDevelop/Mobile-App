@@ -4,8 +4,9 @@ import React from "react";
 import { Dimensions, Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import SkeletonScreen from "../../components/SkeletonScreen";
-import { color, font, serverLink, setUserInfo } from "../../global/globalVariable";
+import { color, font, serverLink } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
+import { setUserInfo } from "../../controllers/userData";
 
 interface SignupProps {
     visibility: boolean,

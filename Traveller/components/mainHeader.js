@@ -2,20 +2,17 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Avatar, Badge } from "@react-native-material/core";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
-import AnimatedLottieView from "lottie-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
+import { getUserInfo } from "../controllers/userData";
 import {
   color,
   font,
-  getUserInfo,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";

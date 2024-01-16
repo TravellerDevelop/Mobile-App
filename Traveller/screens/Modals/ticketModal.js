@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { Avatar } from "@react-native-material/core";
+import axios from "axios";
+import React, { useState } from "react";
 import {
+  Dimensions,
+  FlatList,
+  Image,
+  LogBox,
+  Modal,
+  SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  Modal,
-  View,
-  TouchableWithoutFeedback,
-  Image,
-  FlatList,
-  Dimensions,
   TextInput,
-  SafeAreaView,
-  LogBox,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { font, color, serverLink, getUserInfo } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
-import QrCodeModal from "./qrCodeModal";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
-import axios from "axios";
-import { getData } from "../../shared/data/localdata";
-import { Avatar } from "@react-native-material/core";
+import { color, font, serverLink } from "../../global/globalVariable";
+import { getUserInfo } from "../../controllers/userData";
+import QrCodeModal from "./qrCodeModal";
 
 export default function TicketModal({ navigation, route }) {
   let [data, setData] = useState({});

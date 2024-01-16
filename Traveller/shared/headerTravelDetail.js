@@ -15,10 +15,10 @@ import {
 import {
   color,
   font,
-  getUserInfo,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";
+import { getUserInfo } from "../controllers/userData";
 
 export default function HeaderTravelDetail({ navigation, data }) {
   let username = getUserInfo().username

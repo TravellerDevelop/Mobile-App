@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-import { font, getUserInfo } from "../../global/globalVariable";
+import { font } from "../../global/globalVariable";
 import PostCard from "./PostCard";
 import { ComponentStyles } from "./componentStyle";
+import { getUserInfo } from "../../controllers/userData";
 
 export default function PaymentComponent({
   navigation,

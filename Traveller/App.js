@@ -1,6 +1,7 @@
 import React, { useEffect, useState, createContext } from "react";
 import Font from "./components/font";
-import { color, font, setUserInfo, statusBarColor } from "./global/globalVariable";
+import { color, font, statusBarColor } from "./global/globalVariable";
+import { setUserInfo } from "./controllers/userData";
 import {
   Image,
   View,
@@ -122,7 +123,7 @@ export default function App() {
         <Image
           style={[
             bottomBarImage,
-            { tintColor: color },
+            { tintColor: (focused) ? '#000' :  color },
             !focused && bottomBarImageFocus,
           ]}
           source={iconConfig[route.name]}
@@ -304,8 +305,8 @@ export default function App() {
                 },
                 animationEnabled: true,
                 tabBarShowLabel: false,
-                activeTintColor: "#4900FF",
-                topBarActiveTintColor: "#4900FF",
+                activeTintColor: "#000",
+                topBarActiveTintColor: "#000",
                 tabBarLabelStyle: textInputStyle,
                 tabBarStyle: tabBarStyle,
                 tabBarIcon: ({ focused, color, size }) => (

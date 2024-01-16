@@ -6,8 +6,9 @@ import { Camera, CameraType } from 'expo-camera';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { Dimensions, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
-import { color, font, getUserInfo, serverLink } from "../../global/globalVariable.js";
+import { color, font, serverLink } from "../../global/globalVariable";
 import { getData } from "../data/localdata.js";
+import { getUserInfo } from "../../controllers/userData";
 
 export default function TicketsHeader({ update }) {
     const [type, setType] = useState(CameraType.back);

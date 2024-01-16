@@ -13,10 +13,10 @@ import { Checkbox } from "react-native-paper";
 import {
     color,
     font,
-    getUserInfo,
     paddingTopPage,
     serverLink,
 } from "../global/globalVariable";
+import { getUserInfo } from "../controllers/userData";
 
 export default function PaymentInfo({ navigation, route }) {
   let [items, setItems] = useState(route.params.item);
