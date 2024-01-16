@@ -2,16 +2,15 @@ import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  LogBox,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableNativeFeedback,
-  View,
+    ActivityIndicator,
+    Image,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableNativeFeedback,
+    View,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Checkbox, SegmentedButtons, TextInput } from "react-native-paper";
@@ -44,9 +43,9 @@ export default function NewPost({ navigation, route }) {
     travel: "",
   });
 
-  LogBox.ignoreLogs([
-    "Non-serializable values were found in the navigation state",
-  ]);
+  // LogBox.ignoreLogs([
+  //   "Non-serializable values were found in the navigation state",
+  // ]);
 
   const pickImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({

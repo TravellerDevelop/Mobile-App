@@ -4,9 +4,15 @@ import { StyleSheet, Text, View } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { font, serverLink } from "../../global/globalVariable";
 import PostCard from "./PostCard";
+import { takeSocket } from "../../global/socket";
 
 export default function ToDo({ data, home, travel, loadPosts }) {
   let [temp, setTemp] = useState(data);
+
+  takeSocket().on("changedCheckbox=" + data._id, (socketData) => {
+    console.log("arrivato chk" + socketData._id)
+    setTemp(socketData)
+  });
 
   const handleCheckboxPress = async (itemKey) => {
     const updatedItems = temp.items.map((item) => {
@@ -16,6 +22,7 @@ export default function ToDo({ data, home, travel, loadPosts }) {
       return item;
     });
 
+    takeSocket().emit("changedCheckbox", { ...temp, items: updatedItems });
     setTemp({ ...temp, items: updatedItems });
 
     try {
@@ -40,14 +47,14 @@ export default function ToDo({ data, home, travel, loadPosts }) {
                   backgroundColor: "#CCCCCC50",
                   borderRadius: "50%",
                   marginRight: 10,
-                  marginBottom: 5
+                  marginBottom: 5,
                 }}
               >
                 <Checkbox
                   status={item.checked ? "checked" : "unchecked"}
                   onPress={() => {
-                    if(!home){
-                        handleCheckboxPress(item.key);
+                    if (!home) {
+                      handleCheckboxPress(item.key);
                     }
                   }}
                   style={{ borderColor: "#CCC", borderWidth: 1 }}
@@ -60,9 +67,9 @@ export default function ToDo({ data, home, travel, loadPosts }) {
                 status={item.checked ? "checked" : "unchecked"}
                 disabled={home}
                 onPress={() => {
-                    if(!home){
-                        handleCheckboxPress(item.key);
-                    }
+                  if (!home) {
+                    handleCheckboxPress(item.key);
+                  }
                 }}
                 style={{ borderColor: "#CCC", borderWidth: 1 }}
                 uncheckedColor="#CCC"

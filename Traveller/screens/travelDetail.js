@@ -20,40 +20,62 @@ import HeaderTravelDetail from "../shared/headerTravelDetail";
 import MenuNewPost from "../components/MenuNewPost";
 import ToDo from "../components/Travel-Componets/ToDo";
 import PostLoading from "../components/loading/PostLoading";
-import { joinTravelSocket, leaveTravelSocket, takeSocket } from "../global/socket";
+import {
+  joinTravelSocket,
+  leaveTravelSocket,
+  takeSocket,
+} from "../global/socket";
+
+const DISTANCETOTOP = 150;
 import { getUserInfo } from "../controllers/userData";
 
 export default function TravelDetail({ navigation, route }) {
   let [personalBudget, setPersonalBudget] = useState(0);
   let [postLoading, setPostLoading] = useState(true);
   let [postData, setPostData] = useState([]);
-  let UserData = getUserInfo()
+  let UserData = getUserInfo();
   let username = route.params.username;
   let [newPost, setNewPost] = useState(false);
+  let [scrollY, setScrollY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [spent, setSpent] = useState(0);
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
     loadPosts(route.params.data._id);
 
-    joinTravelSocket(route.params.data._id)
+    joinTravelSocket(route.params.data._id);
 
     takeSocket().on("NewPostFromServer", (data) => {
-      let datas = [data, ...postData]
-      setPostData(datas);
-      setNewPost(true)
-    })
+      // let datas = await postData;
+      // datas.unshift(data);
+      setPostData(data);
+      if (scrollY > DISTANCETOTOP) setNewPost(true);
+    });
+
+    takeSocket().on("deletedPost", async (data) => {
+      let localPostData = await postData;
+      setPostData(localPostData.filter(item => item._id!==data));
+    });
   }, []);
+
+
+  function onScoll(event) {
+    if (event.nativeEvent.contentOffset.y <= DISTANCETOTOP && setNewPost) {
+      setNewPost(false);
+    }
+
+    setScrollY(event.nativeEvent.contentOffset.y);
+  }
 
   React.useEffect(
     // Prima di uscire dalla pagina esce dalla room del socket
     () =>
-      navigation.addListener('beforeRemove', (e) => {
+      navigation.addListener("beforeRemove", (e) => {
         leaveTravelSocket();
       }),
     [navigation]
   );
-
-  const [refreshing, setRefreshing] = useState(false);
-  const [spent, setSpent] = useState(0);
 
   const onRefresh = async () => {
     setPostLoading(true);
@@ -96,10 +118,10 @@ export default function TravelDetail({ navigation, route }) {
     axios
       .get(
         serverLink +
-        "api/post/takeTotalPayedByTravel?travel=" +
-        travelId +
-        "&userid=" +
-        UserData._id
+          "api/post/takeTotalPayedByTravel?travel=" +
+          travelId +
+          "&userid=" +
+          UserData._id
       )
       .then(async (response) => {
         if (response.status == 200) {
@@ -117,10 +139,9 @@ export default function TravelDetail({ navigation, route }) {
     data["dateTime"] = new Date().toLocaleString("it-IT", {
       timeZone: "Europe/Andorra",
     });
-    takeSocket().emit('newpost', data);
+    setPostData([data, ...postData]);
+    takeSocket().emit("newpost", [data, ...postData]);
   }
-
-  const scrollViewRef = useRef(null);
 
   return (
     <>
@@ -132,21 +153,39 @@ export default function TravelDetail({ navigation, route }) {
         />
         <Pressable
           style={{
-            position: 'absolute', zIndex: 100, top: 20,
-            left: Dimensions.get('screen').width / 2 - 75,
-            display: (newPost) ? 'flex' : 'none'
+            position: "absolute",
+            zIndex: 100,
+            top: 20,
+            left: Dimensions.get("screen").width / 2 - 75,
+            display: newPost ? "flex" : "none",
           }}
           onPress={() => {
-            scrollViewRef.current.scrollTo({ y: 150, animated: true });
+            scrollViewRef.current.scrollTo({
+              y: DISTANCETOTOP,
+              animated: true,
+            });
             setNewPost(false);
-          }}>
-          <View style={{
-            backgroundColor: color.secondary,
-            height: 30,
-            width: 150,
-            borderRadius: 20,
-          }}>
-            <Text style={{ color: 'white', lineHeight: 30, textAlign: 'center', fontFamily: font.text, fontSize: 16 }}>Nuovo post ↑</Text>
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: color.secondary,
+              height: 30,
+              width: 150,
+              borderRadius: 20,
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                lineHeight: 30,
+                textAlign: "center",
+                fontFamily: font.text,
+                fontSize: 16,
+              }}
+            >
+              Nuovo post ↑
+            </Text>
           </View>
         </Pressable>
         <ScrollView
@@ -154,6 +193,8 @@ export default function TravelDetail({ navigation, route }) {
           style={{
             flex: 1,
           }}
+          scrollEventThrottle={20}
+          onScroll={onScoll}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -162,7 +203,6 @@ export default function TravelDetail({ navigation, route }) {
             navigation={navigation}
             data={route.params.data}
           />
-
 
           <View
             style={
@@ -182,7 +222,7 @@ export default function TravelDetail({ navigation, route }) {
 
               {postLoading && <PostLoading />}
 
-              {postData.length > 0 && postData != null && !postLoading && (
+              {postData && !postLoading && (
                 <FlatList
                   scrollEnabled={false}
                   style={{ marginTop: 20 }}

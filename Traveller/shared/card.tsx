@@ -14,10 +14,10 @@ interface CardProps {
   data: any,
   vertical?: boolean,
   isLoading?: boolean,
-  username: string
 }
 
-export default function Card({ navigation, data, vertical, isLoading, username }: CardProps) {
+export default function Card({ navigation, data, vertical, isLoading }: CardProps) {
+  let username = (getUserInfo() as any)._id;
   let creator = "";
   let i = 0;
   while (creator == "" && i < data.participants.length) {
