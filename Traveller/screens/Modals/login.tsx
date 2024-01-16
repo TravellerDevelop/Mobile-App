@@ -1,14 +1,15 @@
 import axios from "axios";
 import * as Crypto from 'expo-crypto';
 import React, { useState, } from "react";
-import { Dimensions, Image, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
+import { Dimensions, Image, Modal, Platform, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginTopShape from "../../assets/image/shapes/loginTopShape";
 import SkeletonScreen from "../../components/SkeletonScreen";
-import { color, font, serverLink, setUserInfo } from "../../global/globalVariable";
+import { color, font, serverLink } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
 import Signup from "./registration";
+import { setUserInfo } from "../../controllers/userData";
 
 interface LoginModalProps {
     setLogged: (bool: boolean) => void

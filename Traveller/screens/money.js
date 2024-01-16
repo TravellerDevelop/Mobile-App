@@ -1,26 +1,24 @@
-import React, { useContext, useEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Dimensions,
-  ScrollView,
-  RefreshControl,
-} from "react-native";
-import { font, color, serverLink, getUserInfo } from "../global/globalVariable";
-import { getData } from "../shared/data/localdata";
-import MoneyHeader from "../shared/Headers/moneyHeaders";
 import axios from "axios";
+import React, { useEffect } from "react";
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { BarChart } from "react-native-chart-kit";
-import { ActivityIndicator } from "@react-native-material/core";
 import { SafeAreaView } from "react-native-safe-area-context";
 import SkeletonScreen from "../components/SkeletonScreen";
+import { font, serverLink } from "../global/globalVariable";
+import MoneyHeader from "../shared/Headers/moneyHeaders";
+import { getUserInfo } from "../controllers/userData";
 
 export default function Money() {
   let [lastYear, setLastYear] = React.useState("-- ");
   let [totalToPay, setTotalToPay] = React.useState("-- ");
   let [totalToGet, setTotalToGet] = React.useState("-- ");
-  let [payedGroupByTravel, setPayedGroupByTravel] = React.useState([]);
   let [barChartData, setBarChartData] = React.useState({});
   let [isLoading, setIsLoading] = React.useState(true);
 

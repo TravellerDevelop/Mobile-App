@@ -17,11 +17,11 @@ import SkeletonScreen from "../components/SkeletonScreen";
 import {
   color,
   font,
-  getUserInfo,
   paddingTopPage,
   serverLink,
 } from "../global/globalVariable";
 import Card from "../shared/card";
+import { getUserInfo } from "../controllers/userData";
 
 export default function MyProfile({ navigation, route }) {
   let [ntravel, setNtravel] = React.useState(null);

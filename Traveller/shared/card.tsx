@@ -1,12 +1,13 @@
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableNativeFeedback,
   ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableNativeFeedback,
+  View,
 } from "react-native";
-import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
+import { color, font, serverLink } from "../global/globalVariable";
+import { getUserInfo } from "../controllers/userData";
 
 interface CardProps {
   navigation: any,

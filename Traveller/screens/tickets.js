@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, ScrollView, TextInput, RefreshControl, Dimensions, ActivityIndicator } from "react-native";
-import { color, paddingTopPage, font, serverLink, getUserInfo } from "../global/globalVariable";
-import TicketsHeader from "../shared/Headers/ticketsHeaders";
-import TicketsPreview from "../components/tickets/ticketsPreview";
 import axios from "axios";
-import { getData } from "../shared/data/localdata";
+import React, { useEffect, useState } from "react";
+import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { storeJsonData } from "../shared/data/localdata";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TicketsLoading from "../components/loading/tiketsLoading";
+import TicketsPreview from "../components/tickets/ticketsPreview";
+import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
+import TicketsHeader from "../shared/Headers/ticketsHeaders";
+import { storeJsonData } from "../shared/data/localdata";
+import { getUserInfo } from "../controllers/userData";
 
 export default function Tickets({ navigation }) {
     let [data, setData] = useState([]);

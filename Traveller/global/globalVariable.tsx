@@ -4,17 +4,6 @@ export const color = {
     third: '#3582DB',
 }
 
-let userInfo = {}
-
-export const getUserInfo = () => {
-    return userInfo;
-}
-
-export const setUserInfo = (data) => {
-    userInfo = data;
-}
-
-
 export const font = {
     montserrat: "montserrat-regular",
     montserratLight: "montserrat-light",
@@ -24,7 +13,7 @@ export const font = {
     text_bold: "rubik-bold",
     text_light: "rubik-light",
     text_black: "rubik-black",
-}   
+}
 
 const myIp = "192.168.1.155";
 
@@ -36,7 +25,7 @@ export const serverLink = ISDEBUG ? "http://" + myIp + ":1337/" : "https://trave
 
 export let statusBarColor = "#4960FF";
 
-export function setStatusBarColor(color){
+export function setStatusBarColor(color: string) {
     statusBarColor = color;
 }
 

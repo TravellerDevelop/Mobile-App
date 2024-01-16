@@ -3,8 +3,9 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import PostMenu from '../../screens/Modals/postMenu';
 import { ComponentStyles } from './componentStyle';
-import { font, getUserInfo } from '../../global/globalVariable';
+import { font } from '../../global/globalVariable';
 import { Avatar } from 'react-native-paper';
+import { getUserInfo } from "../../controllers/userData";
 
 const PostCard = ({ children, item, home, travel, loadPosts }: any) => {
     let [showMenu, setShowMenu] = React.useState(false);

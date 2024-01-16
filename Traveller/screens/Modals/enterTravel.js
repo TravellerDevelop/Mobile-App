@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from "react-native";
-import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
 import axios from "axios";
-import { getData } from "../../shared/data/localdata";
+import React, { useState } from "react";
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
+import { color, font, serverLink } from "../../global/globalVariable";
+import { getUserInfo } from "../../controllers/userData";
 
 export default function EnterTravel({ visibility, setVisibility, updateJoinTravels }) {
     let [code, setCode] = useState("");

@@ -26,7 +26,6 @@ import {
   appVersion,
   color,
   font,
-  getUserInfo,
   serverLink
 } from "../global/globalVariable";
 import LoginModal from "../screens/Modals/login";
@@ -36,6 +35,7 @@ import {
   storeStringData
 } from "../shared/data/localdata";
 import LoadingCard from "../shared/loadingCard";
+import { getUserInfo } from "../controllers/userData";
 
 // Componenti
 import * as Notifications from "expo-notifications";

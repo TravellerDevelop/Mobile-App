@@ -9,10 +9,10 @@ import {
   View,
 } from "react-native";
 import { ProgressBar, RadioButton } from "react-native-paper";
-import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
-import { getData } from "../../shared/data/localdata";
+import { color, font, serverLink } from "../../global/globalVariable";
 import PostCard from "./PostCard";
 import { ComponentStyles } from "./componentStyle";
+import { getUserInfo } from "../../controllers/userData";
 
 let percent = {};
 let ausItem;

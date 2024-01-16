@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
-import { getUserInfo, serverLink } from "./globalVariable";
+import { serverLink } from "./globalVariable";
+import { getUserInfo } from "../controllers/userData";
 
 let socket: any = null;
 let actualRoom: string = '';

@@ -14,9 +14,9 @@ import {
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";
-import { color, font, getUserInfo, serverLink } from "../../global/globalVariable";
-import { getData } from "../../shared/data/localdata";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
+import { color, font, serverLink } from "../../global/globalVariable";
+import { getUserInfo } from "../../controllers/userData";
 
 export default function NewTravel({
   userState,

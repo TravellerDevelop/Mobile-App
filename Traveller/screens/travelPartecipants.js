@@ -1,11 +1,11 @@
 import { Avatar } from "@react-native-material/core";
-import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Text, TouchableNativeFeedback, Image, ActivityIndicator } from "react-native";
-import { color, font, getUserInfo, serverLink } from "../global/globalVariable";
-import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
 import axios from "axios";
-import { getData } from "../shared/data/localdata";
+import React, { useEffect, useState } from "react";
+import { FlatList, Image, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
 import ParticipantsLoading from "../components/loading/ParticipantsLoading";
+import { color, font, serverLink } from "../global/globalVariable";
+import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
+import { getUserInfo } from "../controllers/userData";
 
 export default function TravelPartecipants({ navigation, route }) {
     let [isLoadingParticipants, setIsLoadingParticipants] = useState(true);

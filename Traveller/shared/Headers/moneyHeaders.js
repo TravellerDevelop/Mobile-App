@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions } from "react-native";
-import { color, font } from "../../global/globalVariable.js";
+import { color, font } from "../../global/globalVariable";
 import { LinearGradient } from "expo-linear-gradient";
 import { Badge } from "@react-native-material/core";
 

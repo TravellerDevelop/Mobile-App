@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
 import { savePostToGallery } from "../../components/utils/fileSystem";
-import { font, getUserInfo, serverLink } from "../../global/globalVariable";
+import { font, serverLink } from "../../global/globalVariable";
+import { getUserInfo } from "../../controllers/userData";
 import { takeSocket } from "../../global/socket";
 
 interface PostMenuProps {

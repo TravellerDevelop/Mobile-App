@@ -14,12 +14,12 @@ import {
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Checkbox, SegmentedButtons, TextInput } from "react-native-paper";
+import { getUserInfo } from "../../controllers/userData";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import {
-    color,
-    font,
-    getUserInfo,
-    serverLink,
+  color,
+  font,
+  serverLink,
 } from "../../global/globalVariable";
 
 let voteParams;
