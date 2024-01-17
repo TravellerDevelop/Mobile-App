@@ -344,7 +344,7 @@ export default function NewTravel({
               onPress={async () => {
                 // await setCreator(getStringData("username"))
                 let part = [];
-                if (friendsAdded.length != 0) {
+                if (friendsAdded.length) {
                   for (let item of friendsAdded) {
                     part.push({
                       userid: item._id,
