@@ -213,7 +213,7 @@ export default function App() {
                   alignItems: "center",
                 }}
               >
-                {offlineTickets != null && offlineTickets.length > 0 ? (
+                {offlineTickets && offlineTickets ? (
                   <FlatList
                     data={offlineTickets}
                     scrollEnabled={true}

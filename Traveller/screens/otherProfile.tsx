@@ -67,11 +67,11 @@ export default function OtherProfile({ navigation, route }: any) {
                 route.params.userid
               )
               .then((response) => {
-                if (response.data.length > 0) {
+                if (response.data.length) {
                   if (response.data[0].accepted === false)
                     setRequestStatus("Sent");
                   else setRequestStatus("Followed");
-                } else if (response.data.length == 0) {
+                } else {
                   setRequestStatus("Not sent");
                 }
 
@@ -307,7 +307,7 @@ export default function OtherProfile({ navigation, route }: any) {
                   I viaggi creati da {user.name}:
                 </Text>
               )}
-              {myTravel.length > 0 && !isLoading ? (
+              {myTravel.length && !isLoading ? (
                 <FlatList
                   scrollEnabled={false}
                   data={myTravel}

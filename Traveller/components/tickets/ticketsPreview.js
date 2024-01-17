@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
 import { font } from "../../global/globalVariable";
 
 let companies = {
@@ -14,7 +14,7 @@ let companies = {
 let col = "#FFF"
 let img;
 
-export default function TicketsPreview({ item, takeInfo, navigation }) {
+export default function TicketsPreview({ item, navigation }) {
     if (item.company.name === "Ryanair") {
         col = companies.Ryanair;
         img = require("../../assets/image/airlines/ryanair.png");
@@ -34,7 +34,7 @@ export default function TicketsPreview({ item, takeInfo, navigation }) {
 
     return (
         <>
-            <TouchableNativeFeedback onPress={() => navigation.navigate("TicketsModal", {data: item, takeInfo: takeInfo })} >
+            <TouchableNativeFeedback onPress={() => navigation.navigate("TicketsModal", {data: item })} >
                 <View style={[styles.container, { backgroundColor: col }]} >
                     <View style={styles.left}></View>
                     <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />

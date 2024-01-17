@@ -1,14 +1,12 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TicketsLoading from "../components/loading/tiketsLoading";
 import TicketsPreview from "../components/tickets/ticketsPreview";
-import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
+import { color, font, paddingTopPage } from "../global/globalVariable";
+import takeInfo from "../global/ticketsFunctions";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
-import { storeJsonData } from "../shared/data/localdata";
-import { getUserInfo } from "../controllers/userData";
 
 export default function Tickets({ navigation }) {
     let [data, setData] = useState([]);
@@ -22,23 +20,8 @@ export default function Tickets({ navigation }) {
         setExtraData(!extraData);
     }
 
-    async function takeInfo() {
-        setIsLoading(true);
-        personalData = getUserInfo();
-        axios.get(serverLink + "api/tickets/take?userid=" + personalData._id)
-            .then(res => {
-                setData(res.data);
-                setAusTicket(res.data);
-                setIsLoading(false);
-                storeJsonData("tickets", res.data);
-            }).catch(err => {
-                console.log(err);
-                setIsLoading(false);
-            })
-    }
-
     useEffect(() => {
-        takeInfo();
+        takeInfo(personalData, setIsLoading, setData, setAusTicket);
     }, []);
 
     return (
@@ -53,7 +36,7 @@ export default function Tickets({ navigation }) {
                         onChangeText={(value) => {
                             setSearch(value);
 
-                            if (value.length > 0) {
+                            if (value.length) {
                                 let aus = data.filter((item) => {
                                     return item.title.toLowerCase().includes(value.toLowerCase());
                                 });
@@ -68,12 +51,12 @@ export default function Tickets({ navigation }) {
                         inputStyle={{ fontFamily: font.text }}
                     />
                     {
-                        (data.length > 0 && !isLoading) ?
+                        (data.length && !isLoading) ?
                             <FlatList
                                 scrollEnabled={false}
                                 data={ausTicket}
                                 extraData={extraData}
-                                renderItem={({ item }) => <TicketsPreview item={item} takeInfo={takeInfo} navigation={navigation} />}
+                                renderItem={({ item }) => <TicketsPreview item={item} navigation={navigation} />}
                             />
                             :
                             (isLoading) ?

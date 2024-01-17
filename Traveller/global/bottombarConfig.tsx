@@ -47,8 +47,7 @@ export const bottomBarStyle = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderRadius: 5,
-        position: (Platform.OS === 'ios') ? 'absolute' : 'relative',
-        top: -1.5,
+        position: 'relative',
     },
     focusedTextStyle: {
         color: 'black',
@@ -65,6 +64,5 @@ export const bottomBarStyle = StyleSheet.create({
     },
     bottomBarImageFocus: {
         position: 'relative',
-        top: Platform.OS === 'ios' ? -1.5 : -0,
     }
 });

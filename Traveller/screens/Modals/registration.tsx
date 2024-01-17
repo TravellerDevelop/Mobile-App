@@ -32,7 +32,7 @@ export default function Signup({ visibility, setVisibility, setLoginVisibility, 
                 password
             );
 
-            if (name != "" && surname != "" && username != "" && email != "" && password != "" && password.length >= 8 && email.includes("@") && email.includes(".")) {
+            if (name.trim() && surname.trim() && username.trim() && email.trim() && password.trim() && password.length >= 8 && email.includes("@") && email.includes(".")) {
                 axios.post(serverLink + "api/user/register", { name: name, surname: surname, username: username, email: email, password: digest })
                     .then((response) => {
                         if (response.status == 200) {

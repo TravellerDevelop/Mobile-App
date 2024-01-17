@@ -464,7 +464,7 @@ export default function Home({ navigation }) {
               <TextInput
                 placeholder="Cerca un account"
                 style={
-                  serchData.length == 0 ? styles.input : styles.inputResult
+                  !serchData.length ? styles.input : styles.inputResult
                 }
                 inputStyle={{ fontFamily: font.montserrat }}
                 onSubmitEditing={(event) => {
@@ -520,8 +520,8 @@ export default function Home({ navigation }) {
                 }}
               />
 
-              {serchData.length == 0 &&
-              !searchLoading ? null : !searchLoading && serchData.length > 0 ? (
+              {!serchData.length &&
+              !searchLoading ? null : !searchLoading && serchData.length ? (
                 <View
                   style={{
                     marginBottom: 10,
@@ -619,7 +619,7 @@ export default function Home({ navigation }) {
                 </ScrollView>
               )}
               {joinedTravels != null &&
-                joinedTravels.length > 0 &&
+                joinedTravels.length &&
                 !joinedTravelsLoading &&
                 userData.username && (
                   <FlatList
@@ -635,7 +635,7 @@ export default function Home({ navigation }) {
                     )}
                   />
                 )}
-              {(joinedTravels == null || joinedTravels.length == 0) &&
+              {(!joinedTravels || !joinedTravels.length) &&
                 !joinedTravelsLoading && (
                   <View
                     style={{
@@ -664,8 +664,8 @@ export default function Home({ navigation }) {
                 Gli ultimi post dai tuoi viaggi:
               </Text>
               {lastPostsLoading && <PostLoading />}
-              {lastPosts != null &&
-                lastPosts.length > 0 &&
+              {lastPosts &&
+                lastPosts.length &&
                 !lastPostsLoading && (
                   <FlatList
                     scrollEnabled={false}
@@ -709,7 +709,7 @@ export default function Home({ navigation }) {
                     )}
                   />
                 )}
-              {(lastPosts == null || lastPosts.length == 0) && (
+              {(!lastPosts || !lastPosts.length) && (
                 <View
                   style={{
                     height: 140,

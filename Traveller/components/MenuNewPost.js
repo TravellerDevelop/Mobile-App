@@ -94,9 +94,7 @@ export default function MenuNewPost({ data, navigation, onAddData }) {
   return (
     <>
       {showPostsMenu && (
-        <View
-          style={{ position: "absolute", right: 10, bottom: 150, zIndex: 1000 }}
-        >
+        <View style={styles.button}>
           {PostType.map((buttonData, index) => (
             <Animated.View key={index} style={[buttonStyles[index]]}>
               <TouchableOpacity
@@ -115,16 +113,17 @@ export default function MenuNewPost({ data, navigation, onAddData }) {
         </View>
       )}
 
-      <IconButton
-        icon={showPostsMenu ? "close" : "plus"}
-        iconColor="#FFF"
-        containerColor="#4900FF"
-        animated={true}
-        size={40}
-        style={{ position: "absolute", right: 10, bottom: 80, zIndex: 1000 }}
-        onPress={() => toggleMenu()}
-        mode="contained"
-      />
+      <View style={styles.iconButtonContainer}>
+        <IconButton
+          icon={showPostsMenu ? "close" : "plus"}
+          iconColor="#FFF"
+          containerColor="#4900FF"
+          animated={true}
+          size={40}
+          onPress={() => toggleMenu()}
+          mode="contained"
+        />
+      </View>
     </>
   );
 }
@@ -161,4 +160,16 @@ const styles = StyleSheet.create({
     fontFamily: font.text,
     lineHeight: 30,
   },
+  button: {
+    position: "absolute",
+    right: 10,
+    bottom: 150,
+    zIndex: 1000,
+  },
+  iconButtonContainer: {
+    position: "absolute",
+    right: 10,
+    bottom: 80,
+    zIndex: 1000,
+  }
 });

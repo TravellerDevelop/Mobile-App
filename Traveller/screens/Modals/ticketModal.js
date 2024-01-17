@@ -5,7 +5,6 @@ import {
   Dimensions,
   FlatList,
   Image,
-  LogBox,
   Modal,
   SafeAreaView,
   StyleSheet,
@@ -13,22 +12,16 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Image,
-  FlatList,
-  Dimensions,
-  TextInput,
-  SafeAreaView,
-  // LogBox,
+  View
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
-import { color, font, serverLink } from "../../global/globalVariable";
 import { getUserInfo } from "../../controllers/userData";
+import { color, font, serverLink } from "../../global/globalVariable";
 import QrCodeModal from "./qrCodeModal";
 
 export default function TicketModal({ navigation, route }) {
   let [data, setData] = useState({});
-  let [takeInfo, setTakeInfo] = useState("");
 
   let [from, setFrom] = useState("");
   let [to, setTo] = useState("");
@@ -54,7 +47,6 @@ export default function TicketModal({ navigation, route }) {
   React.useEffect(() => {
     uData();
     setData(route.params.data);
-    setTakeInfo(route.params.takeInfo);
 
     setFrom(route.params.data.from.name.split(",")[1]);
     setTo(route.params.data.to.name.split(",")[1]);
@@ -325,7 +317,6 @@ export default function TicketModal({ navigation, route }) {
                     axios
                       .post(serverLink + "api/tickets/delete", { id: data._id })
                       .then((response) => {
-                        takeInfo();
                         setShowMenu(false);
                         setVisibility(false);
                       })

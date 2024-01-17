@@ -157,7 +157,7 @@ export default function TravelDetail({ navigation, route }) {
             zIndex: 100,
             top: 20,
             left: Dimensions.get("screen").width / 2 - 75,
-            display: newPost ? "flex" : "none",
+            display: newPost && scrollY < DISTANCETOTOP ? "flex" : "none",
           }}
           onPress={() => {
             scrollViewRef.current.scrollTo({
@@ -274,7 +274,7 @@ export default function TravelDetail({ navigation, route }) {
                   )}
                 />
               )}
-              {(postData.length == 0 || postData == null) && !postLoading && (
+              {(!postData) && !postLoading && (
                 <View
                   style={{
                     flex: 1,
