@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const storeStringData = async (key, value) => {
+export const storeStringData = async (key: string, value: string) => {
     try {
         await AsyncStorage.setItem(key, value);
         return true;
@@ -9,7 +9,7 @@ export const storeStringData = async (key, value) => {
     }
 }
 
-export const storeJsonData = async (key, value) => {
+export const storeJsonData = async (key: string, value: any) => {
     try {
         const jsonValue = JSON.stringify(value)
         await AsyncStorage.setItem(key, jsonValue)
@@ -19,7 +19,7 @@ export const storeJsonData = async (key, value) => {
     }
 }
 
-export const getStringData = async (key) => {
+export const getStringData = async (key: string) => {
     try {
         const value = await AsyncStorage.getItem(key)
         if (value != null && value != undefined){
@@ -33,7 +33,7 @@ export const getStringData = async (key) => {
     }
 }
 
-export const getData = async (key) => {
+export const getData = async (key: string) => {
     try {
         const jsonValue = await AsyncStorage.getItem(key)
         return jsonValue != null ? JSON.parse(jsonValue) : null;
@@ -42,10 +42,10 @@ export const getData = async (key) => {
     }
 }
 
-export const getStringDataWithState = async (key, state, setState) => {
+export const getStringDataWithState = async (key: string, state: any, setState: (data: any) => void) => {
     try {
         const value = await AsyncStorage.getItem(key)
-        if (value != null && value != undefined && value != '[]' && value != 'false' && value != false){
+        if (value != null && value != undefined && value != '[]' && value != 'false' && !value){
             setState(value);
         }
         else{
@@ -56,7 +56,7 @@ export const getStringDataWithState = async (key, state, setState) => {
     }
 }
 
-export const getStringDataWithStateReverse = async (key, state, setState) => {
+export const getStringDataWithStateReverse = async (key: string, state: any, setState: (data: any) => void) => {
     try {
         const value = await AsyncStorage.getItem(key)
         if (value != null && value != undefined){

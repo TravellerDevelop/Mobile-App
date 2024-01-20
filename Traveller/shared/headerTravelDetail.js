@@ -115,7 +115,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
           imageStyle={{ opacity: 0.85 }}
         >
           <SafeAreaView>
-            {creator == username ? (
+            {creator == username && (
               <>
                 <TouchableOpacity
                   onPress={() => {
@@ -142,7 +142,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
                   </View>
                 </TouchableOpacity>
               </>
-            ) : null}
+            )}
             <View style={styles.row}>
               <TouchableNativeFeedback onPress={() => navigation.goBack()}>
                 <MaterialCommunityIcons

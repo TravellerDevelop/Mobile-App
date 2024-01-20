@@ -30,9 +30,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function ImagesComponent({ item, home, loadPosts, travel }) {
+interface ImagesComponentProps {
+  item: any;
+  home: boolean;
+  loadPosts: (param: any) => void;
+  travel: boolean;
+}
+
+export default function ImagesComponent({ item, home, loadPosts, travel }: ImagesComponentProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [ausItems, setAusItems] = useState({});
+  const [ausItems, setAusItems]: any = useState({});
 
   async function downloadImages() {
     let x = item;
@@ -82,7 +89,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
           setCurrentIndex(
             Math.round(
               e.nativeEvent.contentOffset.x /
-                ((Dimensions.get("screen").width / 100) * 88)
+              ((Dimensions.get("screen").width / 100) * 88)
             )
           );
         }}
@@ -117,7 +124,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel }) {
             borderRadius: 50,
           }}
         >
-          {item.source.map((item) => {
+          {item.source.map((item: any) => {
             return (
               <View
                 key={item.id}

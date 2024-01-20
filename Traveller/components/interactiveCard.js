@@ -9,7 +9,7 @@ export default function InteractiveCard({ userState, setUserState, updatecards }
 
     return (
         <>
-            {newTravelVisibility ? <NewTravel userState={userState} setUserState={setUserState} updatecards={updatecards} setNewTravelVisibility={setNewTravelVisibility} /> : null}
+            {newTravelVisibility && <NewTravel updatecards={updatecards} setNewTravelVisibility={setNewTravelVisibility} />}
             <View style={styles.container}>
                 <LinearGradient
                     start={{ x: 0.4, y: 0.3 }}

@@ -35,8 +35,8 @@ export default function MyProfile({ navigation, route }) {
   const getData = () => {
     setIsLoading(true);
     let endpoints = [
-      serverLink + "api/user/takeTravelsNum?username=" + user.username,
-      serverLink + "api/travel/takeByCreator?username=" + user.username,
+      serverLink + "api/user/takeTravelsNum?userid=" + user._id,
+      serverLink + "api/travel/takeByCreator?userid=" + user._id,
       serverLink + "api/follow/takeFollowers?to=" + user._id,
       serverLink + "api/follow/takeFollowings?from=" + user._id
     ]
@@ -175,7 +175,7 @@ export default function MyProfile({ navigation, route }) {
             </TouchableNativeFeedback>
           )}
 
-          {ntravel == 0 ? (
+          {!myTravel.length ? (
             <View
               style={{
                 flex: 1,
@@ -205,8 +205,7 @@ export default function MyProfile({ navigation, route }) {
               >
                 I viaggi creati da te:
               </Text>
-              {!isLoading &&
-                (myTravel.length && (
+              {(myTravel.length && (
                   <FlatList
                     scrollEnabled={false}
                     data={myTravel}

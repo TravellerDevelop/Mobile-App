@@ -45,8 +45,8 @@ export default function Notifications({ navigation, route }) {
         <View style={styles.container}>
             {
                 (!users.length)
-                    ?
-                    <Text style={{ textAlign: "center", marginTop: 20, fontFamily: font.montserrat, fontSize: 16 }}>Non hai nessuna notifica al momento</Text> : null
+                    &&
+                    <Text style={{ textAlign: "center", marginTop: 20, fontFamily: font.text, fontSize: 16 }}>Non hai nessuna notifica al momento</Text>
             }
             <FlatList
                 data={users}

@@ -55,7 +55,6 @@ export default function OtherProfile({ navigation, route }: any) {
             response.data[0]._id
           )
           .then((response) => {
-            console.log(response.data);
             setNtravel(response.data.count);
 
             axios
@@ -88,8 +87,8 @@ export default function OtherProfile({ navigation, route }: any) {
         axios
           .get(
             serverLink +
-            "api/travel/takeByCreator?username=" +
-            response.data[0].username
+            "api/travel/takeByCreator?userid=" +
+            response.data[0]._id
           )
           .then((response) => {
             setMyTravel(response.data);
@@ -261,7 +260,7 @@ export default function OtherProfile({ navigation, route }: any) {
                   >
                     Segui già
                   </Text>
-                ) : requestStatus == "Not sent" ? (
+                ) : requestStatus == "Not sent" && (
                   <Text
                     style={{
                       fontFamily: font.text,
@@ -271,53 +270,64 @@ export default function OtherProfile({ navigation, route }: any) {
                   >
                     Inizia a seguire
                   </Text>
-                ) : null}
+                )}
               </View>
             )}
           </TouchableNativeFeedback>
-          {ntravel == 0 ? (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#fff",
-                alignItems: "center",
-                paddingTop: 50,
-              }}
-            >
-              <AnimatedLottieView
-                source={require("../assets/animation/sadGuyWalking.json")}
-                autoPlay
-                loop
-                style={{ width: 150, height: 150 }}
-              />
-              <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
-            </View>
-          ) : (
-            <View style={{ width: "100%" }}>
-              {!isLoading && (
-                <Text
-                  style={{
-                    fontFamily: font.text,
-                    fontSize: 20,
-                    color: "#000",
-                    textAlign: "left",
-                    marginLeft: "5%",
-                  }}
-                >
-                  I viaggi creati da {user.name}:
-                </Text>
-              )}
-              {myTravel.length && !isLoading ? (
-                <FlatList
-                  scrollEnabled={false}
-                  data={myTravel}
-                  renderItem={({ item }) => (
-                    <Card vertical={true} data={item} navigation={navigation} />
-                  )}
-                />
-              ) : null}
-            </View>
-          )}
+          {
+            isLoading ? (
+              <SkeletonScreen
+                width={(Dimensions.get("window").width / 100) * 90}
+                height={500}
+                borderRadius={10}
+                style={{ marginBottom: 20 }} />
+            )
+              :
+              (
+                !myTravel.length ? (
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: "#fff",
+                      alignItems: "center",
+                      paddingTop: 50,
+                    }}
+                  >
+                    <AnimatedLottieView
+                      source={require("../assets/animation/sadGuyWalking.json")}
+                      autoPlay
+                      loop
+                      style={{ width: 150, height: 150 }}
+                    />
+                    <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
+                  </View>
+                ) : (
+                  <View style={{ width: "100%" }}>
+                    <Text
+                      style={{
+                        fontFamily: font.text,
+                        fontSize: 20,
+                        color: "#000",
+                        textAlign: "left",
+                        marginLeft: "5%",
+                      }}
+                    >
+                      I viaggi creati da {user.name}:
+                    </Text>
+                    {myTravel.length && (
+                      <FlatList
+                        scrollEnabled={false}
+                        data={myTravel}
+                        renderItem={({ item }) => (
+                          <Card vertical={true} data={item} navigation={navigation} />
+                        )}
+                      />
+                    )}
+                  </View>
+                )
+              )
+          }
+
         </View>
       </View>
     </ScrollView>

@@ -195,13 +195,7 @@ export default function Home({ navigation }) {
 
   function loadJoinedTravels(username, userid) {
     axios
-      .get(
-        serverLink +
-          "api/travel/takeJoined?username=" +
-          username +
-          "&userid=" +
-          userid
-      )
+      .get(serverLink + "api/travel/takeJoined?userid=" + userid)
       .then(async (response) => {
         if (response.status == 200) {
           await setJoinedTravels(response.data);
@@ -217,10 +211,7 @@ export default function Home({ navigation }) {
     axios
       .get(
         serverLink +
-          "api/post/takeLastsByUsername?userid=" +
-          userid +
-          "&username=" +
-          username
+          "api/post/takeLastsByUsername?userid=" + userid
       )
       .then(async (response) => {
         if (response.status == 200) {
@@ -239,7 +230,6 @@ export default function Home({ navigation }) {
               }
             }
           }
-          console.log(response.data)
           await setLastPosts(response.data);
           await setLastPostsLoading(false);
         }

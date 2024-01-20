@@ -18,7 +18,7 @@ export default function EnterTravel({ visibility, setVisibility, updateJoinTrave
                 </TouchableOpacity>
                 <Text style={styles.title}>Entra in un nuovo viaggio</Text>
                 <Text style={styles.text}>Inserisci il codice a 5 cifre che trovi nella home page del viaggio:</Text>
-                {error ? <Text style={{ color: "red", fontSize: 16, fontFamily: font.text }}>{error}</Text> : null}
+                {error && <Text style={{ color: "red", fontSize: 16, fontFamily: font.text }}>{error}</Text>}
                 <TextInput placeholderTextColor={"gray"} style={styles.input} placeholder="Codice invito" maxLength={5} onChangeText={(value) => setCode(value)} />
                 <TouchableOpacity style={[{ borderRadius: 10, padding: 10, width: "80%" }, (code.length < 5) ? { backgroundColor: "lightGray" } : { backgroundColor: color.primary, }, (loading) ? { opacity: 0, height: 0 } : { opacity: 100 }]} onPress={async () => {
                     if (code.length == 5) {

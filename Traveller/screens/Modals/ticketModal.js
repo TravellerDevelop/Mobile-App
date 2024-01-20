@@ -212,13 +212,12 @@ export default function TicketModal({ navigation, route }) {
 
                     <TouchableOpacity
                       style={{ position: "absolute", right: 10 }}
-                      onPress={async () => {
-                        let aus = getUserInfo();
+                      onPress={() => {
                         axios
                           .post(serverLink + "api/tickets/share", {
                             userid: item._id,
                             content: data,
-                            createBy: aus.username,
+                            createBy: getUserInfo()._id,
                           })
                           .then((response) => {
                             item.sent = true;
@@ -389,7 +388,7 @@ const modalstyles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#FFF",
     position: "absolute",
-    bottom: 40,
+    bottom: 100,
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",

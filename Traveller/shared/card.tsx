@@ -6,8 +6,8 @@ import {
   TouchableNativeFeedback,
   View,
 } from "react-native";
-import { color, font, serverLink } from "../global/globalVariable";
 import { getUserInfo } from "../controllers/userData";
+import { color, font, serverLink } from "../global/globalVariable";
 
 interface CardProps {
   navigation: any,
@@ -27,24 +27,26 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
     i++;
   }
 
+  function clickHandler() {
+    console.log("HW")
+    let found = false, i = 0;
+    while(i < data.participants.length || found){
+      if (data.participants[i].username == getUserInfo().username) {
+        found = true;
+      }
+    }
+    console.log(found)
+
+    if (found) {
+      navigation.navigate("TravelDetail", { data: data, username: username });
+    }
+  }
+
   return (
     <>
       {data.image == null || data.image == undefined || data.image == "" ? (
         <TouchableNativeFeedback
-          onPress={() => {
-            let myD = getUserInfo() as any;
-            let found = false;
-
-            for (let item of data.participants) {
-              if (item.username == myD.username) {
-                found = true;
-              }
-            }
-
-            if (found) {
-              navigation.navigate("TravelDetail", { data:data, username:username});
-            }
-          }}
+          onPress={() => {clickHandler()}}
         >
           {!vertical ? (
             <View style={!isLoading ? styles.container : { display: "none" }}>
@@ -83,17 +85,7 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
       ) : (
         <TouchableNativeFeedback
           style={{ zIndex: 10 }}
-          onPress={() => {
-            let found = false;
-            for (let item of data.participants) {
-              if (item.username == username) {
-                found = true;
-              }
-            }
-            if (found) {
-              navigation.navigate("TravelDetail", {data:data, username:username});
-            }
-          }}
+          onPress={() =>{clickHandler()}}
         >
           {!vertical ? (
             <ImageBackground
@@ -106,13 +98,13 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
               >
                 <Text
                   style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
+                  onPress={() =>{clickHandler()}}
                 >
                   {data.name}
                 </Text>
                 <Text
                   style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
+                  onPress={() =>{clickHandler()}}
                 >
                   Creato il{" "}
                   {new Date(data.creation_date)
@@ -134,13 +126,13 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
               >
                 <Text
                   style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
+                  onPress={() =>{clickHandler()}}
                 >
                   {data.name}
                 </Text>
                 <Text
                   style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
+                  onPress={() =>{clickHandler()}}
                 >
                   Creato il{" "}
                   {new Date(data.creation_date)
@@ -172,7 +164,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-
     elevation: 5,
   },
   containerWithBg: {
@@ -189,7 +180,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-
     elevation: 5,
   },
   containerVertical: {

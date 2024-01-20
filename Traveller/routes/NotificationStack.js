@@ -1,18 +1,16 @@
-import React from 'react'
-import { NavigationContainer, Drawer } from '@react-navigation/native'
+import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
+import React from 'react'
+import { font } from '../global/globalVariable'
+import NewPost from '../screens/Modals/NewPost'
+import EditTravel from '../screens/Modals/edittravel'
 import Home from '../screens/home'
 import Notifications from '../screens/notifications'
-import { font } from '../global/globalVariable'
+import OtherProfile from '../screens/otherProfile'
+import PaymentInfo from '../screens/paymentsInfo'
+import MyProfile from '../screens/profile'
 import TravelDetail from '../screens/travelDetail'
 import TravelPartecipants from '../screens/travelPartecipants'
-import MyProfile from '../screens/profile'
-import PaymentInfo from '../screens/paymentsInfo'
-import OtherProfile from '../screens/otherProfile'
-import NewPost from '../screens/Modals/NewPost'
-import TicketModal from '../screens/Modals/ticketModal'
-import Tickets from '../screens/tickets'
-import EditTravel from '../screens/Modals/edittravel'
 
 const Stack = createStackNavigator()
 
@@ -76,12 +74,6 @@ export default function Navigator() {
         />
 
         <Stack.Screen name='EditTravel' component={EditTravel}
-          options={{
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen name='TicketsModal' component={TicketModal}
           options={{
             headerShown: false,
           }}

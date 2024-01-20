@@ -1,7 +1,7 @@
 import { Avatar } from "@react-native-material/core";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
+import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
 import ParticipantsLoading from "../components/loading/ParticipantsLoading";
 import { color, font, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
@@ -23,7 +23,7 @@ export default function TravelPartecipants({ navigation, route }) {
             }
         }
 
-        axios.get(serverLink + "api/travel/takeParticipants?travel=" + route.params.code)
+        axios.get(serverLink + "api/travel/takeParticipants?travel=" + route.params._id)
             .then((response) => {
                 if (response.status == 200) {
                     setUsersData(response.data);
@@ -41,7 +41,7 @@ export default function TravelPartecipants({ navigation, route }) {
     }, [])
 
     return (
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
             <TravelPartecipantsHeader navigation={navigation} route={route} />
             <View style={styles.container}>
                 <Text style={styles.subtext}>Descrizione:</Text>
@@ -125,7 +125,7 @@ export default function TravelPartecipants({ navigation, route }) {
                     <Text style={styles.leaveText}>Abbandona viaggio</Text>
                 </View>
             </TouchableNativeFeedback>
-        </View>
+        </SafeAreaView>
     )
 }
 

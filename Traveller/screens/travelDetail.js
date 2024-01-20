@@ -50,11 +50,13 @@ export default function TravelDetail({ navigation, route }) {
       // let datas = await postData;
       // datas.unshift(data);
       setPostData(data);
+      console.log("Scroll: ", scrollY > DISTANCETOTOP)
       if (scrollY > DISTANCETOTOP) setNewPost(true);
     });
 
     takeSocket().on("deletedPost", async (data) => {
       let localPostData = await postData;
+      console.log("deleted")
       setPostData(localPostData.filter(item => item._id!==data));
     });
   }, []);
@@ -157,7 +159,7 @@ export default function TravelDetail({ navigation, route }) {
             zIndex: 100,
             top: 20,
             left: Dimensions.get("screen").width / 2 - 75,
-            display: newPost && scrollY < DISTANCETOTOP ? "flex" : "none",
+            display: newPost ? "flex" : "none",
           }}
           onPress={() => {
             scrollViewRef.current.scrollTo({

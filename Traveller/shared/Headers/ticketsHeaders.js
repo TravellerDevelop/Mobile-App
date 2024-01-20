@@ -6,11 +6,11 @@ import { Camera, CameraType } from 'expo-camera';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { Dimensions, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
-import { color, font, serverLink } from "../../global/globalVariable";
-import { getData } from "../data/localdata.js";
+import { getTickets, setTickets } from '../../controllers/ticketsData';
 import { getUserInfo } from "../../controllers/userData";
+import { color, font, serverLink } from "../../global/globalVariable";
 
-export default function TicketsHeader({ update }) {
+export default function TicketsHeader() {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
     const [modalVisible, setModalVisible] = useState(false);
@@ -47,129 +47,123 @@ export default function TicketsHeader({ update }) {
         toggleDatePicker();
     }
 
-
     if (!permission)
         requestPermission();
-
-    function toggleCameraType() {
-        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
-    }
 
     return (
         <>
             {
-                qrVisible ?
-                    <Modal visible={qrVisible} animationType='slide' >
-                        <View style={modalstyles.container}>
-                            <Text style={modalstyles.title}>{(!scanned) ? "Scannerizza il Qr Code" : "Nuovo biglietto"}</Text>
-                            {
-                                scanned ?
-                                    <View>
-                                        {/* <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text> */}
-                                        {
-                                            showPicker ?
-                                                <DateTimePicker
-                                                    mode="date"
-                                                    value={date}
-                                                    display="default"
-                                                    onChange={onChangeDate}
-                                                    minimumDate={new Date()}
-                                                    style={
-                                                        styles.datePicker
-                                                    }
-                                                />
-                                                :
-                                                null
-                                        }
-
-
-                                        {
-                                            showPicker && Platform.OS == "ios" && (
-                                                <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-                                                    <TouchableOpacity onPress={() => { toggleDatePicker() }} >
-                                                        <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Annulla</Text>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity onPress={() => { confirmIOSDate() }} >
-                                                        <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Conferma</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            )
-                                        }
-
-                                        <TextInput style={styles.input} placeholder="Titolo biglietto" placeholderTextColor="black"
-                                            onChangeText={(text) => { setTicketTitle(text) }}
-                                        />
-
-                                        <Pressable
-                                            onPress={() => { toggleDatePicker() }}
-                                        >
-                                            <TextInput style={styles.input}
-                                                placeholder="Data del biglietto"
-                                                placeholderTextColor="black"
-                                                value={dateOfTicket}
-                                                onChangeText={setDateOfTicket}
-                                                onPressIn={toggleDatePicker}
-                                                editable={false}
+                qrVisible &&
+                <Modal visible={qrVisible} animationType='slide' >
+                    <View style={modalstyles.container}>
+                        <Text style={modalstyles.title}>{(!scanned) ? "Scannerizza il Qr Code" : "Nuovo biglietto"}</Text>
+                        {
+                            scanned ?
+                                <View>
+                                    {/* <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text> */}
+                                    {
+                                        showPicker ?
+                                            <DateTimePicker
+                                                mode="date"
+                                                value={date}
+                                                display="default"
+                                                onChange={onChangeDate}
+                                                minimumDate={new Date()}
+                                                style={
+                                                    styles.datePicker
+                                                }
                                             />
-                                        </Pressable>
+                                            :
+                                            null
+                                    }
 
-                                        <TouchableNativeFeedback
-                                            onPress={async () => {
-                                                verifyTicketsData(data);
-                                            }}
-                                        >
-                                            <View
-                                                style={{
-                                                    width: (Dimensions.get("window").width / 100) * 40,
-                                                    height: 40,
-                                                    marginLeft: (Dimensions.get("window").width / 100) * 30,
-                                                    backgroundColor: "#F5F5F5",
-                                                    borderRadius: 10,
-                                                    paddingLeft: 10,
-                                                    paddingRight: 10,
-                                                }}
-                                            >
-                                                <Text
-                                                    style={{
-                                                        fontFamily: font.text,
-                                                        fontSize: 20,
-                                                        color: color.primary,
-                                                        textAlign: "center",
-                                                        lineHeight: 40,
-                                                    }}
 
-                                                >Carica biglietto</Text>
+                                    {
+                                        showPicker && Platform.OS == "ios" && (
+                                            <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                                                <TouchableOpacity onPress={() => { toggleDatePicker() }} >
+                                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Annulla</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => { confirmIOSDate() }} >
+                                                    <Text style={{ fontFamily: font.text, fontSize: 20, color: color.primary }}>Conferma</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                        </TouchableNativeFeedback>
-                                    </View>
-                                    :
-                                    <Camera style={styles.camera} type={type}
-                                        barCodeScannerSettings={{
-                                            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-                                        }}
+                                        )
+                                    }
 
-                                        onBarCodeScanned={({ type, data }) => {
-                                            setData([type, data]);
-                                            setScaned(true);
+                                    <TextInput style={styles.input} placeholder="Titolo biglietto" placeholderTextColor="black"
+                                        onChangeText={(text) => { setTicketTitle(text) }}
+                                    />
+
+                                    <Pressable
+                                        onPress={() => { toggleDatePicker() }}
+                                    >
+                                        <TextInput style={styles.input}
+                                            placeholder="Data del biglietto"
+                                            placeholderTextColor="black"
+                                            value={dateOfTicket}
+                                            onChangeText={setDateOfTicket}
+                                            onPressIn={toggleDatePicker}
+                                            editable={false}
+                                        />
+                                    </Pressable>
+
+                                    <TouchableNativeFeedback
+                                        onPress={async () => {
+                                            verifyTicketsData(data);
                                         }}
                                     >
-                                    </Camera>
+                                        <View
+                                            style={{
+                                                width: (Dimensions.get("window").width / 100) * 40,
+                                                height: 40,
+                                                marginLeft: (Dimensions.get("window").width / 100) * 30,
+                                                backgroundColor: "#F5F5F5",
+                                                borderRadius: 10,
+                                                paddingLeft: 10,
+                                                paddingRight: 10,
+                                            }}
+                                        >
+                                            <Text
+                                                style={{
+                                                    fontFamily: font.text,
+                                                    fontSize: 20,
+                                                    color: color.primary,
+                                                    textAlign: "center",
+                                                    lineHeight: 40,
+                                                }}
 
-                            }
-                            <TouchableNativeFeedback onPress={() => {
-                                setScaned(false)
-                                setData(null)
-                                setQrVisible(false)
-                            }}>
-                                <View style={modalstyles.button}>
-                                    <Text style={modalstyles.buttonText}>
-                                        ← Torna indietro
-                                    </Text>
+                                            >Carica biglietto</Text>
+                                        </View>
+                                    </TouchableNativeFeedback>
                                 </View>
-                            </TouchableNativeFeedback >
-                        </View>
-                    </Modal>
-                    : null
+                                :
+                                <Camera style={styles.camera} type={type}
+                                    barCodeScannerSettings={{
+                                        barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+                                    }}
+
+                                    onBarCodeScanned={({ type, data }) => {
+                                        setData([type, data]);
+                                        setScaned(true);
+                                    }}
+                                >
+                                </Camera>
+
+                        }
+                        <TouchableNativeFeedback onPress={() => {
+                            setScaned(false)
+                            setData(null)
+                            setQrVisible(false)
+                        }}>
+                            <View style={modalstyles.button}>
+                                <Text style={modalstyles.buttonText}>
+                                    ← Torna indietro
+                                </Text>
+                            </View>
+                        </TouchableNativeFeedback >
+                    </View>
+                </Modal>
             }
 
             <LinearGradient
@@ -277,15 +271,15 @@ export default function TicketsHeader({ update }) {
 
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(async function (response) {
-                            update();
                             setScaned(false);
                             setData(null);
                             setQrVisible(false);
                             setModalVisible(false);
-                            let aus = await getData("tickets");
-                            if(aus == null) aus = [];
+                            let aus = getTickets();
+                            if (aus == null) aus = [];
                             aus.push(out);
                             await storeData("tickets", aus);
+                            setTickets(aus);
                         })
                         .catch(function (error) {
                             console.error(error);

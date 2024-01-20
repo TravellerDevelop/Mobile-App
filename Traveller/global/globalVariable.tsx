@@ -15,11 +15,11 @@ export const font = {
     text_black: "rubik-black",
 }
 
-const myIp = "192.168.1.155";
+const myIp = "192.168.3.172";
 
 export const appVersion = "1.0.2";
 export const paddingTopPage = 0;
-export const ISDEBUG = false;
+export const ISDEBUG = true;
 export const ISBETA = false;
 export const serverLink = ISDEBUG ? "http://" + myIp + ":1337/" : "https://traveller-ttze.onrender.com/";
 

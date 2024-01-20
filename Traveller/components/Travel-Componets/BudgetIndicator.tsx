@@ -197,7 +197,6 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                                 <View style={[styles.btn, { backgroundColor: "white", marginTop: 0 }]}><Text style={[styles.btnText, { color: "black" }]}>Annulla</Text></View>
                             </TouchableNativeFeedback>
                             <TouchableNativeFeedback onPress={() => {
-                                console.log(budgetInput.current._lastNativeText)
                                 setPersonalBudget(parseInt(budgetInput.current._lastNativeText));
                                 setModalVisibility(false)
                             }}>

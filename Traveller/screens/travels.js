@@ -21,13 +21,7 @@ export default function Travels({ navigation }) {
 
   useEffect(() => {
     axios
-      .get(
-        serverLink +
-          "api/travel/takeJoined?username=" +
-          userData.username +
-          "&userid=" +
-          userData._id
-      )
+      .get(serverLink + "api/travel/takeJoined?userid=" + userData._id)
       .then((res) => {
         if (res.status == 200) setMyTravel(res.data);
       })

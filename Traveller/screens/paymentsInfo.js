@@ -313,7 +313,7 @@ export default function PaymentInfo({ navigation, route }) {
         )}
       />
 
-      {myData.username == items.creator ? (
+      {myData.username == items.creator && (
         <TouchableNativeFeedback onPress={() => setEditVisibility(true)}>
           <View
             style={{
@@ -339,7 +339,7 @@ export default function PaymentInfo({ navigation, route }) {
             </Text>
           </View>
         </TouchableNativeFeedback>
-      ) : null}
+      )}
     </View>
   );
 }

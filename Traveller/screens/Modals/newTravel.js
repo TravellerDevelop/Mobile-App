@@ -14,13 +14,11 @@ import {
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";
+import { getUserInfo } from "../../controllers/userData";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import { color, font, serverLink } from "../../global/globalVariable";
-import { getUserInfo } from "../../controllers/userData";
 
 export default function NewTravel({
-  userState,
-  setUserState,
   setNewTravelVisibility,
   updatecards,
 }) {
@@ -33,13 +31,9 @@ export default function NewTravel({
   let [new_members_allowed, setNewMembersAllowed] = React.useState("1");
 
   let [textValue, setTextValue] = React.useState("");
-
   let [friendsAdded, setFriendsAdded] = React.useState([]);
-
   let [friends, setFriends] = React.useState([]);
-
   let [isLoading, setIsLoading] = React.useState(false);
-
   let [refresh, setRefresh] = React.useState(false);
 
   const toggleRefresh = () => {
@@ -81,7 +75,7 @@ export default function NewTravel({
 
   async function getUserData() {
     let aus = getUserInfo();
-    setCreator({ userid: aus._id, username: aus.username, creator: true });
+    setCreator({ userid: aus._id, creator: true });
 
     axios
       .get(serverLink + "api/follow/takeFollowingsWithInfo?from=" + aus._id)
@@ -111,7 +105,7 @@ export default function NewTravel({
         }}
       >
         <ScrollView style={{ flex: 1, width: "100%" }}>
-          <View style={{ marginLeft: 20, marginRight:20 }}>
+          <View style={{ marginLeft: 20, marginRight: 20 }}>
             <TouchableOpacity
               style={{ position: "absolute", top: 20, right: 0 }}
               onPress={() => setNewTravelVisibility(false)}
@@ -137,9 +131,7 @@ export default function NewTravel({
               }}
               style={globalStyleComponent.input}
               label="Nome del viaggio"
-              onChangeText={(value) => {
-                name_(value);
-              }}
+              onChangeText={setName}
             />
             <TextInput
               placeholderTextColor={"gray"}
@@ -150,9 +142,7 @@ export default function NewTravel({
               style={[globalStyleComponent.input, { height: 120 }]}
               label="Descrizione (facoltativa)"
               multiline
-              onChangeText={(value) => {
-                description_(value);
-              }}
+              onChangeText={setDescription}
             />
             <TextInput
               placeholderTextColor={"gray"}
@@ -163,9 +153,7 @@ export default function NewTravel({
               style={globalStyleComponent.input}
               label="Budget (facoltativo)"
               keyboardType="numeric"
-              onChangeText={(value) => {
-                budget_(parseInt(value));
-              }}
+              onChangeText={(value) => { setBudget(parseInt(value)); }}
             />
             <TextInput
               placeholderTextColor={"gray"}
@@ -292,32 +280,37 @@ export default function NewTravel({
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[styles.modalButton, { marginTop: 30 }]}
-              onPress={pickImage}
-            >
-              <Text style={[styles.modalButtonText, { fontSize: 16 }]}>
-                Immagine di copertina (facoltativo)
-              </Text>
-            </TouchableOpacity>
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {image ? (
+            <Text style={styles.coverText}>Immagine di copertina (facoltativo)</Text>
+            {image ?
+              <View
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: 10
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.touchableButtonRemoveImage}
+                  onPress={() => setImage(null)}
+                >
+                  <View style={styles.buttonRemoveImage}>
+                    <MaterialCommunityIcons name="close" size={24} color="black" />
+                  </View>
+                </TouchableOpacity>
                 <Image
                   source={{ uri: image.assets[0].uri }}
-                  style={{ width: 200, height: 200 }}
+                  style={{ width: "100%", height: 200, borderRadius: 10 }}
                 />
-              ) : (
-                <Text style={{ fontFamily: font.text }}>
-                  Nessun immagine selezionata
-                </Text>
-              )}
-            </View>
+              </View>
+              :
+              <TouchableOpacity
+                style={styles.coverImageButton}
+                onPress={pickImage}
+              >
+                <Text style={{ fontSize: 40, fontFamily: font.text }}>+</Text>
+              </TouchableOpacity>
+            }
             {/* <Text>{(image) ? JSON.stringify(image.assets[0]) : ""}</Text> */}
 
             {/* <Text style={[styles.cardSubtitle, { color: "black", marginTop: 30, marginBottom: 10 }]}>Visibilità:</Text>
@@ -437,30 +430,16 @@ export default function NewTravel({
                 }
               }}
             >
-              <Text
-                style={isLoading ? { display: "none" } : styles.modalButtonText}
-              >
-                Crea il viaggio!
-              </Text>
+              <Text style={isLoading ? { display: "none" } : styles.modalButtonText}>Crea il viaggio!</Text>
             </TouchableOpacity>
-            {isLoading ? (
+            {isLoading && (
               <ActivityIndicator size="large" color="#4900FF" />
-            ) : null}
+            )}
           </View>
         </ScrollView>
       </View>
     </Modal>
   );
-
-  function name_(text) {
-    setName(text);
-  }
-  function description_(text) {
-    setDescription(text);
-  }
-  function budget_(text) {
-    setBudget(text);
-  }
 }
 
 const styles = StyleSheet.create({
@@ -551,4 +530,36 @@ const styles = StyleSheet.create({
     width: "100%",
     fontSize: 18,
   },
+  coverImageButton: {
+    width: "100%",
+    height: 200,
+    borderStyle: "dashed",
+    borderWidth: 2,
+    borderRadius: 10,
+    marginBottom: 20,
+    marginTop: 10,
+    display: 'flex',
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  coverText: {
+    fontFamily: font.text,
+    fontSize: 15,
+    marginTop: 20,
+  },
+  buttonRemoveImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 30,
+    backgroundColor: "white",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  touchableButtonRemoveImage: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 100
+  }
 });

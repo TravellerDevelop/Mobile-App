@@ -1,44 +1,44 @@
-import React, { useEffect, useState, createContext } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import axios from "axios";
+import React, { createContext, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Modal,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import Font from "./components/font";
+import TicketsPreview from "./components/tickets/ticketsPreview";
+import { setTickets } from "./controllers/ticketsData";
+import { setUserInfo } from "./controllers/userData";
+import { bottomBarStyle, iconConfig } from "./global/bottombarConfig";
 import {
   color,
   font,
- 
+  serverLink,
   statusBarColor,
 } from "./global/globalVariable";
-import { setUserInfo } from "./controllers/userData";
-import {
-  Image,
-  View,
-  Text,
-  StatusBar,
-  Platform,
-  TouchableOpacity,
-  ActivityIndicator,
-  Modal,
-  SafeAreaView,
-} from "react-native";
-import Loading from "./shared/loading";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { serverLink } from "./global/globalVariable";
-import Nav from "./screens/nav";
-import Tickets from "./screens/tickets";
 import InitialModal from "./screens/Modals/initialModal";
-import {
-  getStringDataWithStateReverse,
-  getData,
-} from "./shared/data/localdata";
-import Money from "./screens/money";
-import axios from "axios";
-import TicketsPreview from "./components/tickets/ticketsPreview";
-import { FlatList } from "react-native-gesture-handler";
+import LoginModal from "./screens/Modals/login";
 import TicketModal from "./screens/Modals/ticketModal";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Money from "./screens/money";
+import Nav from "./screens/nav";
+import TicketNav from "./screens/ticketNav";
+import {
+  getData,
+  getStringDataWithStateReverse,
+} from "./shared/data/localdata";
+import Loading from "./shared/loading";
 
 export const GlobalUserContext = createContext();
-import { iconConfig, bottomBarStyle } from "./global/bottombarConfig";
-import LoginModal from "./screens/Modals/login";
 
 export default function App() {
   let [globalUserInfo, setGlobalUserInfo] = useState({});
@@ -88,7 +88,7 @@ export default function App() {
   }
 
   async function verifyConnection() {
-    await setOfflineTickets(await getData("tickets"));
+    setTickets(await getData("tickets"));
 
     setIsLoading(true);
     axios({
@@ -326,7 +326,7 @@ export default function App() {
                   headerShown: false,
                 }}
                 name="Tickets"
-                component={Tickets}
+                component={TicketNav}
               />
               <Tab.Screen
                 options={{

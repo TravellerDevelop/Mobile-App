@@ -46,13 +46,13 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }) {
 
   return (
     <>
-      {enter ? (
+      {enter && (
         <EnterTravel
           visibility={enter}
           setVisibility={setEnter}
           updateJoinTravels={updateJoinTravels}
         />
-      ) : null}
+      )}
       <LinearGradient
         style={styles.header}
         start={{ x: 0.5, y: 0.2 }}
