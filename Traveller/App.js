@@ -144,8 +144,7 @@ export default function App() {
         <Text
           style={{
             fontSize: 20,
-            fontWeight: "bold",
-            fontFamily: "montserrat-regular",
+            fontFamily: font.montserratBold,
           }}
         >
           Errore di connessione al server 😥
@@ -163,8 +162,7 @@ export default function App() {
             <Text
               style={{
                 fontSize: 20,
-                fontWeight: "bold",
-                fontFamily: "montserrat-regular",
+                fontFamily: font.montserratBold,
                 color: "white",
               }}
             >

@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Platform } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { font, serverLink } from "../../global/globalVariable";
 import PostCard from "./PostCard";

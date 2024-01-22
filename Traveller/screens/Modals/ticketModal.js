@@ -191,10 +191,9 @@ export default function TicketModal({ navigation, route }) {
                       size={40}
                       autoColor
                       labelStyle={{
-                        fontFamily: font.text,
+                        fontFamily: font.text_bold,
                         fontSize: 20,
                         color: "#FFF",
-                        fontWeight: "bold",
                       }}
                       label={item.name + " " + item.surname}
                       style={{ marginRight: 10 }}

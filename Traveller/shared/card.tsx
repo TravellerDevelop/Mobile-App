@@ -28,17 +28,13 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
   }
 
   function clickHandler() {
-    console.log("HW")
     let found = false, i = 0;
-    while(i < data.participants.length || found){
-      if (data.participants[i].username == getUserInfo().username) {
+    while (i < data.participants.length && !found) {
+      if (data.participants[i].userid == getUserInfo()._id) {
         found = true;
       }
-    }
-    console.log(found)
 
-    if (found) {
-      navigation.navigate("TravelDetail", { data: data, username: username });
+      i++
     }
   }
 
