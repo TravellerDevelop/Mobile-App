@@ -44,7 +44,7 @@ export default function Notifications({ navigation, route }) {
     return (
         <View style={styles.container}>
             {
-                (!users.length)
+                (!users)
                     &&
                     <Text style={{ textAlign: "center", marginTop: 20, fontFamily: font.text, fontSize: 16 }}>Non hai nessuna notifica al momento</Text>
             }

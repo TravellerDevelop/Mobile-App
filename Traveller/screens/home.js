@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Platform,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -736,14 +737,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 30,
-    fontWeight: 200,
     marginBottom: 20,
     fontFamily: font.text_bold,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 20,
-    fontWeight: 200,
     marginBottom: 10,
     textAlign: "left",
     fontFamily: font.text,

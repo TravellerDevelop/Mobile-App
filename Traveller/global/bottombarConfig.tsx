@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { font } from "./globalVariable";
 
 export const iconConfig = {

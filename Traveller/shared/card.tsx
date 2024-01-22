@@ -33,8 +33,11 @@ export default function Card({ navigation, data, vertical, isLoading }: CardProp
       if (data.participants[i].userid == getUserInfo()._id) {
         found = true;
       }
+      i++;
+    }
 
-      i++
+    if (found) {
+      navigation.navigate("TravelDetail", { data: data, username: username });
     }
   }
 

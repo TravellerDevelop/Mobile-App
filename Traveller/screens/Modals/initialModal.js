@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Platform } from "react-native";
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { font } from "../../global/globalVariable";
-import InitialModalContent from "./initialModalContent";
 import { storeStringData } from "../../shared/data/localdata";
+import InitialModalContent from "./initialModalContent";
 
 export default function InitialModal({ visibility, setVisibility }) {
     let [num, setNum] = useState(0);
