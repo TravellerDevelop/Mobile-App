@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import {
     Image,
     Modal,
-    SafeAreaView,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ComponentStyles } from "../../components/Travel-Componets/componentStyle";
 import { savePostToGallery } from "../../components/utils/fileSystem";
 import { font, serverLink } from "../../global/globalVariable";

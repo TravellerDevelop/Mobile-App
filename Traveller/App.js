@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   Platform,
-  SafeAreaView,
   StatusBar,
   Text,
   TouchableOpacity,
@@ -26,6 +25,7 @@ import {
   serverLink,
   statusBarColor,
 } from "./global/globalVariable";
+import { SafeAreaView } from "react-native-safe-area-context";
 import InitialModal from "./screens/Modals/initialModal";
 import LoginModal from "./screens/Modals/login";
 import TicketModal from "./screens/Modals/ticketModal";
@@ -269,7 +269,7 @@ export default function App() {
     const Tab = createBottomTabNavigator();
 
     return (
-      <>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         {Platform.OS !== "ios" && (
           <StatusBar backgroundColor={color.primary} barStyle="white-content" />
         )}
@@ -345,7 +345,7 @@ export default function App() {
             </Tab.Navigator>
           </NavigationContainer>
         </GlobalUserContext.Provider>
-      </>
+      </GestureHandlerRootView>
     );
   }
 }

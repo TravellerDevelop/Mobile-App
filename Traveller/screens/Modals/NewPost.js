@@ -5,13 +5,13 @@ import {
     ActivityIndicator,
     Image,
     Platform,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TouchableNativeFeedback,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FlatList } from "react-native-gesture-handler";
 import { Checkbox, SegmentedButtons, TextInput } from "react-native-paper";
 import { getUserInfo } from "../../controllers/userData";

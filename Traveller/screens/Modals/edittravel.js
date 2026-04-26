@@ -1,18 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Dimensions,
+  Easing,
   ImageBackground,
-  SafeAreaView,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
-// Animated,
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";
-import Animated, { EasingNode } from "react-native-reanimated";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import { color, font, serverLink } from "../../global/globalVariable";
 
@@ -30,7 +30,8 @@ export default function EditTravel({ navigation, route }) {
     Animated.timing(grayBarWidth, {
       toValue: 100,
       duration: 300,
-      easing: EasingNode.linear,
+      easing: Easing.linear,
+      useNativeDriver: false,
     }).start();
   };
 
@@ -38,7 +39,8 @@ export default function EditTravel({ navigation, route }) {
     Animated.timing(grayBarWidth, {
       toValue: 70, // Cambia da 100 a 0 per restringere
       duration: 100,
-      easing: EasingNode.linear,
+      easing: Easing.linear,
+      useNativeDriver: false,
     }).start();
   };
 

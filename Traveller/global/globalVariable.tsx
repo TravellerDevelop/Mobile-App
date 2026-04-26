@@ -15,7 +15,7 @@ export const font = {
     text_black: "rubik-black",
 }
 
-const myIp = "192.168.3.172";
+const myIp = "192.168.1.18";
 
 export const appVersion = "1.0.2";
 export const paddingTopPage = 0;

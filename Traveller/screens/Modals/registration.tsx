@@ -1,7 +1,8 @@
 import axios from "axios";
 import * as Crypto from 'expo-crypto';
 import React from "react";
-import { Dimensions, Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
+import { Dimensions, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableWithoutFeedback, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-paper";
 import SkeletonScreen from "../../components/SkeletonScreen";
 import { color, font, serverLink } from "../../global/globalVariable";

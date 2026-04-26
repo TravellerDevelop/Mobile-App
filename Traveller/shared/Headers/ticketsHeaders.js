@@ -1,4 +1,9 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useEffect, useState } from "react";
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
+import { color, font, serverLink } from "../../global/globalVariable.js";
+import { LinearGradient } from "expo-linear-gradient";
 import { Badge } from "@react-native-material/core";
 import axios from "axios";
 import { BarCodeScanner } from 'expo-barcode-scanner';
@@ -9,10 +14,18 @@ import { Dimensions, Image, Modal, Platform, Pressable, StyleSheet, Text, TextIn
 import { getTickets, setTickets } from '../../controllers/ticketsData';
 import { getUserInfo } from "../../controllers/userData";
 import { color, font, serverLink } from "../../global/globalVariable";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from "axios";
+import { getData, storeJsonData } from "../data/localdata.js";
 
 export default function TicketsHeader() {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
+export default function TicketsHeader({ update }) {
+
+    const [type, setType] = useState('back');
+    const [permission, requestPermission] = useCameraPermissions();
+
     const [modalVisible, setModalVisible] = useState(false);
     const [qrVisible, setQrVisible] = useState(false);
     const [scanned, setScaned] = useState(false);
@@ -49,6 +62,19 @@ export default function TicketsHeader() {
 
     if (!permission)
         requestPermission();
+
+    function toggleCameraType() {
+        setType(current => (current === 'back' ? 'front' : 'back'));
+    }
+
+    async function getUserData(){
+        let aus = await getData("user");
+        setUserInfo(aus);
+    }
+
+    useEffect(() => {
+        getUserData();
+    }, [])
 
     return (
         <>
@@ -142,6 +168,15 @@ export default function TicketsHeader() {
                                     barCodeScannerSettings={{
                                         barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
                                     }}
+                                                >Carica biglietto</Text>
+                                            </View>
+                                        </TouchableNativeFeedback>
+                                    </View>
+                                    :
+                                    <CameraView style={styles.camera} facing={type}
+                                        barcodeScannerSettings={{
+                                            barcodeTypes: ['qr'],
+                                        }}
 
                                     onBarCodeScanned={({ type, data }) => {
                                         setData([type, data]);
@@ -149,6 +184,12 @@ export default function TicketsHeader() {
                                     }}
                                 >
                                 </Camera>
+                                        onBarcodeScanned={({ type, data }) => {
+                                            setData([type, data]);
+                                            setScaned(true);
+                                        }}
+                                    >
+                                    </CameraView>
 
                         }
                         <TouchableNativeFeedback onPress={() => {
@@ -280,6 +321,7 @@ export default function TicketsHeader() {
                             aus.push(out);
                             await storeData("tickets", aus);
                             setTickets(aus);
+                            await storeJsonData("tickets", aus);
                         })
                         .catch(function (error) {
                             console.error(error);
