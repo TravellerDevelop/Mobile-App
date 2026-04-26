@@ -5,11 +5,11 @@ import {
   Dimensions,
   Easing,
   ImageBackground,
-  SafeAreaView,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScrollView } from "react-native-gesture-handler";
 import { TextInput } from "react-native-paper";

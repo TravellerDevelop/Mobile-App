@@ -10,9 +10,9 @@ import {
   FlatList,
   Dimensions,
   TextInput,
-  SafeAreaView,
   LogBox,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { font, color, serverLink } from "../../global/globalVariable";
 import QRCode from "react-native-qrcode-svg";
 import QrCodeModal from "./qrCodeModal";
@@ -119,7 +119,7 @@ export default function TicketModal({ navigation, route }) {
           {data.surname} {data.name}
         </Text>
         <Text style={modalstyles.destination}>
-          Da {data.from.name} a {data.to.name}
+          Da {data?.from?.name} a {data?.to?.name}
         </Text>
         <Text style={modalstyles.position}>Modello: {data.aircraft}</Text>
         <Text style={modalstyles.position}>Nr. volo: {data.flightNumber}</Text>

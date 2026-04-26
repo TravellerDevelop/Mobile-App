@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback, ScrollView, ActivityIndicator, Image, SafeAreaView, LogBox } from "react-native";
+import { View, Text, StyleSheet, TouchableNativeFeedback, ScrollView, ActivityIndicator, Image, LogBox } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { TextInput, Checkbox, SegmentedButtons } from "react-native-paper";
 import { FlatList } from "react-native-gesture-handler";

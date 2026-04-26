@@ -9,8 +9,8 @@ import {
   Image,
   Linking,
   Modal,
+  Platform,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Swiper from "react-native-swiper";
 import InteractiveCard from "../components/interactiveCard";
 import MainHeader from "../components/mainHeader";
@@ -59,10 +60,15 @@ export default function Home({ navigation }) {
   const notificationListener = useRef();
   const responseListener = useRef();
 
+  // Le notifiche push remote non sono supportate in Expo Go (rimosso da SDK 53).
+  // Vengono abilitate solo nei development/production build.
+  const isExpoGo = Constants.appOwnership === "expo";
+
   // Verifica se l'utente ha abilitato le notifiche e se sono presenti su DB
   const verifyNotifications = async () => {
+    if (isExpoGo) return; // skip silenzioso su Expo Go
+
     let data = await getData("user");
-    // setOpenLogin(false);
     let notificationToken = await SecureStore.getItemAsync("notif-token");
     if (!notificationToken) {
       await registerForPushNotificationsAsync()
@@ -266,8 +272,10 @@ export default function Home({ navigation }) {
       });
   }
 
-  // Produce il token per le notifiche
+  // Produce il token per le notifiche (solo su development/production build)
   async function registerForPushNotificationsAsync() {
+    if (isExpoGo) return null;
+
     let token;
 
     if (Platform.OS === "android") {
@@ -288,11 +296,11 @@ export default function Home({ navigation }) {
     }
     if (finalStatus !== "granted") {
       alert("Failed to get push token for push notification!");
-      return;
+      return null;
     }
     token = (
       await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig.extra.eas.projectId,
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
       })
     ).data;
 

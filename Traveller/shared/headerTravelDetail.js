@@ -19,7 +19,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getData } from "./data/localdata";
 import { Badge } from "@react-native-material/core";
 import EditTravel from "../screens/Modals/edittravel";
-import { SafeAreaView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HeaderTravelDetail({ navigation, data }) {
   let top = paddingTopPage - 20;

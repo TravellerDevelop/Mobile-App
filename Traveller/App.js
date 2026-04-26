@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "./shared/loading";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -26,7 +26,7 @@ import {
 import Money from "./screens/money";
 import axios from "axios";
 import TicketsPreview from "./components/tickets/ticketsPreview";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import TicketModal from "./screens/Modals/ticketModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -255,7 +255,7 @@ export default function App() {
     const Tab = createBottomTabNavigator();
 
     return (
-      <>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         {Platform.OS !== "ios" && (
           <StatusBar backgroundColor={color.primary} barStyle="white-content" />
         )}
@@ -331,7 +331,7 @@ export default function App() {
             </Tab.Navigator>
           </NavigationContainer>
         </GlobalUserContext.Provider>
-      </>
+      </GestureHandlerRootView>
     );
   }
 }

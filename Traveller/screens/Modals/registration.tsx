@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, ScrollView, ActivityIndicator, Platform, Dimensions, Image, SafeAreaView, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, View, Text, TouchableNativeFeedback, TouchableWithoutFeedback, Modal, ScrollView, ActivityIndicator, Platform, Dimensions, Image, KeyboardAvoidingView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-paper";
 import { font, color, serverLink } from "../../global/globalVariable";
 import { storeJsonData, storeStringData } from "../../shared/data/localdata";
