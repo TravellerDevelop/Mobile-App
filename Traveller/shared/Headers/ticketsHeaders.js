@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Camera, CameraType } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
 import { color, font, serverLink } from "../../global/globalVariable.js";
 import { LinearGradient } from "expo-linear-gradient";
 import { Badge } from "@react-native-material/core";
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from "axios";
 import { getData, storeJsonData } from "../data/localdata.js";
 
 export default function TicketsHeader({ update }) {
 
-    const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
+    const [type, setType] = useState('back');
+    const [permission, requestPermission] = useCameraPermissions();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [qrVisible, setQrVisible] = useState(false);
@@ -58,7 +57,7 @@ export default function TicketsHeader({ update }) {
         requestPermission();
 
     function toggleCameraType() {
-        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
+        setType(current => (current === 'back' ? 'front' : 'back'));
     }
 
     async function getUserData(){
@@ -158,17 +157,17 @@ export default function TicketsHeader({ update }) {
                                         </TouchableNativeFeedback>
                                     </View>
                                     :
-                                    <Camera style={styles.camera} type={type}
-                                        barCodeScannerSettings={{
-                                            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+                                    <CameraView style={styles.camera} facing={type}
+                                        barcodeScannerSettings={{
+                                            barcodeTypes: ['qr'],
                                         }}
 
-                                        onBarCodeScanned={({ type, data }) => {
+                                        onBarcodeScanned={({ type, data }) => {
                                             setData([type, data]);
                                             setScaned(true);
                                         }}
                                     >
-                                    </Camera>
+                                    </CameraView>
 
                             }
                             <TouchableNativeFeedback onPress={() => {
@@ -302,7 +301,7 @@ export default function TicketsHeader({ update }) {
                             let aus = await getData("tickets");
                             if(aus == null) aus = [];
                             aus.push(out);
-                            await storeData("tickets", aus);
+                            await storeJsonData("tickets", aus);
                         })
                         .catch(function (error) {
                             console.error(error);
