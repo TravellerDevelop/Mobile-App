@@ -1,6 +1,7 @@
 
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { font } from "../../global/globalVariable";
+import { Screen } from "react-native-screens";
 export const ComponentStyles = StyleSheet.create({
     container: {
         backgroundColor: "white",
@@ -114,9 +115,9 @@ export const ComponentStyles = StyleSheet.create({
         position: "absolute",
         bottom: 0,
         backgroundColor: "white",
-        width: "100%",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        width: Dimensions.get('window').width - 30,
+        borderRadius: 30,
         padding: 20,
+        margin: 15
     }
 });

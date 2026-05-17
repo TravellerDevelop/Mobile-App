@@ -16,7 +16,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  Platform,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -68,7 +67,7 @@ export default function Home({ navigation }) {
 
   // Le notifiche push remote non sono supportate in Expo Go (rimosso da SDK 53).
   // Vengono abilitate solo nei development/production build.
-  const isExpoGo = Constants.appOwnership === "expo";
+  const isExpoGo = Constants.appOwnership === "expo" || true;
 
   // Verifica se l'utente ha abilitato le notifiche e se sono presenti su DB
   const verifyNotifications = async () => {
@@ -719,7 +718,7 @@ export default function Home({ navigation }) {
                 >
                   <Text
                     style={{
-                      textAlign: "center",
+                      textAlign: "left",
                       fontFamily: "montserrat-light",
                       fontSize: 15,
                     }}
@@ -742,7 +741,7 @@ export default function Home({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: color.primary,
   },
   title: {
     fontSize: 30,

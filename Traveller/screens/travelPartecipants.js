@@ -1,7 +1,8 @@
 import { Avatar } from "@react-native-material/core";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, TouchableNativeFeedback, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ParticipantsLoading from "../components/loading/ParticipantsLoading";
 import { color, font, serverLink } from "../global/globalVariable";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";

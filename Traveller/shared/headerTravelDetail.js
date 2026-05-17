@@ -8,20 +8,12 @@ import {
   TouchableNativeFeedback,
   TouchableOpacity,
   View,
+  ImageBackground
 } from "react-native";
-import {
-  color,
-  font,
-  paddingTopPage,
-  serverLink,
-} from "../global/globalVariable";
-import { getUserInfo } from "../controllers/userData";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { getData } from "./data/localdata";
-import { Badge } from "@react-native-material/core";
-import EditTravel from "../screens/Modals/edittravel";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { color, font, paddingTopPage, serverLink } from "../global/globalVariable";
+import { getUserInfo } from "../controllers/userData";
+import EditTravel from "../screens/Modals/edittravel";
 
 export default function HeaderTravelDetail({ navigation, data }) {
   let username = getUserInfo().username

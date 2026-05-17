@@ -17,6 +17,7 @@ import { TextInput } from "react-native-paper";
 import { getUserInfo } from "../../controllers/userData";
 import { globalStyleComponent } from "../../global/globalStyleComponent";
 import { color, font, serverLink } from "../../global/globalVariable";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NewTravel({
   setNewTravelVisibility,
@@ -105,7 +106,7 @@ export default function NewTravel({
         }}
       >
         <ScrollView style={{ flex: 1, width: "100%" }}>
-          <View style={{ marginLeft: 20, marginRight: 20 }}>
+          <SafeAreaView style={{ marginLeft: 20, marginRight: 20, position: 'relative' }}>
             <TouchableOpacity
               style={{ position: "absolute", top: 20, right: 0 }}
               onPress={() => setNewTravelVisibility(false)}
@@ -435,7 +436,7 @@ export default function NewTravel({
             {isLoading && (
               <ActivityIndicator size="large" color="#4900FF" />
             )}
-          </View>
+          </SafeAreaView>
         </ScrollView>
       </View>
     </Modal>

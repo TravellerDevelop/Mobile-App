@@ -10,11 +10,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { font } from "../global/globalVariable";
-import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import { font, serverLink } from '../global/globalVariable';
-import { IconButton, MD3Colors } from 'react-native-paper';
-import Animated, { Easing, useSharedValue, withSpring, withTiming, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
 
 export default function MenuNewPost({ data, navigation, onAddData }) {
   let [showPostsMenu, setShowPostsMenu] = useState(false);

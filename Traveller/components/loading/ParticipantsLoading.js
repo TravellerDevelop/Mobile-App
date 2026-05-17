@@ -1,7 +1,6 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import SkeletonScreen from "../SkeletonScreen";
-import { Dimensions } from "react-native";
 
 export default function ParticipantsLoading() {
     return (

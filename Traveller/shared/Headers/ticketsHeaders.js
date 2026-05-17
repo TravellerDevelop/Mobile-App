@@ -1,26 +1,15 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useEffect, useState } from "react";
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { StyleSheet, Text, TouchableOpacity, Modal, View, TouchableNativeFeedback, Image, Dimensions, Pressable, TextInput, Platform } from "react-native";
-import { color, font, serverLink } from "../../global/globalVariable.js";
-import { LinearGradient } from "expo-linear-gradient";
-import { Badge } from "@react-native-material/core";
 import axios from "axios";
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { Camera, CameraType } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { Dimensions, Image, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { Badge } from "@react-native-material/core";
 import { getTickets, setTickets } from '../../controllers/ticketsData';
 import { getUserInfo } from "../../controllers/userData";
 import { color, font, serverLink } from "../../global/globalVariable";
-import DateTimePicker from '@react-native-community/datetimepicker';
-import axios from "axios";
-import { getData, storeJsonData } from "../data/localdata.js";
+import { storeJsonData } from "../data/localdata.tsx";
 
-export default function TicketsHeader() {
-    const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
 export default function TicketsHeader({ update }) {
 
     const [type, setType] = useState('back');
@@ -34,7 +23,6 @@ export default function TicketsHeader({ update }) {
     const [showPicker, setShowPicker] = useState(false);
     let [dateOfTicket, setDateOfTicket] = useState("");
     const [ticketTitle, setTicketTitle] = useState("");
-    let userInfo = getUserInfo();
 
     const toggleDatePicker = () => {
         setShowPicker(!showPicker);
@@ -67,15 +55,6 @@ export default function TicketsHeader({ update }) {
         setType(current => (current === 'back' ? 'front' : 'back'));
     }
 
-    async function getUserData(){
-        let aus = await getData("user");
-        setUserInfo(aus);
-    }
-
-    useEffect(() => {
-        getUserData();
-    }, [])
-
     return (
         <>
             {
@@ -86,7 +65,6 @@ export default function TicketsHeader({ update }) {
                         {
                             scanned ?
                                 <View>
-                                    {/* <Text style={modalstyles.paragraph}>Scanned Data: {data}</Text> */}
                                     {
                                         showPicker ?
                                             <DateTimePicker
@@ -95,14 +73,11 @@ export default function TicketsHeader({ update }) {
                                                 display="default"
                                                 onChange={onChangeDate}
                                                 minimumDate={new Date()}
-                                                style={
-                                                    styles.datePicker
-                                                }
+                                                style={styles.datePicker}
                                             />
                                             :
                                             null
                                     }
-
 
                                     {
                                         showPicker && Platform.OS == "ios" && (
@@ -121,9 +96,7 @@ export default function TicketsHeader({ update }) {
                                         onChangeText={(text) => { setTicketTitle(text) }}
                                     />
 
-                                    <Pressable
-                                        onPress={() => { toggleDatePicker() }}
-                                    >
+                                    <Pressable onPress={() => { toggleDatePicker() }}>
                                         <TextInput style={styles.input}
                                             placeholder="Data del biglietto"
                                             placeholderTextColor="black"
@@ -158,39 +131,21 @@ export default function TicketsHeader({ update }) {
                                                     textAlign: "center",
                                                     lineHeight: 40,
                                                 }}
-
                                             >Carica biglietto</Text>
                                         </View>
                                     </TouchableNativeFeedback>
                                 </View>
                                 :
-                                <Camera style={styles.camera} type={type}
-                                    barCodeScannerSettings={{
-                                        barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+                                <CameraView style={styles.camera} facing={type}
+                                    barcodeScannerSettings={{
+                                        barcodeTypes: ['qr'],
                                     }}
-                                                >Carica biglietto</Text>
-                                            </View>
-                                        </TouchableNativeFeedback>
-                                    </View>
-                                    :
-                                    <CameraView style={styles.camera} facing={type}
-                                        barcodeScannerSettings={{
-                                            barcodeTypes: ['qr'],
-                                        }}
-
-                                    onBarCodeScanned={({ type, data }) => {
+                                    onBarcodeScanned={({ type, data }) => {
                                         setData([type, data]);
                                         setScaned(true);
                                     }}
                                 >
-                                </Camera>
-                                        onBarcodeScanned={({ type, data }) => {
-                                            setData([type, data]);
-                                            setScaned(true);
-                                        }}
-                                    >
-                                    </CameraView>
-
+                                </CameraView>
                         }
                         <TouchableNativeFeedback onPress={() => {
                             setScaned(false)
@@ -248,7 +203,6 @@ export default function TicketsHeader({ update }) {
                                 </Text>
                             </View>
                         </TouchableNativeFeedback>
-
 
                         <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
                             <View style={modalstyles.button}>
@@ -308,18 +262,17 @@ export default function TicketsHeader({ update }) {
 
                     out.title = ticketTitle;
                     out.date = new Date(date);
-                    out.creator = userInfo._id;
+                    out.creator = getUserInfo()?._id;
 
                     axios.post(serverLink + "api/tickets/create", { data: out })
                         .then(async function (response) {
+                            if (update) update();
                             setScaned(false);
                             setData(null);
                             setQrVisible(false);
                             setModalVisible(false);
-                            let aus = getTickets();
-                            if (aus == null) aus = [];
+                            let aus = getTickets() ?? [];
                             aus.push(out);
-                            await storeData("tickets", aus);
                             setTickets(aus);
                             await storeJsonData("tickets", aus);
                         })
@@ -330,7 +283,6 @@ export default function TicketsHeader({ update }) {
                     return out;
                 }).catch(function (error) {
                     console.error(error);
-
                     return "Errore nella richiesta";
                 });
         }

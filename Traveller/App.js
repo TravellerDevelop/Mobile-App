@@ -19,6 +19,7 @@ import TicketsPreview from "./components/tickets/ticketsPreview";
 import { setTickets } from "./controllers/ticketsData";
 import { setUserInfo } from "./controllers/userData";
 import { bottomBarStyle, iconConfig } from "./global/bottombarConfig";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   color,
   font,

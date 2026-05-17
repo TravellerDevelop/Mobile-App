@@ -1,8 +1,7 @@
 import React from "react";
 import { ComponentStyles } from "../Travel-Componets/componentStyle";
-import { View } from "react-native";
+import { View, Dimensions } from "react-native";
 import SkeletonScreen from "../SkeletonScreen";
-import { Dimensions } from "react-native";
 
 export default function PostLoading() {
     return (
