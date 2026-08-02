@@ -1,73 +1,46 @@
-import { Platform } from "react-native";
-import { font } from "./globalVariable";
+import { ds } from "./designSystem";
 
-export const iconConfig = {
-    Home: require('../assets/image/icona-home.png'),
-    Settings: require('../assets/image/icona-user.png'),
-    Tickets: require('../assets/image/icona-biglietto-1.png'),
-    Travels: require('../assets/image/airplane.png'),
-    Money: require('../assets/image/icona-wallet.png'),
+/* Icone della tab bar (Material Community Icons), stato attivo e non attivo */
+export const iconConfig: any = {
+    Home: { active: "home-variant", inactive: "home-variant-outline", label: "Home" },
+    Tickets: { active: "ticket-confirmation", inactive: "ticket-confirmation-outline", label: "Biglietti" },
+    Money: { active: "wallet", inactive: "wallet-outline", label: "Money" },
+    Travels: { active: "airplane", inactive: "airplane", label: "Viaggi" },
+    Settings: { active: "account", inactive: "account-outline", label: "Profilo" },
 };
 
-export const tabBarStyle = {
-    flexDirection: 'row',
-    padding: 0,
-    height: 55,
-    width: '85%',
-    left: '7.5%',
-    position: 'absolute',
-    bottom: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    backgroundColor: 'white',
-    shadowColor: '#000000FF',
-    shadowOffset: {
-        width: 0,
-        height: 2,
-    },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
-    elevation: 3,
+/* Pillola flottante centrata in basso (design PierTour) */
+export const tabBarStyle: any = {
+    flexDirection: "row",
+    position: "absolute",
+    left: "50%",
+    marginLeft: -(ds.layout.tabBarWidth / 2),
+    bottom: ds.layout.tabBarBottom,
+    width: ds.layout.tabBarWidth,
+    height: ds.layout.tabBarHeight,
+    paddingTop: 0,
+    paddingBottom: 0,
+    borderTopWidth: 0,
+    borderRadius: ds.radius.full,
+    backgroundColor: ds.colors.brand,
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    ...ds.shadow.lg,
 };
 
-export const textInputStyle = {
-    fontFamily: 'montserrat-regular',
-    fontSize: 12,
-    color: 'black',
-    textAlign: 'center',
-    marginTop: 5,
-    position: 'absolute',
-    left: 75,
+export const tabItemStyle: any = {
+    alignItems: "center",
+    justifyContent: "center",
 };
 
-export const focusedIconContainerStyle = {
-    height: 40,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderRadius: 5,
-    position: (Platform.OS === 'ios') ? 'absolute' : 'relative',
-    top: -1.5,
+export const tabLabelStyle: any = {
+    fontFamily: ds.fontFamily.semibold,
+    fontSize: 9,
+    color: ds.colors.white,
+    marginTop: 2,
 };
 
-export const focusedTextStyle = {
-    color: 'black',
-    fontSize: 11,
-    fontFamily: font.text_bold,
-    textAlign: 'center',
-    marginRight: 10,
+export const tabColors = {
+    active: ds.colors.white,
+    inactive: ds.colors.onBrandFaint,
 };
-
-export const bottomBarImage = {
-    width: 40,
-    height: 30,
-    marginRight: 5,
-    resizeMode: "contain",
-}
-
-export const bottomBarImageFocus = {
-    position: Platform.OS === 'ios' ? "absolute" : 'relative',
-    top: Platform.OS === 'ios' ? -1.5 : -0,
-}

@@ -3,7 +3,6 @@ import { NavigationContainer, Drawer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Home from '../screens/home'
 import Notifications from '../screens/notifications'
-import { font } from '../global/globalVariable'
 import TravelDetail from '../screens/travelDetail'
 import TravelPartecipants from '../screens/travelPartecipants'
 import MyProfile from '../screens/profile'
@@ -12,7 +11,14 @@ import OtherProfile from '../screens/otherProfile'
 import NewPost from '../screens/Modals/NewPost'
 import TicketModal from '../screens/Modals/ticketModal'
 import Tickets from '../screens/tickets'
+import Travels from '../screens/travels'
+import NewTravel from '../screens/Modals/NewTravel'
 import EditTravel from '../screens/Modals/edittravel'
+import Itinerary from '../screens/Itinerary'
+import ItineraryStopDetail from '../screens/ItineraryStopDetail'
+import ItineraryToday from '../screens/ItineraryToday'
+import ItineraryRecap from '../screens/ItineraryRecap'
+import ItineraryPermissions from '../screens/Modals/ItineraryPermissions'
 
 const Stack = createStackNavigator()
 
@@ -30,10 +36,7 @@ export default function Navigator() {
 
         <Stack.Screen name='Notifications' component={Notifications}
           options={{
-            title: 'Notifiche',
-            headerTitleStyle: {
-              fontFamily: font.montserrat
-            }
+            headerShown: false,
           }}
         />
 
@@ -63,21 +66,66 @@ export default function Navigator() {
           }}
         />
 
+        <Stack.Screen name='Travels' component={Travels}
+          options={{
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen name='PaymentInfo' component={PaymentInfo} 
           options={{
             headerShown: false,
           }}
         />
 
-        <Stack.Screen name='NewPost' component={NewPost} 
+        <Stack.Screen name='NewPost' component={NewPost}
           options={{
-            headerTitle: 'Nuovo Post',
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+
+        <Stack.Screen name='NewTravel' component={NewTravel}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
 
         <Stack.Screen name='EditTravel' component={EditTravel}
           options={{
             headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='Itinerary' component={Itinerary}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='ItineraryStopDetail' component={ItineraryStopDetail}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='ItineraryToday' component={ItineraryToday}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='ItineraryRecap' component={ItineraryRecap}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen name='ItineraryPermissions' component={ItineraryPermissions}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
 

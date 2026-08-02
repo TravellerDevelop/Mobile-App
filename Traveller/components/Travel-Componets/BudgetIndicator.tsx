@@ -7,28 +7,26 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    TouchableNativeFeedback,
+    TouchableOpacity,
     TouchableWithoutFeedback,
     View
 } from "react-native";
-import { ProgressBar } from "react-native-paper";
-import { font } from "../../global/globalVariable";
+import { ds } from "../../global/designSystem";
+import { ProgressTrack } from "../ui";
 
-interface BudgetIndicatorProps{
-    budget:number,
+interface BudgetIndicatorProps {
+    budget: number,
     spent: number,
-    creator:boolean,
-    personalbudget:number,
-    setPersonalBudget:any
+    creator: boolean,
+    personalbudget: number,
+    setPersonalBudget: any
 }
 
-export default function BudgetIndicator({ budget, spent, creator, personalbudget, setPersonalBudget } : BudgetIndicatorProps) {
-    let budgetInput : any = useRef<TextInput>(null);
-    // personalbudget = 20;
+export default function BudgetIndicator({ budget, spent, creator, personalbudget, setPersonalBudget }: BudgetIndicatorProps) {
+    let budgetInput: any = useRef<TextInput>(null);
     let [modalVisibility, setModalVisibility] = useState(false);
     const [selectedBudget, setselectedBudget] = useState("personal");
     const [translateY] = useState(new Animated.Value(-Dimensions.get("screen").height));
-    let [heightModal, setheightmodal] = useState(0);
 
     let [percent, setPercent] = useState(0);
     let [personalPercent, setPersonalPercent] = useState(0);
@@ -39,9 +37,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
 
         if (spent < personalbudget) setPersonalPercent(spent / personalbudget);
         else setPersonalPercent(1);
-    }, [spent, budget]);
-
-    const ProgressBarWidth = (Dimensions.get("screen").width / 100) * 60;
+    }, [spent, budget, personalbudget]);
 
     const closeModal = () => {
         setModalVisibility(false);
@@ -61,7 +57,7 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
         }).start();
     };
 
-    const panResponder : any = PanResponder.create({
+    const panResponder: any = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderMove: (event, gestureState) => {
@@ -82,89 +78,31 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
         },
     });
 
-    const styles = StyleSheet.create({
-        card: {
-            backgroundColor: "#FFF",
-            borderRadius: 10,
-            margin: 10,
-            marginTop: 20,
-            marginBottom: 0,
-            padding: 10,
-            elevation: 5,
-        },
-        row: {
-            display: "flex",
-            flexDirection: "row",
-            marginBottom: 20
-        },
-        sel: {
-            height: 30,
-            width: "50%",
-            backgroundColor: "#FFF",
-            borderBottomWidth: 2,
-            borderBottomColor: "#FFF"
-        },
-        selText: {
-            fontFamily: font.text,
-            fontSize: 16,
-            textAlign: "center"
-        },
-        modalBackground: {
-            flex: 1,
-            backgroundColor: "#00000060",
-        },
-        // modalContainer: {
-        //     flex: 1,
-        //     backgroundColor: "#00000060",
-        //     justifyContent: "center",
-        //     alignItems: "center"
-        // },
-        main: {
-            backgroundColor: "white",
-            borderRadius: 20,
-            width: "100%",
-            position: "absolute",
-            bottom: 0,
-            paddingTop: 10,
-            paddingBottom: 10,
-        },
-        title: {
-            fontFamily: font.text_bold,
-            fontSize: 16,
-            margin: 10
-        },
-        input: {
-            fontFamily: font.text,
-            height: 40,
-            backgroundColor: "#F5F5F5",
-            marginBottom: 20,
-            borderRadius: 10,
-            paddingLeft: 10,
-            paddingRight: 10,
-            marginLeft: 10,
-            marginRight: 10,
-        },
-        btn: {
-            backgroundColor: "#4900FF",
-            padding: 10,
-            margin: 10,
-            borderRadius: 5,
-            width: 100,
-            borderWidth: 2,
-            borderColor: "#4900FF"
-        },
-        btnText: {
-            fontFamily: font.text,
-            fontSize: 15,
-            textAlign: "center",
-            color: "white"
-        },
-        rowRight: {
-            flexDirection: "row",
-            justifyContent: "flex-end",
-        }
-    });
+    /* Riga "speso / totale" + barra di avanzamento */
+    const renderBar = (total: number, progress: number) => (
+        <>
+            <View style={styles.amountRow}>
+                <Text style={styles.label}>
+                    {selectedBudget === "travel" ? "Budget viaggio" : "Budget personale"}
+                </Text>
+                <Text style={styles.amount}>
+                    € {Number(spent).toFixed(2)}
+                    <Text style={styles.amountTotal}> / € {Number(total).toFixed(2)}</Text>
+                </Text>
+            </View>
 
+            <ProgressTrack
+                progress={progress}
+                color={spent < total ? ds.colors.action : ds.colors.error}
+            />
+
+            <Text style={styles.hint}>
+                {spent < total
+                    ? "Hai ancora € " + (total - spent).toFixed(2) + " a disposizione"
+                    : "Hai sforato il budget di € " + (spent - total).toFixed(2)}
+            </Text>
+        </>
+    );
 
     return (
         <View style={styles.card}>
@@ -172,127 +110,234 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                 animationType="slide"
                 transparent={true}
                 visible={modalVisibility}
-                onRequestClose={() => {
-                    setModalVisibility(false);
-                }}
+                onRequestClose={() => setModalVisibility(false)}
             >
                 <TouchableWithoutFeedback onPress={closeModal}>
                     <View style={styles.modalBackground} />
                 </TouchableWithoutFeedback>
 
                 <Animated.View
-                    style={[
-                        styles.main,
-                        panResponder.panHandlers,
-                        {
-                            transform: [{ translateY }],
-                        },
-                    ]}
+                    style={[styles.main, panResponder.panHandlers, { transform: [{ translateY }] }]}
                 >
-                    <View style={styles.main} onLayout={(event) => {
-                        var { x, y, width, height } = event.nativeEvent.layout;
-                        setheightmodal(y)
-                    }}>
+                    <View style={styles.main}>
                         {/* Contenuto della modale impostazione budget personale */}
-                        <Text style={styles.title}>Imposta budget personale</Text>
-                        <Text style={{ color: "gray", fontSize: 13, textAlign: "left", fontFamily: font.text, marginBottom: 10, marginLeft: 10 }}>Imposta un budget unico per te</Text>
-                        <TextInput style={styles.input} ref={budgetInput} placeholder="Scrivi il budget" inputMode="decimal"  />
+                        <Text style={styles.modalTitle}>Imposta budget personale</Text>
+                        <Text style={styles.modalSubtitle}>Imposta un budget unico per te</Text>
+                        <TextInput
+                            style={styles.input}
+                            ref={budgetInput}
+                            placeholder="Scrivi il budget"
+                            placeholderTextColor={ds.colors.textPlaceholder}
+                            inputMode="decimal"
+                        />
                         <View style={styles.rowRight}>
-                            <TouchableNativeFeedback onPress={() => {
-                                budgetInput.current.value = '';
-                                setModalVisibility(false);
-                            }}>
-                                <View style={[styles.btn, { backgroundColor: "white", marginTop: 0 }]}><Text style={[styles.btnText, { color: "black" }]}>Annulla</Text></View>
-                            </TouchableNativeFeedback>
-                            <TouchableNativeFeedback onPress={() => {
-                                console.log(budgetInput.current._lastNativeText)
-                                setPersonalBudget(parseInt(budgetInput.current._lastNativeText));
-                                setModalVisibility(false)
-                            }}>
-                                <View style={[styles.btn, { marginTop: 0 }]}><Text style={styles.btnText}>Conferma</Text></View>
-                            </TouchableNativeFeedback>
+                            <TouchableOpacity
+                                activeOpacity={0.85}
+                                onPress={() => {
+                                    budgetInput.current.value = '';
+                                    setModalVisibility(false);
+                                }}
+                            >
+                                <View style={[styles.btn, styles.btnGhost]}>
+                                    <Text style={[styles.btnText, { color: ds.colors.text }]}>Annulla</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                activeOpacity={0.85}
+                                onPress={() => {
+                                    setPersonalBudget(parseInt(budgetInput.current._lastNativeText));
+                                    setModalVisibility(false);
+                                }}
+                            >
+                                <View style={styles.btn}>
+                                    <Text style={styles.btnText}>Conferma</Text>
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </Animated.View>
             </Modal>
 
-
-            <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text_bold, marginBottom: 10 }}>Budget:</Text>
-            <View style={styles.row}>
-                <TouchableNativeFeedback
-                    onPress={
-                        () => setselectedBudget("personal")
-                    }
-                >
-                    <View
-                        style={[styles.sel, (selectedBudget == "personal") ? { borderBottomColor: "#4900FF" } : { borderBottomColor: "#FFF" }]}
-                    >
-                        <Text style={styles.selText}>Personale</Text>
+            {/* Selettore budget personale / del viaggio */}
+            <View style={styles.tabs}>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setselectedBudget("personal")}>
+                    <View style={[styles.tab, selectedBudget === "personal" && styles.tabActive]}>
+                        <Text style={[styles.tabText, selectedBudget === "personal" && styles.tabTextActive]}>
+                            Personale
+                        </Text>
                     </View>
-                </TouchableNativeFeedback>
-                <TouchableNativeFeedback
-                    onPress={
-                        () => setselectedBudget("travel")
-                    }
-                >
-                    <View
-                        style={[styles.sel, (selectedBudget == "travel") ? { borderBottomColor: "#4900FF" } : { borderBottomColor: "#FFF" }]}
-                    >
-                        <Text style={styles.selText}>Del viaggio</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setselectedBudget("travel")}>
+                    <View style={[styles.tab, selectedBudget === "travel" && styles.tabActive]}>
+                        <Text style={[styles.tabText, selectedBudget === "travel" && styles.tabTextActive]}>
+                            Del viaggio
+                        </Text>
                     </View>
-                </TouchableNativeFeedback>
+                </TouchableOpacity>
             </View>
 
-            {
-                (selectedBudget == "travel") && (
-                    (!budget && !isNaN(budget)) ?
+            {selectedBudget === "travel" && (
+                budget && !isNaN(budget)
+                    ? renderBar(budget, percent)
+                    : (
                         <>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent.toFixed(2)}€</Text>
-                                <ProgressBar progress={percent} color={(spent < budget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, width: ProgressBarWidth }} />
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{budget.toFixed(2)}€</Text>
-                            </View>
-                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < budget) ? "Hai ancora " + (budget - spent).toFixed(2) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - budget).toFixed(2) + "€ 😥"}</Text>
+                            <Text style={styles.emptyTitle}>Nessun budget impostato</Text>
+                            <Text style={styles.emptyHint}>
+                                {creator
+                                    ? "Accedi alle impostazioni del viaggio per impostarne uno"
+                                    : "Chiedi all'admin di impostarne uno"}
+                            </Text>
                         </>
-                        :
-                        <>
-                            <Text style={{ color: "#000", fontSize: 18, textAlign: "left", fontFamily: font.text, marginBottom: 5 }}>Nessun budget impostato! 😥</Text>
-                            {
-                                (creator) ?
-                                    <Text style={{ color: "gray", fontSize: 13, textAlign: "left", fontFamily: font.text, marginBottom: 10 }}>Accedi alle impostazioni del viaggio per impostarne uno</Text>
-                                    :
-                                    <Text style={{ color: "gray", fontSize: 13, textAlign: "left", fontFamily: font.text, marginBottom: 10 }}>Chiedi all'admin di impostarne uno</Text>
-                            }
-                        </>
-                )
-            }
+                    )
+            )}
 
-            {
-                (selectedBudget == "personal") && (
-                    (personalbudget && !isNaN(personalbudget)) ?
-                        <>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{spent}€</Text>
-                                <ProgressBar progress={personalPercent} color={(spent < personalbudget) ? "green" : "red"} style={{ height: 10, borderRadius: 10, width: ProgressBarWidth }} />
-                                <Text style={{ color: "#000", fontSize: 16, textAlign: "left", fontFamily: font.text }}>{personalbudget}€</Text>
+            {selectedBudget === "personal" && (
+                personalbudget && !isNaN(personalbudget)
+                    ? renderBar(personalbudget, personalPercent)
+                    : (
+                        <TouchableOpacity activeOpacity={0.7} onPress={openModal}>
+                            <View>
+                                <Text style={styles.emptyTitle}>Nessun budget impostato</Text>
+                                <Text style={styles.emptyHint}>Tocca qui per impostarne uno</Text>
                             </View>
-                            <Text style={{ color: "#000", fontSize: 16, textAlign: "center", fontFamily: font.text, margin: 10 }}>{(spent < personalbudget) ? "Hai ancora " + (personalbudget - spent).toFixed(2) + "€ a disposizione!" : "Hai sforato il budget di " + (spent - personalbudget).toFixed(2) + "€ 😥"}</Text>
-                        </>
-                        :
-                        <>
-                            <TouchableNativeFeedback
-                                onPress={
-                                    () => { openModal() }
-                                }
-                            >
-                                <View style={{ width: "100%" }}>
-                                    <Text style={{ color: "#000", fontSize: 18, textAlign: "left", fontFamily: font.text, marginBottom: 5 }}>Nessun budget impostato! 😥</Text>
-                                    <Text style={{ color: "gray", fontSize: 13, textAlign: "left", fontFamily: font.text, marginBottom: 10 }}>Clicca qua per impostarne uno</Text>
-                                </View>
-                            </TouchableNativeFeedback>
-                        </>
-                )
-            }
+                        </TouchableOpacity>
+                    )
+            )}
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    card: {
+        borderWidth: 1,
+        borderColor: ds.colors.borderSubtle,
+        borderRadius: ds.radius.l,
+        backgroundColor: ds.colors.surface,
+        padding: ds.space[5] - 2,
+        marginBottom: ds.space[6],
+    },
+    tabs: {
+        flexDirection: "row",
+        marginBottom: ds.space[5],
+    },
+    tab: {
+        height: 28,
+        alignItems: "center",
+        justifyContent: "center",
+        borderBottomWidth: 2,
+        borderBottomColor: "transparent",
+    },
+    tabActive: {
+        borderBottomColor: ds.colors.action,
+    },
+    tabText: {
+        fontFamily: ds.fontFamily.medium,
+        fontSize: 12,
+        color: ds.colors.textSecondary,
+    },
+    tabTextActive: {
+        fontFamily: ds.fontFamily.semibold,
+        color: ds.colors.text,
+    },
+    amountRow: {
+        flexDirection: "row",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        marginBottom: ds.space[3],
+    },
+    label: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 12,
+        color: ds.colors.textSecondary,
+    },
+    amount: {
+        fontFamily: ds.fontFamily.metaBold,
+        fontSize: 15,
+        color: ds.colors.text,
+    },
+    amountTotal: {
+        fontFamily: ds.fontFamily.metaRegular,
+        fontSize: 12,
+        color: ds.colors.textSecondary,
+    },
+    hint: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: ds.colors.textSecondary,
+        marginTop: ds.space[3],
+    },
+    emptyTitle: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 13,
+        color: ds.colors.text,
+        marginBottom: ds.space[1],
+    },
+    emptyHint: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: ds.colors.textSecondary,
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: ds.colors.scrim,
+    },
+    main: {
+        backgroundColor: ds.colors.surface,
+        borderTopLeftRadius: ds.radius["2xl"],
+        borderTopRightRadius: ds.radius["2xl"],
+        width: "100%",
+        position: "absolute",
+        bottom: 0,
+        paddingTop: ds.space[5],
+        paddingBottom: ds.space[6],
+        paddingHorizontal: ds.space[5],
+    },
+    modalTitle: {
+        fontFamily: ds.fontFamily.bold,
+        fontSize: 16,
+        color: ds.colors.text,
+        marginBottom: ds.space[1],
+    },
+    modalSubtitle: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 12,
+        color: ds.colors.textSecondary,
+        marginBottom: ds.space[4],
+    },
+    input: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 13,
+        color: ds.colors.text,
+        height: ds.control.md,
+        backgroundColor: ds.colors.surfaceSunken,
+        borderWidth: 1,
+        borderColor: ds.colors.border,
+        borderRadius: ds.radius.m,
+        paddingHorizontal: ds.space[4],
+        marginBottom: ds.space[5],
+    },
+    rowRight: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+    },
+    btn: {
+        backgroundColor: ds.colors.action,
+        height: ds.control.sm,
+        minWidth: 100,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: ds.radius.m,
+        marginLeft: ds.space[3],
+    },
+    btnGhost: {
+        backgroundColor: ds.colors.surface,
+        borderWidth: 1,
+        borderColor: ds.colors.border,
+    },
+    btnText: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 12,
+        color: ds.colors.white,
+        textAlign: "center",
+    },
+});

@@ -1,10 +1,14 @@
 import React, { useEffect } from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-import { font } from "../../global/globalVariable";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ds } from "../../global/designSystem";
+import { StatusBadge } from "../ui";
 import { getData } from "../../shared/data/localdata";
 import PostCard from "./PostCard";
-import { ComponentStyles } from "./componentStyle";
 
+/**
+ * @param {{ navigation?: any, item: any, home: any, travel?: any, loadPosts?: any, username: any }} props
+ */
 export default function PaymentComponent({
   navigation,
   item,
@@ -47,6 +51,12 @@ export default function PaymentComponent({
     test();
   }, []);
 
+  // Stato mostrato nel badge in alto a destra della riga importo
+  let badge = { label: "Da saldare", intent: "error" };
+  if (isCreator && !isPersonal) badge = { label: "Creato da te", intent: "info" };
+  else if (isPersonal) badge = { label: "Personale", intent: "info" };
+  else if (info.payed) badge = { label: "Pagato", intent: "success" };
+
   return (
     info != [] &&
     isMine && (
@@ -57,71 +67,70 @@ export default function PaymentComponent({
           }
         }}
       >
-        <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
-          {info.payed && !isCreator ? (
-            <View style={[styles.status, { backgroundColor: "green" }]}>
-              <Text style={styles.statusText}>Pagato</Text>
+        <View>
+          <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
+            <View style={styles.row}>
+              <View style={styles.iconWrap}>
+                <MaterialCommunityIcons
+                  name="wallet-outline"
+                  size={18}
+                  color={ds.colors.action}
+                />
+              </View>
+              <View style={styles.amountBlock}>
+                <Text style={styles.description}>
+                  {!isPersonal
+                    ? "Richiesta di pagamento"
+                    : "Pagamento personale"}
+                </Text>
+                <Text style={styles.amount}>€ {item.amount}</Text>
+              </View>
+              <StatusBadge label={badge.label} intent={badge.intent} />
             </View>
-          ) : (
-            <View style={styles.status}>
-              <Text style={styles.statusText}>Non pagato</Text>
-            </View>
-          )}
 
-          {isCreator && !isPersonal && (
-            <View style={[styles.status, { backgroundColor: "#4900FF" }]}>
-              <Text style={styles.statusText}>Creato da te</Text>
-            </View>
-          )}
-
-          <View>
-            <Text style={ComponentStyles.contentText}>
-              {!isPersonal
-                ? "Ti ha inviato una richiesta di:"
-                : "Pagamento personale di:"}
-            </Text>
-            <Text
-              style={[
-                ComponentStyles.contentText,
-                { fontSize: 25, fontFamily: font.text_bold },
-              ]}
-            >
-              {item.amount}€
-            </Text>
             {home ? null : (
-              <Text
-                style={[
-                  ComponentStyles.contentText,
-                  { fontSize: 12, marginTop: 10, color: "gray" },
-                ]}
-              >
-                Clicca per maggiori informazioni
-              </Text>
+              <Text style={styles.hint}>Tocca per maggiori informazioni</Text>
             )}
-          </View>
-        </PostCard>
+          </PostCard>
+        </View>
       </TouchableWithoutFeedback>
     )
   );
 }
 
 const styles = StyleSheet.create({
-  status: {
-    backgroundColor: "#FF0000",
-    width: 100,
-    height: 30,
-    justifyContent: "center",
+  row: {
+    flexDirection: "row",
     alignItems: "center",
-    position: "absolute",
-    top: 35,
-    right: 0,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    elevation: 3,
   },
-  statusText: {
-    color: "#FFF",
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: ds.radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: ds.colors.actionSubtle,
+    marginRight: ds.space[3] + 2,
+  },
+  amountBlock: {
+    flex: 1,
+    marginRight: ds.space[3],
+  },
+  description: {
+    fontFamily: ds.fontFamily.medium,
     fontSize: 12,
-    fontFamily: font.text_bold,
+    color: ds.colors.textSecondary,
+  },
+  amount: {
+    fontFamily: ds.fontFamily.metaBold,
+    fontSize: 18,
+    color: ds.colors.text,
+    marginTop: 2,
+  },
+  hint: {
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 11,
+    color: ds.colors.textSecondary,
+    marginTop: ds.space[4],
   },
 });

@@ -1,14 +1,29 @@
-import { Badge } from '@react-native-material/core';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PostMenu from '../../screens/Modals/postMenu';
-import { ComponentStyles } from './componentStyle';
+import { InitialsAvatar } from '../ui';
+import { ds } from '../../global/designSystem';
+
+/* Icona a destra dell'intestazione, in base al tipo di post */
+const typeIcon: any = {
+    text: 'file-document-outline',
+    vote: 'chart-bar',
+    payments: 'wallet-outline',
+    images: 'image-outline',
+    todo: 'check-circle-outline',
+    itinerary: 'map-marker-path',
+};
 
 const PostCard = ({ children, item, home, travel, loadPosts, username }: any) => {
     let [showMenu, setShowMenu] = React.useState(false);
 
+    const dateTime = item.dateTime
+        ? String(item.dateTime).substring(0, String(item.dateTime).length - 3)
+        : '';
+
     return (
-        <View style={ComponentStyles.card}>
+        <View style={styles.card}>
             <PostMenu
                 item={item}
                 showMenu={showMenu}
@@ -16,56 +31,138 @@ const PostCard = ({ children, item, home, travel, loadPosts, username }: any) =>
                 type={item.type}
                 loadPosts={loadPosts}
             />
-            {item.creator == username && !home && (
-                <View style={{ position: "absolute", top: 0, right: 0, zIndex: 99 }}>
-                    <TouchableOpacity
-                        style={{ position: "absolute", top: 5, right: 5, zIndex: 100 }}
-                        onPress={() => {
-                            setShowMenu(!showMenu);
-                        }}
-                    >
-                        <Image
-                            source={require("../../assets/image/icona-more-cerchio.png")}
-                            style={{ width: 20, height: 20, tintColor: "lightgray" }}
-                        />
-                    </TouchableOpacity>
-                </View>
-            )}
 
+            {/* Post fissato in alto */}
             {item.pinned && !home && (
-                <View style={ComponentStyles.pinned}>
-                    <Image
-                        source={require("../../assets/image/pin.png")}
-                        style={{
-                            width: 20,
-                            height: 20,
-                            marginRight: 5,
-                            tintColor: "lightgray",
-                        }}
-                    />
-                    <Text style={ComponentStyles.pinnedText}>Fissato in alto</Text>
+                <View style={styles.pin}>
+                    <MaterialCommunityIcons name="pin" size={11} color={ds.colors.action} />
+                    <Text style={styles.pinText}>Fissato</Text>
                 </View>
             )}
 
-            {home && (
-                <Badge
-                    label={travel}
-                    style={ComponentStyles.Badge}
-                    labelStyle={ComponentStyles.BadgeText}
+            <View style={styles.headerRow}>
+                <InitialsAvatar
+                    name={item.creatorData[0].username}
+                    size={32}
+                    style={styles.avatar}
                 />
-            )}
-
-            <View>
-                <View style={ComponentStyles.nameContainer}>
-                    <Text style={ComponentStyles.nameText}>@{item.creator}</Text>
+                <View style={styles.headerText}>
+                    <Text style={styles.author} numberOfLines={1}>
+                        @{item.creatorData[0].username}
+                    </Text>
+                    <View style={styles.metaRow}>
+                        {home && travel ? (
+                            <>
+                                <Text style={styles.meta} numberOfLines={1}>
+                                    {travel}
+                                </Text>
+                                <View style={styles.metaDot} />
+                            </>
+                        ) : null}
+                        <Text style={styles.meta} numberOfLines={1}>
+                            {dateTime}
+                        </Text>
+                    </View>
                 </View>
-                <Text style={ComponentStyles.datetimeText}>
-                    {item.dateTime.substring(0, item.dateTime.length - 3)}
-                </Text>
+
+                {item.creatorData[0].username == username && !home ? (
+                    <TouchableOpacity
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        onPress={() => setShowMenu(!showMenu)}
+                    >
+                        <View style={styles.iconChip}>
+                            <MaterialCommunityIcons
+                                name="dots-horizontal"
+                                size={16}
+                                color={ds.colors.textSecondary}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                ) : (
+                    <View style={[styles.iconChip, styles.typeChip]}>
+                        <MaterialCommunityIcons
+                            name={typeIcon[item.type] || 'file-document-outline'}
+                            size={14}
+                            color={ds.colors.action}
+                        />
+                    </View>
+                )}
             </View>
+
             {children}
         </View>
-    )
+    );
 };
+
+const styles = StyleSheet.create({
+    card: {
+        borderRadius: ds.radius.xl,
+        backgroundColor: ds.colors.surface,
+        padding: ds.space[5],
+        marginBottom: ds.space[5],
+        ...ds.shadow.md,
+    },
+    pin: {
+        alignSelf: 'flex-start',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: ds.colors.actionSubtle,
+        borderRadius: ds.radius.full,
+        paddingHorizontal: ds.space[3],
+        paddingVertical: 3,
+        marginBottom: ds.space[3],
+    },
+    pinText: {
+        fontFamily: ds.fontFamily.metaSemibold,
+        fontSize: 9,
+        color: ds.colors.action,
+        marginLeft: 3,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: ds.space[4],
+    },
+    avatar: {
+        ...ds.shadow.md,
+    },
+    headerText: {
+        flex: 1,
+        marginLeft: ds.space[3] + 2,
+    },
+    author: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 13,
+        color: ds.colors.text,
+    },
+    metaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 1,
+    },
+    meta: {
+        fontFamily: ds.fontFamily.metaRegular,
+        fontSize: 10,
+        color: ds.colors.textSecondary,
+    },
+    metaDot: {
+        width: 2.5,
+        height: 2.5,
+        borderRadius: 2,
+        backgroundColor: ds.colors.textPlaceholder,
+        marginHorizontal: ds.space[2],
+    },
+    iconChip: {
+        width: 30,
+        height: 30,
+        borderRadius: ds.radius.full,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: ds.colors.scale.neutral[2],
+    },
+    typeChip: {
+        backgroundColor: ds.colors.actionSubtle,
+    },
+});
 
 export default PostCard;

@@ -42,6 +42,15 @@ export const getData = async (key) => {
     }
 }
 
+export const removeData = async (key) => {
+    try {
+        await AsyncStorage.removeItem(key);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 export const getStringDataWithState = async (key, state, setState) => {
     try {
         const value = await AsyncStorage.getItem(key)

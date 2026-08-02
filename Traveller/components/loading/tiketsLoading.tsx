@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
+import { ds } from "../../global/designSystem";
 
+/* Placeholder della card biglietto (stesse proporzioni di TicketsPreview) */
 export default function TicketsLoading() {
     const opacity = useRef(new Animated.Value(0.3));
 
@@ -32,31 +34,30 @@ export default function TicketsLoading() {
 
 const styles = StyleSheet.create({
     skeleton: {
-        backgroundColor: '#efefef',
-        marginTop: 10,
-        marginBottom: 10,
-        height: 175,
-        width: 300,
-        borderRadius: 15
+        backgroundColor: ds.colors.scale.neutral[3],
+        marginBottom: ds.space[4] + 2,
+        height: 150,
+        width: "100%",
+        borderRadius: ds.radius.l,
     },
     leftCircle: {
         position: "absolute",
-        top: 82.5,
-        backgroundColor: "#fff",
-        height: 30,
-        width: 30,
-        borderRadius: 30,
-        left: -15,
+        top: 66,
+        backgroundColor: ds.colors.surface,
+        height: 26,
+        width: 26,
+        borderRadius: ds.radius.full,
+        left: -13,
         zIndex: 100
     },
     rightCircle: {
         position: "absolute",
-        top: 82.5,
-        backgroundColor: "#fff",
-        height: 30,
-        width: 30,
-        borderRadius: 30,
-        right: -15,
+        top: 66,
+        backgroundColor: ds.colors.surface,
+        height: 26,
+        width: 26,
+        borderRadius: ds.radius.full,
+        right: -13,
         zIndex: 100
     }
 })

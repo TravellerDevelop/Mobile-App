@@ -1,254 +1,244 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
-  TouchableNativeFeedback,
-  ImageBackground,
+  TouchableOpacity,
 } from "react-native";
-import { color, font, serverLink } from "../global/globalVariable";
-import { getData } from "./data/localdata";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { serverLink } from "../global/globalVariable";
+import { ds } from "../global/designSystem";
+import { StatusBadge } from "../components/ui";
 
 interface CardProps {
   navigation: any,
   data: any,
   vertical?: boolean,
+  /* Tessera alta metà larghezza, usata nella griglia del profilo */
+  grid?: boolean,
   isLoading?: boolean,
   username: string
 }
 
-export default function Card({ navigation, data, vertical, isLoading, username }: CardProps) {
-  let creator = "";
-  let i = 0;
-  while (creator == "" && i < data.participants.length) {
-    if (data.participants[i].creator === true) {
-      creator = data.participants[i].username;
-    }
-    i++;
+/* Copertine tinta unita quando il viaggio non ha immagine */
+const covers = [
+  ds.colors.scale.accent[9],
+  ds.colors.scale.primary[11],
+  ds.colors.scale.neutral[11],
+];
+
+export default function Card({ navigation, data, vertical, grid, isLoading, username }: Readonly<CardProps>) {
+  const creator = data.participants.find((r: any) => r.creator === true).username;
+
+  const cover = covers[Math.abs(String(data.name || "").length + String(data.code || "").length) % covers.length];
+  const createdAt = new Date(data.creation_date)
+    .toLocaleString("it-IT", { timeZone: "UTC" })
+    .substring(0, 10);
+
+  async function open() {
+    navigation.navigate("TravelDetail", { data: data, username: username });
   }
 
-  return (
+  /* Variante griglia: pill di stato in alto, titolo e meta ancorati in basso */
+  const gridContent = (
     <>
-      {data.image == null || data.image == undefined || data.image == "" ? (
-        <TouchableNativeFeedback
-          onPress={async () => {
-            let myD = await getData("user");
-            let found = false;
+      <View style={styles.gridPill}>
+        <Text style={styles.gridPillText}>{data.closed ? "Chiuso" : "In corso"}</Text>
+      </View>
 
-            for (let item of data.participants) {
-              if (item.username == myD.username) {
-                found = true;
-              }
-            }
-
-            if (found) {
-              navigation.navigate("TravelDetail", { data:data, username:username});
-            }
-          }}
-        >
-          {!vertical ? (
-            <View style={!isLoading ? styles.container : { display: "none" }}>
-              <View style={{ position: "absolute", top: 10, left: 10 }}>
-                <Text style={styles.cardTitle}>{data.name}</Text>
-                <Text style={styles.cardSubtitle}>
-                  Creato il{" "}
-                  {new Date(data.creation_date)
-                    .toLocaleString("en-GB", { timeZone: "UTC" })
-                    .substring(0, 10)}{" "}
-                  da {creator == username ? "te" : creator}
-                </Text>
-              </View>
-              <View style={{ position: "absolute", bottom: 10, right: 30 }}>
-                {/* <CardPartecipants  data={data} /> */}
-              </View>
-            </View>
-          ) : (
-            <View style={styles.containerVertical}>
-              <View style={{ position: "absolute", top: 10, left: 10 }}>
-                <Text style={styles.cardTitle}>{data.name}</Text>
-                <Text style={styles.cardSubtitle}>
-                  Creato il{" "}
-                  {new Date(data.creation_date)
-                    .toLocaleString("en-GB", { timeZone: "UTC" })
-                    .substring(0, 10)}{" "}
-                  da {creator == username ? "te" : creator}
-                </Text>
-              </View>
-              <View
-                style={{ position: "absolute", bottom: 10, right: 30 }}
-              ></View>
-            </View>
-          )}
-        </TouchableNativeFeedback>
-      ) : (
-        <TouchableNativeFeedback
-          style={{ zIndex: 10 }}
-          onPress={() => {
-            let found = false;
-            for (let item of data.participants) {
-              if (item.username == username) {
-                found = true;
-              }
-            }
-            if (found) {
-              navigation.navigate("TravelDetail", {data:data, username:username});
-            }
-          }}
-        >
-          {!vertical ? (
-            <ImageBackground
-              imageStyle={{ borderRadius: 10, opacity: 0.7 }}
-              source={{ uri: serverLink + "userImage/" + data.image }}
-              style={styles.containerWithBg}
-            >
-              <View
-                style={{ position: "absolute", top: 10, left: 10, zIndex: 0 }}
-              >
-                <Text
-                  style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
-                >
-                  {data.name}
-                </Text>
-                <Text
-                  style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
-                >
-                  Creato il{" "}
-                  {new Date(data.creation_date)
-                    .toLocaleString("en-GB", { timeZone: "UTC" })
-                    .substring(0, 10)}{" "}
-                  da {creator == username ? "te" : creator}
-                </Text>
-              </View>
-            </ImageBackground>
-          ) : (
-            <ImageBackground
-              resizeMode="cover"
-              imageStyle={{ borderRadius: 10, opacity: 0.7, width: "100%" }}
-              source={{ uri: serverLink + "userImage/" + data.image }}
-              style={styles.containerVerticalWithBg}
-            >
-              <View
-                style={{ position: "absolute", top: 10, left: 10, zIndex: 0 }}
-              >
-                <Text
-                  style={styles.cardTitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
-                >
-                  {data.name}
-                </Text>
-                <Text
-                  style={styles.cardSubtitle}
-                  onPress={() => navigation.navigate("TravelDetail", {data:data, username:username})}
-                >
-                  Creato il{" "}
-                  {new Date(data.creation_date)
-                    .toLocaleString("en-GB", { timeZone: "UTC" })
-                    .substring(0, 10)}{" "}
-                  da {creator == username ? "te" : creator}
-                </Text>
-              </View>
-            </ImageBackground>
-          )}
-        </TouchableNativeFeedback>
-      )}
+      <View style={styles.gridBottom}>
+        <Text style={styles.gridTitle} numberOfLines={2}>
+          {data.name}
+        </Text>
+        <View style={styles.gridMetaRow}>
+          <Text style={styles.gridDate} numberOfLines={1}>
+            {createdAt}
+          </Text>
+          <View style={styles.gridCount}>
+            <Text style={styles.gridCountText}>{data.participants.length}</Text>
+            <MaterialCommunityIcons
+              name="account-group-outline"
+              size={10}
+              color="rgba(255,255,255,0.85)"
+            />
+          </View>
+        </View>
+      </View>
     </>
+  );
+
+  const content = grid ? gridContent : (
+    <>
+      <StatusBadge
+        label={data.closed ? "Chiuso" : "In corso"}
+        intent={data.closed ? "neutral" : "info"}
+        style={styles.badge}
+      />
+
+      <Text style={styles.cardTitle} numberOfLines={2}>
+        {data.name}
+      </Text>
+      <Text style={styles.cardSubtitle} numberOfLines={1}>
+        Creato il {createdAt} da {creator == username ? "te" : creator}
+      </Text>
+
+      <View style={styles.footer}>
+        <MaterialCommunityIcons
+          name="account-group-outline"
+          size={12}
+          color={ds.colors.onCoverMuted}
+        />
+        <Text style={styles.footerText}>{data.participants.length}</Text>
+      </View>
+    </>
+  );
+
+  const shape = grid
+    ? styles.containerGrid
+    : vertical
+      ? styles.containerVertical
+      : styles.container;
+
+  if (isLoading) return null;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={open}
+      style={[shape, { backgroundColor: data.image ? ds.colors.black : cover }]}
+    >
+      {data.image ? (
+        <>
+          {/* Image "nudo" invece di ImageBackground: ImageBackground riapplica
+              width/height del contenitore all'<Image> interno, e se il
+              contenitore è dimensionato in percentuale (grid/vertical) o senza
+              height esplicita (header) il ricalcolo può risultare in una
+              copertura incompleta (bordo destro/basso scoperto). */}
+          <Image
+            source={{ uri: serverLink + "userImage/" + data.image }}
+            style={[StyleSheet.absoluteFillObject, styles.coverImage]}
+            resizeMode="cover"
+          />
+          <View style={styles.scrim} />
+        </>
+      ) : null}
+      {content}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: color.primary,
-    height: 120,
-    width: 270,
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    elevation: 5,
-  },
-  containerWithBg: {
-    backgroundColor: "#000",
-    height: 120,
-    width: 270,
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    elevation: 5,
+    width: 190,
+    height: 112,
+    borderRadius: ds.radius.l,
+    padding: ds.space[4],
+    marginRight: ds.space[4],
+    overflow: "hidden",
+    ...ds.shadow.md,
   },
   containerVertical: {
-    backgroundColor: color.primary,
-    height: 140,
-    width: "90%",
-    borderRadius: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    marginLeft: "5%",
-    marginRight: "5%",
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    width: "100%",
+    height: 88,
+    borderRadius: ds.radius.l,
+    padding: ds.space[5] - 2,
+    marginBottom: ds.space[4],
+    overflow: "hidden",
+    ...ds.shadow.md,
   },
-  containerVerticalWithBg: {
-    backgroundColor: "#000",
-    height: 140,
-    width: "90%",
-    borderRadius: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    marginLeft: "5%",
-    marginRight: "5%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  containerGrid: {
+    width: "100%",
+    height: 128,
+    borderRadius: ds.radius.l,
+    padding: ds.space[4],
+    overflow: "hidden",
+    ...ds.shadow.md,
+  },
+  coverImage: {
+    borderRadius: ds.radius.l,
+  },
+  gridPill: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: ds.radius.s,
+    paddingHorizontal: ds.space[2] + 2,
+    paddingVertical: 3,
+  },
+  gridPillText: {
+    fontFamily: ds.fontFamily.metaSemibold,
+    fontSize: 9,
+    letterSpacing: 0.3,
+    color: ds.colors.white,
+  },
+  gridBottom: {
+    position: "absolute",
+    left: ds.space[4],
+    right: ds.space[4],
+    bottom: ds.space[4],
+  },
+  gridTitle: {
+    fontFamily: ds.fontFamily.bold,
+    fontSize: 14,
+    lineHeight: 17,
+    color: ds.colors.white,
+  },
+  gridMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: ds.space[2],
+  },
+  gridDate: {
+    flex: 1,
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 10,
+    color: ds.colors.onCoverMuted,
+  },
+  gridCount: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  gridCountText: {
+    fontFamily: ds.fontFamily.metaMedium,
+    fontSize: 10,
+    color: "rgba(255,255,255,0.85)",
+    marginRight: 3,
+  },
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(1, 13, 55, 0.35)",
+  },
+  badge: {
+    position: "absolute",
+    top: ds.space[3] + 2,
+    right: ds.space[3] + 2,
+    zIndex: 2,
   },
   cardTitle: {
-    color: "white",
-    fontSize: 24,
-    textAlign: "left",
-    fontFamily: font.text_bold,
-    marginBottom: 5,
+    fontFamily: ds.fontFamily.bold,
+    fontSize: 15,
+    color: ds.colors.white,
+    maxWidth: 140,
+    marginTop: ds.space[1],
   },
   cardSubtitle: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "left",
-    fontFamily: font.text,
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 11,
+    color: ds.colors.onCoverMuted,
+    marginTop: ds.space[1] + 1,
   },
-  avatarContainer: {
-    backgroundColor: "white",
-    borderRadius: 100,
+  footer: {
+    position: "absolute",
+    bottom: ds.space[3] + 2,
+    left: ds.space[4],
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    height: 35,
-    width: 35,
-    marginRight: -15,
+  },
+  footerText: {
+    fontFamily: ds.fontFamily.metaMedium,
+    fontSize: 11,
+    color: ds.colors.onCoverMuted,
+    marginLeft: ds.space[2],
   },
 });

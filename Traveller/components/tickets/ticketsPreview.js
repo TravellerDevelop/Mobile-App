@@ -1,120 +1,158 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text, Image, TouchableNativeFeedback } from "react-native";
-import { font } from "../../global/globalVariable";
+import React from "react";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ds } from "../../global/designSystem";
 
-let companies = {
+/* Colori ufficiali delle compagnie (fallback: blu azione) */
+const companies = {
     "Ryanair": "#2B4779",
     "EasyJet": "#FF561F",
     "Alitalia": "#009FE3",
     "Ita": "#009FE3",
+    "ITA Airways": "#009FE3",
     "Vueling": "#F5B912",
     "KLM": "#00A1DE",
-}
+};
 
-let col = "#FFF"
-let img;
-
+/**
+ * @param {{ item: any, takeInfo?: any, navigation?: any }} props
+ */
 export default function TicketsPreview({ item, takeInfo, navigation }) {
-    if (item.company.name === "Ryanair") {
-        col = companies.Ryanair;
-        img = require("../../assets/image/airlines/ryanair.png");
-    } else if (item.company.name === "EasyJet") {
-        col = companies.EasyJet;
-        img = require("../../assets/image/airlines/EasyJet.png");
-    } else if (item.company.name === "Alitalia" || item.company.name === "Ita") {
-        col = companies.Alitalia;
-        img = require("../../assets/image/airlines/ita.png");
-    } else if (item.company.name === "Vueling") {
-        col = companies.Vueling;
-        img = require("../../assets/image/airlines/vueling.png");
-    } else if (item.company.name === "KLM") {
-        col = companies.KLM;
-        img = require("../../assets/image/airlines/klm.png");
-    }
+    const color = companies[item.company?.name] || ds.colors.action;
 
     return (
-        <>
-            <TouchableNativeFeedback onPress={() => navigation.navigate("TicketsModal", {data: item, takeInfo: takeInfo })} >
-                <View style={[styles.container, { backgroundColor: col }]} >
-                    <View style={styles.left}></View>
-                    <Image source={img} style={{ height: 30, width: 30, position: "absolute", top: 20, right: 20 }} resizeMode="contain" />
-                    <Text style={styles.name}>{item.surname} {item.name}</Text>
-                    { (item.sharedBy) && ( <Text style={styles.sharedBy}>Condiviso da {item.sharedBy}</Text> ) }
-                    <Text style={styles.nrFlight}>Numero di volo: {item.flightNumber}</Text>
-                    <Text style={styles.destination}>From {item.from.iata} to {item.to.iata}</Text>
-                    <Text style={styles.date}>{new Date(item.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}</Text>
-                    <View style={styles.right}></View>
+        <TouchableOpacity
+            activeOpacity={navigation ? 0.9 : 1}
+            onPress={() => {
+                // In modalità offline (App.js) il componente è mostrato senza navigation
+                if (navigation)
+                    navigation.navigate("TicketsModal", { data: item, takeInfo: takeInfo });
+            }}
+        >
+            <View style={[styles.container, { backgroundColor: color }]}>
+                {/* Icona filigranata sullo sfondo, come da design */}
+                <MaterialCommunityIcons
+                    name="airplane-takeoff"
+                    size={80}
+                    color="rgba(255,255,255,0.08)"
+                    style={styles.watermark}
+                />
+
+                <View style={styles.topRow}>
+                    <Text style={styles.name} numberOfLines={1}>
+                        {item.surname} {item.name}
+                    </Text>
+                    {item.company?.name ? (
+                        <View style={styles.airlineBadge}>
+                            <Text style={styles.airline}>{item.company.name}</Text>
+                        </View>
+                    ) : null}
                 </View>
-            </TouchableNativeFeedback>
-        </>
+
+                <Text style={styles.flight}>Volo {item.flightNumber}</Text>
+                {item.sharedBy ? (
+                    <Text style={styles.sharedBy}>Condiviso da {item.sharedBy}</Text>
+                ) : null}
+
+                <View style={styles.divider} />
+
+                <View style={styles.bottomRow}>
+                    <View style={styles.route}>
+                        <Text style={styles.iata}>{item.from?.iata}</Text>
+                        <MaterialCommunityIcons
+                            name="arrow-right"
+                            size={13}
+                            color={ds.colors.onCoverMuted}
+                            style={styles.routeIcon}
+                        />
+                        <Text style={styles.iata}>{item.to?.iata}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                        {new Date(item.date).toLocaleDateString("it-IT", { timeZone: "Europe/Andorra" })}
+                    </Text>
+                </View>
+            </View>
+        </TouchableOpacity>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: col,
-        height: 175,
-        width: 300,
-        borderRadius: 15,
-        marginTop: 10,
-        marginBottom: 10,
+        position: "relative",
+        borderRadius: ds.radius.l,
+        padding: ds.space[6] - 2,
+        marginBottom: ds.space[5],
+        overflow: "hidden",
+        ...ds.shadow.lg,
     },
-    left: {
+    watermark: {
         position: "absolute",
-        top: 72.5,
-        backgroundColor: "#fff",
-        height: 30,
-        width: 30,
-        borderRadius: 30,
-        left: -15,
+        right: -10,
+        bottom: -14,
     },
-    right: {
-        position: "absolute",
-        top: 72.5,
-        backgroundColor: "#fff",
-        height: 30,
-        width: 30,
-        borderRadius: 30,
-        right: -15,
+    topRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     name: {
-        position: "absolute",
-        top: 20,
-        left: 20,
-        color: "#fff",
-        fontSize: 18,
-        fontFamily: font.text
+        flex: 1,
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 14,
+        color: ds.colors.white,
+        marginRight: ds.space[3],
     },
-    nrFlight: {
-        position: "absolute",
-        top: 45,
-        left: 20,
-        color: "#fff",
-        fontSize: 13,
-        fontFamily: font.text_light
+    airlineBadge: {
+        backgroundColor: "rgba(255,255,255,0.18)",
+        borderRadius: ds.radius.full,
+        paddingHorizontal: ds.space[3],
+        paddingVertical: ds.space[1] + 1,
     },
-    destination: {
-        position: "absolute",
-        bottom: 20,
-        left: 20,
-        color: "#fff",
-        fontSize: 15,
-        fontFamily: font.text
+    airline: {
+        fontFamily: ds.fontFamily.metaSemibold,
+        fontSize: 10,
+        letterSpacing: 0.3,
+        color: ds.colors.onCoverMuted,
     },
-    date: {
-        position: "absolute",
-        bottom: 20,
-        right: 20,
-        color: "#fff",
-        fontSize: 13,
-        fontFamily: font.text_light
+    flight: {
+        fontFamily: ds.fontFamily.metaRegular,
+        fontSize: 11,
+        color: "rgba(255,255,255,0.72)",
+        marginTop: ds.space[2] + 1,
     },
     sharedBy: {
-        position: "absolute",
-        bottom: 45,
-        left: 20,
-        color: "#fff",
-        fontSize: 13,
-        fontFamily: font.text_light
-    }
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: "rgba(255,255,255,0.72)",
+        marginTop: ds.space[1],
+    },
+    divider: {
+        borderTopWidth: 2,
+        borderStyle: "dashed",
+        borderColor: "rgba(255,255,255,0.3)",
+        marginTop: ds.space[5],
+        marginBottom: ds.space[4] + 2,
+    },
+    bottomRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    route: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    routeIcon: {
+        marginHorizontal: ds.space[3],
+    },
+    iata: {
+        fontFamily: ds.fontFamily.metaBold,
+        fontSize: 18,
+        color: ds.colors.white,
+    },
+    date: {
+        fontFamily: ds.fontFamily.metaMedium,
+        fontSize: 11,
+        color: ds.colors.onCoverMuted,
+    },
 });

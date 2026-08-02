@@ -1,64 +1,45 @@
 import React from "react";
-import { StyleSheet, View, Text } from "react-native";
-import { font, color, paddingTopPage } from "../global/globalVariable";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-
+import { ds } from "../global/designSystem";
+import { BrandHeader } from "../components/ui";
 
 export default function TravelPartecipantsHeader({ navigation, route }) {
     return (
-        <>
-            <LinearGradient
-                style={styles.container}
-                start={{ x: 0.5, y: 0.2 }}
-                colors={[color.primary, color.secondary]}
-            >
-                <View style={styles.row}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="white" onPress={() => navigation.goBack()} />
-                    <Text style={styles.title}>{route.params.name}</Text>
-                </View>
-                <Text style={styles.subtitle}>Creato il {new Date(route.params.creation_date).toLocaleDateString('it-IT')}</Text>
-            </LinearGradient>
-            <View style={styles.bg}>
-                <View style={styles.rounded}></View>
+        <BrandHeader paddingTop={66} paddingBottom={34}>
+            <View style={styles.row}>
+                <TouchableOpacity
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    onPress={() => navigation.goBack()}
+                >
+                    <MaterialCommunityIcons name="arrow-left" size={20} color={ds.colors.white} />
+                </TouchableOpacity>
+                <Text style={styles.title} numberOfLines={2}>{route.params.name}</Text>
             </View>
-        </>
+            <Text style={styles.subtitle}>
+                Creato il {new Date(route.params.creation_date).toLocaleDateString("it-IT")}
+            </Text>
+        </BrandHeader>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: "black",
-        paddingTop: paddingTopPage,
-        paddingLeft: 10,
-        paddingBottom: 20,
-        paddingRight: 10,
-    },
     row: {
         flexDirection: "row",
         alignItems: "center",
+        marginBottom: ds.space[3] + 2,
     },
     title: {
-        color: "white",
-        fontFamily: font.text_bold,
-        fontSize: 25,
-        marginLeft: 10
-    },
-    bg: {
-        backgroundColor: "#4900FF",
-    },
-    rounded: {
-        backgroundColor: "white",
-        height: 20,
-        width: "100%",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        flex: 1,
+        color: ds.colors.white,
+        fontFamily: ds.fontFamily.bold,
+        fontSize: 19,
+        marginLeft: ds.space[4],
     },
     subtitle: {
-        fontSize: 15,
-        fontFamily: font.text,
-        marginLeft: 35,
-        color: "white",
-        marginBottom: 10,
+        color: ds.colors.onBrandMuted,
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 12,
+        marginLeft: 32,
     },
 })

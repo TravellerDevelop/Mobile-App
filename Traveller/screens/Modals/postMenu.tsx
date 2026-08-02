@@ -35,8 +35,11 @@ export default function PostMenu({ item, showMenu, setShowMenu, type, loadPosts 
                                 onPress={async () => {
                                     if (!savedIntoGallery) {
                                         try {
+                                            // writeOnly: dobbiamo solo salvare immagini, non leggere la libreria.
+                                            // granularPermissions: solo "photo", per non richiedere il permesso
+                                            // AUDIO (non dichiarato in AndroidManifest, causava un crash).
                                             const { status } =
-                                                await MediaLibrary.requestPermissionsAsync();
+                                                await MediaLibrary.requestPermissionsAsync(true, ["photo"]);
                                             if (status === "granted") {
                                                 try {
                                                     for (let i of item.source) {

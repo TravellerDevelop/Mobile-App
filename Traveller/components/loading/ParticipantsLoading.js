@@ -1,70 +1,38 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import SkeletonScreen from "../SkeletonScreen";
-import { Dimensions } from "react-native";
+import { ds } from "../../global/designSystem";
 
+/* Placeholder delle righe partecipante (allineato a travelPartecipants) */
 export default function ParticipantsLoading() {
     return (
         <>
-            <View style={styles.avatarContainer}>
-                <View style={styles.borderAvatarContainer}>
-                    <SkeletonScreen width={40} height={40} borderRadius={40} />
+            {[0, 1, 2].map((i) => (
+                <View key={i} style={styles.row}>
+                    <SkeletonScreen width={40} height={40} borderRadius={999} />
+                    <View style={styles.text}>
+                        <SkeletonScreen width={140} height={14} borderRadius={4} />
+                        <SkeletonScreen width={80} height={10} borderRadius={4} style={{ marginTop: 6 }} />
+                    </View>
                 </View>
-                <View>
-                    <SkeletonScreen width={200} height={20} borderRadius={5} />
-                    <SkeletonScreen width={100} height={10} borderRadius={5} style={{marginTop: 10}} />
-                </View>
-            </View>
-            <View style={styles.avatarContainer}>
-                <View style={styles.borderAvatarContainer}>
-                    <SkeletonScreen width={40} height={40} borderRadius={40} />
-                </View>
-                <View>
-                    <SkeletonScreen width={200} height={20} borderRadius={5} />
-                    <SkeletonScreen width={100} height={10} borderRadius={5} style={{marginTop: 10}} />
-                </View>
-            </View>
-            <View style={styles.avatarContainer}>
-                <View style={styles.borderAvatarContainer}>
-                    <SkeletonScreen width={40} height={40} borderRadius={40} />
-                </View>
-                <View>
-                    <SkeletonScreen width={200} height={20} borderRadius={5} />
-                    <SkeletonScreen width={100} height={10} borderRadius={5} style={{marginTop: 10}} />
-                </View>
-            </View>
+            ))}
         </>
     )
 }
 
 const styles = StyleSheet.create({
-    avatarContainer: {
-        marginLeft: 20,
-        marginRight: 20,
-        paddingBottom: 10,
-        paddingTop: 10,
-        display: "flex",
+    row: {
         flexDirection: "row",
         alignItems: "center",
-        borderBottomWidth: 1,
-        borderBottomColor: "#E5E5E5",
+        borderRadius: ds.radius.l,
+        backgroundColor: ds.colors.surface,
+        paddingVertical: ds.space[4],
+        paddingHorizontal: ds.space[4],
+        marginBottom: ds.space[3] + 2,
+        ...ds.shadow.md,
     },
-    borderAvatarContainer: {
-        backgroundColor: "white",
-        borderRadius: 100,
-        alignItems: "center",
-        justifyContent: "center",
-        height: 40,
-        width: 40,
-        marginRight: -15,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-        marginRight: 10,
-    }
+    text: {
+        flex: 1,
+        marginLeft: ds.space[3] + 2,
+    },
 })

@@ -1,39 +1,63 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import React, { useState } from "react";
-import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { font, serverLink } from "../../global/globalVariable";
+import { serverLink } from "../../global/globalVariable";
+import { ds } from "../../global/designSystem";
 import { getData } from "../../shared/data/localdata";
 import { isFilePresent } from "../utils/fileSystem";
 import PostCard from "./PostCard";
 
 const styles = StyleSheet.create({
   description: {
-    color: "#000",
-    fontSize: 16,
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 12,
+    lineHeight: 18,
+    color: ds.colors.textBody,
     textAlign: "left",
-    fontFamily: font.text,
-    marginTop: 10,
+    marginBottom: ds.space[3],
+  },
+  galleryWrap: {
+    width: "100%",
+    height: 240,
+    borderRadius: ds.radius.l,
+    overflow: "hidden",
+  },
+  gallery: {
+    height: "100%",
+    overflow: "hidden",
+    backgroundColor: ds.colors.scale.neutral[4],
   },
   dots: {
-    backgroundColor: "#4900FF50",
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 3,
-    marginRight: 3,
-    marginTop: 3,
-    marginBottom: 3,
+    backgroundColor: ds.colors.scale.accent[4],
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
+    marginVertical: 3,
   },
   activeDots: {
-    backgroundColor: "#4900FF",
-    width: 8,
+    backgroundColor: ds.colors.action,
+    width: 14,
+  },
+  dotsTrack: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: ds.colors.actionSubtle,
+    paddingHorizontal: ds.space[2],
+    paddingVertical: 2,
+    borderRadius: ds.radius.full,
   },
 });
 
+/**
+ * @param {{ item: any, home: any, loadPosts?: any, travel?: any, username: any }} props
+ */
 export default function ImagesComponent({ item, home, loadPosts, travel, username }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [ausItems, setAusItems] = useState({});
+  const [galleryWidth, setGalleryWidth] = useState(0);
 
   async function downloadImages() {
     let x = item;
@@ -62,62 +86,59 @@ export default function ImagesComponent({ item, home, loadPosts, travel, usernam
 
   return (
     <PostCard item={item} home={home} travel={travel} loadPosts={loadPosts} username={username}>
-      <FlatList
-        data={ausItems.source}
-        renderItem={({ item }) => (
-          <View>
-            <Image
-              source={{
-                uri: item.source.includes("uripost:")
-                  ? item.source.replace("uripost:", "")
-                  : serverLink + "userImage/posts/" + item.source,
-              }}
-              style={{
-                width: (Dimensions.get("screen").width / 100) * 88,
-                height: "100%",
-              }}
-            />
-          </View>
+      {item.description ? (
+        <Text style={styles.description}>{item.description}</Text>
+      ) : null}
+      <View
+        style={styles.galleryWrap}
+        onLayout={(e) => setGalleryWidth(e.nativeEvent.layout.width)}
+      >
+        {galleryWidth > 0 && (
+          <FlatList
+            data={ausItems.source}
+            renderItem={({ item }) => (
+              <View style={[styles.gallery, { width: galleryWidth }]}>
+                <Image
+                  source={{
+                    uri: item.source.includes("uripost:")
+                      ? item.source.replace("uripost:", "")
+                      : serverLink + "userImage/posts/" + item.source,
+                  }}
+                  style={{
+                    width: galleryWidth,
+                    height: "100%",
+                  }}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+            onScroll={(e) => {
+              setCurrentIndex(
+                Math.round(e.nativeEvent.contentOffset.x / galleryWidth)
+              );
+            }}
+            horizontal={true}
+            pagingEnabled={true}
+            snapToInterval={galleryWidth}
+            decelerationRate="fast"
+            disableIntervalMomentum={true}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            style={{ width: galleryWidth, height: "100%" }}
+          />
         )}
-        onScroll={(e) => {
-          setCurrentIndex(
-            Math.round(
-              e.nativeEvent.contentOffset.x /
-                ((Dimensions.get("screen").width / 100) * 88)
-            )
-          );
-        }}
-        horizontal={true}
-        pagingEnabled={true}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        style={{
-          width: (Dimensions.get("window").width / 100) * 88,
-          height: 300,
-        }}
-      />
+      </View>
       <View
         style={{
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
           width: "100%",
-          marginTop: 10,
-          padding: 2,
-          borderRadius: 50,
+          marginTop: ds.space[3],
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#4060FF20",
-            padding: 2,
-            borderRadius: 50,
-          }}
-        >
+        <View style={styles.dotsTrack}>
           {item.source.map((item) => {
             return (
               <View
@@ -131,7 +152,6 @@ export default function ImagesComponent({ item, home, loadPosts, travel, usernam
           })}
         </View>
       </View>
-      <Text style={styles.description}>{item.description}</Text>
     </PostCard>
   );
 }

@@ -4,30 +4,25 @@ import {
   StyleSheet,
   Text,
   Image,
-  TouchableNativeFeedback,
-  FlatList,
+  TouchableOpacity,
   ScrollView,
-  Dimensions,
+  Share,
 } from "react-native";
-import { Avatar } from "@react-native-material/core";
-import {
-  color,
-  font,
-  paddingTopPage,
-  serverLink,
-} from "../global/globalVariable";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { serverLink } from "../global/globalVariable";
+import { ds } from "../global/designSystem";
+import { EmptyState, InitialsAvatar, OverscrollBackdrop, Sheet } from "../components/ui";
 import axios from "axios";
-import { getData } from "../shared/data/localdata";
-import AnimatedLottieView from "lottie-react-native";
 import Card from "../shared/card";
 import SkeletonScreen from "../components/SkeletonScreen";
 import * as SecureStore from "expo-secure-store";
+import { ApiCountResponse, ApiFollow, ApiTravel, ApiUser } from "../shared/types/api";
 
 export default function OtherProfile({ navigation, route }: any) {
   let [myData, setMyData]: any = React.useState({});
   let [user, setUser]: any = React.useState({});
   let [requestStatus, setRequestStatus] = React.useState("");
-  let [myTravel, setMyTravel] = React.useState([]);
+  let [myTravel, setMyTravel] = React.useState<ApiTravel[]>([]);
 
   let [ntravel, setNtravel] = React.useState(0);
   let [followed, setFollowed] = React.useState(0);
@@ -44,22 +39,20 @@ export default function OtherProfile({ navigation, route }: any) {
     getUserData();
 
     axios
-      .get(serverLink + "api/user/takeUserById?id=" + route.params.userid)
+      .get<ApiUser[]>(serverLink + "api/user/takeUserById?id=" + route.params.userid)
       .then((response) => {
         setUser(response.data[0]);
-
         axios
-          .get(
+          .get<ApiCountResponse>(
             serverLink +
-            "api/user/takeTravelsNum?username=" +
-            response.data[0].username
+            "api/user/takeTravelsNum?userid=" +
+            route.params.userid
           )
           .then((response) => {
-            console.log(response.data);
             setNtravel(response.data.count);
 
             axios
-              .get(
+              .get<ApiFollow[]>(
                 serverLink +
                 "api/follow/takeFromTo?from=" +
                 myData._id +
@@ -86,10 +79,10 @@ export default function OtherProfile({ navigation, route }: any) {
           });
 
         axios
-          .get(
+          .get<ApiTravel[]>(
             serverLink +
-            "api/travel/takeByCreator?username=" +
-            response.data[0].username
+            "api/travel/takeByCreator?userid=" +
+            route.params.userid
           )
           .then((response) => {
             setMyTravel(response.data);
@@ -102,7 +95,7 @@ export default function OtherProfile({ navigation, route }: any) {
         console.log(error);
       });
     axios
-      .get(serverLink + "api/follow/takeFollowers?to=" + route.params.userid)
+      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowers?to=" + route.params.userid)
       .then((response) => {
         setFollowers(response.data.length);
       })
@@ -111,7 +104,7 @@ export default function OtherProfile({ navigation, route }: any) {
       });
 
     axios
-      .get(serverLink + "api/follow/takeFollowings?from=" + route.params.userid)
+      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowings?from=" + route.params.userid)
       .then((response) => {
         setFollowed(response.data.length);
       })
@@ -120,286 +113,371 @@ export default function OtherProfile({ navigation, route }: any) {
       });
   }, []);
 
+  // Invia o annulla la richiesta di follow
+  function toggleFollow() {
+    if (requestStatus == "Sent" || requestStatus == "Followed") {
+      axios
+        .post(serverLink + "api/follow/delete", { from: myData._id, to: user._id })
+        .then(() => setRequestStatus("Not sent"))
+        .catch((error) => console.log(error));
+    } else if (requestStatus == "Not sent") {
+      axios
+        .post(serverLink + "api/follow/create", { from: myData._id, to: user._id })
+        .then(() => setRequestStatus("Sent"))
+        .catch((error) => console.log(error));
+    }
+  }
+
+  // Condivide il profilo con il foglio di sistema
+  async function shareProfile() {
+    try {
+      await Share.share({
+        message: "Guarda il profilo di @" + user.username + " su Traveller",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const followLabel =
+    requestStatus == "Sent"
+      ? "Richiesta inviata"
+      : requestStatus == "Followed"
+        ? "Segui già"
+        : "Inizia a seguire";
+
+  const followIcon =
+    requestStatus == "Sent"
+      ? "clock-outline"
+      : requestStatus == "Followed"
+        ? "account-check-outline"
+        : "account-plus-outline";
+
+  const isFollowingState = requestStatus == "Sent" || requestStatus == "Followed";
+
+  // Card contatore della griglia statistiche
+  const Stat = ({ icon, value, label }: any) => (
+    <View style={styles.statCard}>
+      <MaterialCommunityIcons name={icon} size={15} color={ds.colors.action} />
+      {isLoading ? (
+        <SkeletonScreen width={26} height={16} borderRadius={4} style={{ marginTop: 4 }} />
+      ) : (
+        <Text style={styles.statValue}>{value}</Text>
+      )}
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <TouchableNativeFeedback
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Image
-            source={require("../assets/image/icona-freccia-left.png")}
-            style={styles.back}
-          />
-        </TouchableNativeFeedback>
-        <View style={styles.content}>
-          <View style={styles.avatarview}>
-            {isLoading ? (
-              <SkeletonScreen width={100} height={100} borderRadius={100} />
-            ) : (
-              <Avatar
-                label={user.name + " " + user.surname}
-                autoColor
-                size={100}
-                labelStyle={{ fontFamily: font.text, fontSize: 50 }}
-              />
-            )}
-          </View>
-          {isLoading ? (
-            <View style={{ display: "flex", flexDirection: "row" }}>
-              <SkeletonScreen width={150} height={40} borderRadius={5} />
-              <SkeletonScreen
-                width={150}
-                height={40}
-                borderRadius={5}
-                style={{ marginLeft: 20 }}
-              />
-            </View>
-          ) : (
-            <Text style={styles.name}>
-              {user.name} {user.surname}
-            </Text>
-          )}
-          {isLoading ? (
-            <SkeletonScreen
-              width={100}
-              height={25}
-              borderRadius={5}
-              style={{ marginTop: 10 }}
+    <View style={styles.screen}>
+      <OverscrollBackdrop topColor={ds.colors.brand} bottomColor={ds.colors.surface} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={{ backgroundColor: ds.colors.brand, flexGrow: 1 }}
+      >
+        <View style={styles.container}>
+          {/* Fascia brand con bussola decorativa */}
+          <View style={styles.header}>
+            <MaterialCommunityIcons
+              name="compass-outline"
+              size={110}
+              color="rgba(255,255,255,0.06)"
+              style={styles.headerGlyph}
             />
-          ) : (
-            <Text style={styles.nickname}>@{user.username}</Text>
-          )}
-          <View style={styles.row}>
-            <TouchableNativeFeedback>
-              <View style={styles.column}>
-                {isLoading ? (
-                  <SkeletonScreen width={50} height={30} borderRadius={5} />
-                ) : (
-                  <Text style={styles.subtext}>{ntravel}</Text>
-                )}
-                <Text style={styles.subtext}>Viaggi</Text>
-              </View>
-            </TouchableNativeFeedback>
-            <TouchableNativeFeedback>
-              <View style={styles.column}>
-                {isLoading ? (
-                  <SkeletonScreen width={50} height={30} borderRadius={5} />
-                ) : (
-                  <Text style={styles.subtext}>{followers}</Text>
-                )}
-                <Text style={styles.subtext}>Followers</Text>
-              </View>
-            </TouchableNativeFeedback>
-            <TouchableNativeFeedback>
-              <View style={styles.column}>
-                {isLoading ? (
-                  <SkeletonScreen width={50} height={30} borderRadius={5} />
-                ) : (
-                  <Text style={styles.subtext}>{followed}</Text>
-                )}
-                <Text style={styles.subtext}>Seguiti</Text>
-              </View>
-            </TouchableNativeFeedback>
           </View>
-          <TouchableNativeFeedback
-            onPress={() => {
-              if (requestStatus == "Sent" || requestStatus == "Followed") {
-                axios
-                  .post(serverLink + "api/follow/delete", {
-                    from: myData._id,
-                    to: user._id,
-                  })
-                  .then((response) => {
-                    setRequestStatus("Not sent");
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              } else if (requestStatus == "Not sent") {
-                axios
-                  .post(serverLink + "api/follow/create", {
-                    from: myData._id,
-                    to: user._id,
-                  })
-                  .then((response) => {
-                    setRequestStatus("Sent");
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              }
-            }}
-          >
+
+          <Sheet style={styles.sheet} overlap={-20}>
+            <View style={styles.avatarBlock}>
+              <View style={styles.avatarRing}>
+                {isLoading ? (
+                  <SkeletonScreen width={92} height={92} borderRadius={999} />
+                ) : user.image ? (
+                  <Image
+                    source={{ uri: serverLink + "userImage/" + user.image }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <InitialsAvatar
+                    name={user.name + " " + user.surname}
+                    size={92}
+                    color={ds.colors.scale.accent[9]}
+                    textStyle={{ fontSize: 32, fontFamily: ds.fontFamily.bold }}
+                  />
+                )}
+              </View>
+            </View>
+
+            {isLoading ? (
+              <SkeletonScreen width={160} height={26} borderRadius={4} />
+            ) : (
+              <Text style={styles.name}>
+                {user.name} {user.surname}
+              </Text>
+            )}
+
             {isLoading ? (
               <SkeletonScreen
-                width={(Dimensions.get("window").width / 100) * 90}
-                height={50}
-                borderRadius={10}
-                style={{ marginBottom: 20 }}
+                width={100}
+                height={16}
+                borderRadius={4}
+                style={{ marginTop: 6 }}
               />
             ) : (
-              <View style={styles.button}>
-                {requestStatus == "Sent" ? (
-                  <Text
-                    style={{
-                      fontFamily: font.text,
-                      fontSize: 20,
-                      color: "#FFF",
-                    }}
-                  >
-                    Richiesta inviata
-                  </Text>
-                ) : requestStatus == "Followed" ? (
-                  <Text
-                    style={{
-                      fontFamily: font.text,
-                      fontSize: 20,
-                      color: "#FFF",
-                    }}
-                  >
-                    Segui già
-                  </Text>
-                ) : requestStatus == "Not sent" ? (
-                  <Text
-                    style={{
-                      fontFamily: font.text,
-                      fontSize: 20,
-                      color: "#FFF",
-                    }}
-                  >
-                    Inizia a seguire
-                  </Text>
-                ) : null}
-              </View>
+              <Text style={styles.nickname}>@{user.username}</Text>
             )}
-          </TouchableNativeFeedback>
-          {ntravel == 0 ? (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#fff",
-                alignItems: "center",
-                paddingTop: 50,
-              }}
-            >
-              <AnimatedLottieView
-                source={require("../assets/animation/sadGuyWalking.json")}
-                autoPlay
-                loop
-                style={{ width: 150, height: 150 }}
-              />
-              <Text style={styles.err}>Ancora nessun viaggio 😥</Text>
+
+            <View style={styles.statsRow}>
+              <Stat icon="bag-suitcase-outline" value={ntravel} label="Viaggi" />
+              <Stat icon="account-group-outline" value={followers} label="Follower" />
+              <Stat icon="account-plus-outline" value={followed} label="Seguiti" />
             </View>
-          ) : (
-            <View style={{ width: "100%" }}>
-              {!isLoading && (
-                <Text
-                  style={{
-                    fontFamily: font.text,
-                    fontSize: 20,
-                    color: "#000",
-                    textAlign: "left",
-                    marginLeft: "5%",
-                  }}
-                >
-                  I viaggi creati da {user.name}:
-                </Text>
-              )}
-              {myTravel.length > 0 && !isLoading ? (
-                <FlatList
-                  scrollEnabled={false}
-                  data={myTravel}
-                  renderItem={({ item }) => (
-                    <Card vertical={true} data={item} navigation={navigation} />
-                  )}
+
+            <View style={styles.actionsRow}>
+              <TouchableOpacity activeOpacity={0.85} style={{ flex: 1 }} onPress={toggleFollow}>
+                {isLoading ? (
+                  <SkeletonScreen width={"100%"} height={ds.control.lg} borderRadius={8} />
+                ) : (
+                  <View
+                    style={[
+                      styles.followButton,
+                      isFollowingState && styles.followButtonActive,
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name={followIcon}
+                      size={14}
+                      color={isFollowingState ? ds.colors.action : ds.colors.white}
+                    />
+                    <Text
+                      style={[
+                        styles.followButtonText,
+                        isFollowingState && { color: ds.colors.action },
+                      ]}
+                    >
+                      {followLabel}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={0.85} onPress={shareProfile}>
+                <View style={styles.shareButton}>
+                  <MaterialCommunityIcons
+                    name="share-variant"
+                    size={16}
+                    color={ds.colors.text}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.sectionRow}>
+              <Text style={styles.sectionLabel}>
+                {user.name ? "I viaggi creati da " + user.name : "I viaggi creati"}
+              </Text>
+            </View>
+
+            {!isLoading && myTravel.length > 0 ? (
+              <View style={styles.travelsGrid}>
+                {myTravel.map((item: any) => (
+                  <View key={String(item._id)} style={styles.travelsCell}>
+                    <Card
+                      grid={true}
+                      data={item}
+                      navigation={navigation}
+                      username={user.username}
+                    />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              !isLoading && (
+                <EmptyState
+                  icon="airplane-off"
+                  title="Ancora nessun viaggio"
+                  description={
+                    user.name
+                      ? "I viaggi creati da " + user.name + " compariranno qui."
+                      : undefined
+                  }
                 />
-              ) : null}
-            </View>
-          )}
+              )
+            )}
+          </Sheet>
         </View>
+      </ScrollView>
+
+      {/* Barra flottante sopra l'header */}
+      <View style={styles.floatingBar}>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.goBack()}>
+          <View style={styles.floatingButton}>
+            <MaterialCommunityIcons name="arrow-left" size={18} color={ds.colors.white} />
+          </View>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: ds.colors.brand,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
   container: {
     flex: 1,
-    alignItems: "center",
-    backgroundColor: color.primary,
-    paddingTop: paddingTopPage,
+    backgroundColor: ds.colors.brand,
   },
-  content: {
-    flex: 1,
-    marginTop: 100,
-    width: "100%",
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 15,
-    paddingBottom: 80,
-    borderTopRightRadius: 15,
+  header: {
+    height: 128,
+    backgroundColor: ds.colors.brand,
+    overflow: "hidden",
+  },
+  headerGlyph: {
+    position: "absolute",
+    right: -10,
+    top: 20,
+  },
+  floatingBar: {
+    position: "absolute",
+    top: 64,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: ds.layout.headerPaddingH,
+    zIndex: 5,
+  },
+  floatingButton: {
+    width: 34,
+    height: 34,
+    borderRadius: ds.radius.full,
+    backgroundColor: "rgba(255,255,255,0.16)",
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarview: {
-    backgroundColor: "#FFF",
-    borderRadius: 100,
-    width: 110,
-    height: 110,
-    elevation: 5,
+  sheet: {
+    alignItems: "center",
+    paddingTop: 0,
+    paddingBottom: ds.layout.contentBottomPadding,
+  },
+  avatarBlock: {
+    position: "relative",
+    marginTop: -52,
+    marginBottom: ds.space[4] + 2,
+  },
+  avatarRing: {
+    width: 104,
+    height: 104,
+    borderRadius: ds.radius.full,
+    backgroundColor: ds.colors.surface,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -55,
-    marginBottom: 20,
+    ...ds.shadow.md,
+  },
+  avatarImage: {
+    width: 92,
+    height: 92,
+    borderRadius: ds.radius.full,
   },
   name: {
-    fontFamily: font.text_bold,
-    fontSize: 30,
-    color: "black",
+    fontFamily: ds.fontFamily.bold,
+    fontSize: 22,
+    color: ds.colors.text,
   },
   nickname: {
-    fontFamily: font.text,
-    fontSize: 20,
-    color: "black",
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 13,
+    color: ds.colors.textSecondary,
+    marginBottom: ds.space[6],
   },
-  row: {
-    display: "flex",
+  statsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
     width: "100%",
-    marginTop: 20,
-    marginBottom: 20,
+    marginBottom: ds.space[5] + 2,
   },
-  column: {
-    display: "flex",
-    flexDirection: "column",
+  statCard: {
+    flex: 1,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: ds.colors.borderSubtle,
+    borderRadius: ds.radius.l,
+    paddingVertical: ds.space[4],
+    paddingHorizontal: ds.space[2] + 2,
+    marginHorizontal: ds.space[2],
   },
-  subtext: {
-    fontFamily: font.text,
-    fontSize: 18,
-    color: "#000",
+  statValue: {
+    fontFamily: ds.fontFamily.metaBold,
+    fontSize: 16,
+    color: ds.colors.text,
+    marginTop: ds.space[2],
   },
-  button: {
-    width: "90%",
-    height: 50,
-    backgroundColor: color.secondary,
-    borderRadius: 10,
+  statLabel: {
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 10,
+    color: ds.colors.textSecondary,
+    marginTop: ds.space[2],
+  },
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: ds.space[7] + 2,
+  },
+  followButton: {
+    height: ds.control.lg,
+    borderRadius: ds.radius.m,
+    backgroundColor: ds.colors.action,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    ...ds.shadow.md,
   },
-  err: {
-    fontFamily: font.text,
-    fontSize: 20,
-    color: "#000",
+  followButtonActive: {
+    backgroundColor: ds.colors.surface,
+    borderWidth: 1,
+    borderColor: ds.colors.border,
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  back: {
-    width: 30,
-    height: 30,
-    position: "absolute",
-    top: 40,
-    left: 10,
+  followButtonText: {
+    fontFamily: ds.fontFamily.semibold,
+    fontSize: 14,
+    color: ds.colors.white,
+    marginLeft: ds.space[3] - 1,
+  },
+  shareButton: {
+    width: ds.control.lg,
+    height: ds.control.lg,
+    borderRadius: ds.radius.m,
+    borderWidth: 1,
+    borderColor: ds.colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: ds.space[3] + 2,
+  },
+  sectionRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: ds.space[4],
+  },
+  sectionLabel: {
+    ...ds.type.sectionLabel,
+  },
+  travelsGrid: {
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  travelsCell: {
+    width: "48.5%",
+    marginBottom: ds.space[3] + 2,
   },
 });

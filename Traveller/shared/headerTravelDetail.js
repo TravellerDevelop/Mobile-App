@@ -4,25 +4,15 @@ import {
   View,
   TouchableOpacity,
   Text,
-  TouchableNativeFeedback,
   Image,
-  ImageBackground,
 } from "react-native";
-import {
-  color,
-  font,
-  paddingTopPage,
-  serverLink,
-} from "../global/globalVariable";
-import { LinearGradient } from "expo-linear-gradient";
+import { serverLink } from "../global/globalVariable";
+import { ds } from "../global/designSystem";
+import { BrandHeader, HeaderChip } from "../components/ui";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getData } from "./data/localdata";
-import { Badge } from "@react-native-material/core";
-import EditTravel from "../screens/Modals/edittravel";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HeaderTravelDetail({ navigation, data }) {
-  let top = paddingTopPage - 20;
   let [username, setUsername] = React.useState();
 
   let creator = "";
@@ -43,199 +33,117 @@ export default function HeaderTravelDetail({ navigation, data }) {
     test();
   }, []);
 
-  let [editVisibility, setEditVisibility] = React.useState(false);
+  const createdAt = new Date(data.creation_date)
+    .toLocaleString("it-IT", { timeZone: "UTC" })
+    .substring(0, 10);
+
+  const content = (
+    <>
+      <View style={styles.topRow}>
+        <TouchableOpacity
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={20} color={ds.colors.white} />
+        </TouchableOpacity>
+
+        {creator == username && (
+          <TouchableOpacity
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={() => navigation.navigate("EditTravel", data)}
+          >
+            <MaterialCommunityIcons name="pencil-outline" size={18} color={ds.colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <Text style={styles.title} numberOfLines={2}>
+        {data.name}
+      </Text>
+      <Text style={styles.subtitle}>
+        Creato da {creator == username ? "te" : creator} · {createdAt}
+      </Text>
+      <Text style={styles.code}>Codice invito: {data.code}</Text>
+
+      <View style={styles.chipRow}>
+        <HeaderChip
+          icon="information-outline"
+          label="Informazioni"
+          onPress={() => navigation.navigate("TravelPartecipants", data)}
+        />
+        <HeaderChip
+          icon="map-marker-path"
+          label="Itinerario"
+          onPress={() => navigation.navigate("Itinerary", { data, username })}
+        />
+      </View>
+    </>
+  );
+
+  if (!data.image) {
+    return (
+      <BrandHeader paddingTop={66} paddingBottom={40}>
+        {content}
+      </BrandHeader>
+    );
+  }
 
   return (
-    <>
-      {!data.image ? (
-        <LinearGradient
-          style={styles.header}
-          start={{ x: 0.5, y: 0.2 }}
-          colors={[color.primary, color.secondary]}
-        >
-          <SafeAreaView>
-            {creator == username && (
-              <>
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('EditTravel', data)
-                  }}
-                  style={{ zIndex: 100 }}
-                >
-                  <View
-                    style={{
-                      height: 35,
-                      width: 35,
-                      position: "absolute",
-                      right: 20,
-                      top: 15,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 100,
-                    }}
-                  >
-                    <Image
-                      source={require("../assets/image/icona-edit.png")}
-                      style={{ tintColor: "white", height: 25, width: 25 }}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </>
-            )}
-            <View style={styles.row}>
-              <TouchableNativeFeedback onPress={() => navigation.goBack()}>
-                <MaterialCommunityIcons
-                  name="arrow-left"
-                  size={24}
-                  color={"white"}
-                />
-              </TouchableNativeFeedback>
-              <Text style={styles.title}>{data.name}</Text>
-            </View>
-            <Text style={styles.subtitle}>Creato da {creator}</Text>
-
-            <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
-
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                marginLeft: 44,
-                marginTop: 15,
-                width: 300,
-              }}
-              onPress={() => navigation.navigate("TravelPartecipants", data)}
-            >
-              <Badge
-                label={
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <MaterialCommunityIcons
-                      style={{ marginRight: 5 }}
-                      name="information-outline"
-                      color="white"
-                    />
-                    <Text style={{ color: "white", fontFamily: font.text }}>
-                      Informazioni sul viaggio
-                    </Text>
-                  </View>
-                }
-                color="#490099"
-              />
-            </TouchableOpacity>
-          </SafeAreaView>
-        </LinearGradient>
-      ) : (
-        <ImageBackground
-          style={styles.header}
-          source={{ uri: serverLink + "userImage/" + data.image }}
-          imageStyle={{ opacity: 0.85 }}
-        >
-          <SafeAreaView>
-            {creator == username ? (
-              <>
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('EditTravel', data)
-                  }}
-                  style={{ zIndex: 100 }}
-                >
-                  <View
-                    style={{
-                      height: 35,
-                      width: 35,
-                      position: "absolute",
-                      right: 20,
-                      top: 15,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 100,
-                    }}
-                  >
-                    <Image
-                      source={require("../assets/image/icona-edit.png")}
-                      style={{ tintColor: "white", height: 25, width: 25 }}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </>
-            ) : null}
-            <View style={styles.row}>
-              <TouchableNativeFeedback onPress={() => navigation.goBack()}>
-                <MaterialCommunityIcons
-                  name="arrow-left"
-                  size={24}
-                  color={"white"}
-                />
-              </TouchableNativeFeedback>
-              <Text style={styles.title}>{data.name}</Text>
-            </View>
-            <Text style={styles.subtitle}>Creato da {creator}</Text>
-
-            <Text style={styles.subtitle}>Codice invito: {data.code}</Text>
-
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                marginLeft: 44,
-                marginTop: 15,
-                width: 300,
-              }}
-              onPress={() => navigation.navigate("TravelPartecipants", data)}
-            >
-              <Badge
-                label={
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <MaterialCommunityIcons
-                      style={{ marginRight: 5 }}
-                      name="information-outline"
-                      color="white"
-                    />
-                    <Text style={{ color: "white", fontFamily: font.text }}>
-                      Informazioni sul viaggio
-                    </Text>
-                  </View>
-                }
-                color="#490099"
-              />
-            </TouchableOpacity>
-          </SafeAreaView>
-        </ImageBackground>
-      )}
-    </>
+    <View style={styles.imageHeader}>
+      {/* Image "nudo" invece di ImageBackground: ImageBackground riapplica
+          width/height del contenitore all'<Image> interno, e qui l'header
+          non ha una height esplicita (dipende dal contenuto testuale) — quel
+          ricalcolo lascia scoperto il bordo destro dell'immagine. */}
+      <Image
+        style={StyleSheet.absoluteFillObject}
+        source={{ uri: serverLink + "userImage/" + data.image }}
+        resizeMode="cover"
+      />
+      <View style={styles.scrim} />
+      {content}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: "#000",
+  imageHeader: {
     width: "100%",
-    paddingTop: paddingTopPage,
+    backgroundColor: ds.colors.brand,
+    paddingHorizontal: ds.layout.headerPaddingH,
+    paddingTop: 66,
     paddingBottom: 40,
   },
-  row: {
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(1, 13, 55, 0.45)",
+  },
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 10,
-    marginTop: 10,
+    justifyContent: "space-between",
+    marginBottom: ds.space[5] + 2,
   },
   title: {
-    color: "white",
-    fontFamily: font.text_bold,
-    fontSize: 25,
-    marginLeft: 10,
+    color: ds.colors.white,
+    fontFamily: ds.fontFamily.bold,
+    fontSize: 22,
+    marginBottom: ds.space[2],
   },
   subtitle: {
-    marginLeft: 44,
-    color: "white",
-    fontFamily: font.text,
-    fontSize: 16,
+    color: ds.colors.onBrandMuted,
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 12,
+    marginBottom: ds.space[1],
   },
-  avatarContainer: {
-    backgroundColor: "white",
-    borderRadius: 100,
-    alignItems: "center",
-    justifyContent: "center",
-    height: 35,
-    width: 35,
-    marginRight: -15,
+  code: {
+    color: ds.colors.onBrandMuted,
+    fontFamily: ds.fontFamily.metaRegular,
+    fontSize: 12,
+    marginBottom: ds.space[4] + 2,
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: ds.space[3],
   },
 });

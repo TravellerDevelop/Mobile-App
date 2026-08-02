@@ -39,7 +39,22 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "react-native-maps",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Consenti a Traveller di accedere alle tue foto per salvare le immagini dei viaggi.",
+          "savePhotosPermission": "Consenti a Traveller di salvare le immagini nella tua galleria.",
+          "granularPermissions": ["photo"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Consenti a Traveller di accedere alle tue foto per importare un biglietto da uno screenshot."
+        }
+      ]
     ],
     "extra": {
       "eas": {

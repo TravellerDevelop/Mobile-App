@@ -1,0 +1,56 @@
+import axios from "axios";
+
+/* ============================================================
+   Meteo del giorno in corso.
+   Open-Meteo è gratuito e senza chiave, quindi la chiamata parte
+   direttamente dall'app: nessun segreto da proteggere lato server.
+   ============================================================ */
+
+export interface DayWeather {
+  temperature: number;
+  icon: string;
+  description: string;
+}
+
+/* Codici WMO raggruppati: non serve la precisione da bollettino,
+   serve capire se ci si bagna. */
+function describe(code: number): { icon: string; description: string } {
+  if (code === 0) return { icon: "weather-sunny", description: "Sereno" };
+  if (code <= 2) return { icon: "weather-partly-cloudy", description: "Poco nuvoloso" };
+  if (code === 3) return { icon: "weather-cloudy", description: "Nuvoloso" };
+  if (code <= 48) return { icon: "weather-fog", description: "Nebbia" };
+  if (code <= 57) return { icon: "weather-rainy", description: "Pioviggine" };
+  if (code <= 67) return { icon: "weather-pouring", description: "Pioggia" };
+  if (code <= 77) return { icon: "weather-snowy", description: "Neve" };
+  if (code <= 82) return { icon: "weather-pouring", description: "Rovesci" };
+  if (code <= 86) return { icon: "weather-snowy-heavy", description: "Rovesci di neve" };
+  return { icon: "weather-lightning", description: "Temporale" };
+}
+
+/** Meteo attuale su una coordinata; null se la chiamata non riesce. */
+export async function fetchWeather(lat: number, lon: number): Promise<DayWeather | null> {
+  try {
+    const { data } = await axios.get<any>("https://api.open-meteo.com/v1/forecast", {
+      params: {
+        latitude: lat,
+        longitude: lon,
+        current: "temperature_2m,weather_code",
+        timezone: "auto",
+      },
+      timeout: 6000,
+    });
+
+    const current = data?.current;
+    if (!current) return null;
+
+    const { icon, description } = describe(Number(current.weather_code));
+    return {
+      temperature: Math.round(Number(current.temperature_2m)),
+      icon,
+      description,
+    };
+  } catch (err) {
+    // Il meteo è un di più: senza rete la schermata funziona lo stesso.
+    return null;
+  }
+}
