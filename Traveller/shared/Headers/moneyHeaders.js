@@ -1,10 +1,19 @@
 import React from "react";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ds } from "../../global/designSystem";
 
-export default function MoneyHeader() {
+/**
+ * Fascia in cima al tab Money.
+ *
+ * Accetta `children` così che la schermata possa montarci dentro il
+ * riepilogo del saldo: prima l'header conteneva solo titolo e sottotitolo,
+ * e lo spazio più visibile della pagina non diceva nulla di utile.
+ *
+ * @param {{ children?: React.ReactNode }} props
+ */
+export default function MoneyHeader({ children }) {
     return (
         <LinearGradient
             colors={[ds.colors.brand, ds.colors.action]}
@@ -18,10 +27,17 @@ export default function MoneyHeader() {
                 color="rgba(255,255,255,0.07)"
                 style={styles.headerDecor}
             />
-            <Text style={styles.title}>Money</Text>
-            <Text style={styles.paragraph}>
-                Tieni sotto controllo entrate e uscite di tutti i tuoi viaggi.
-            </Text>
+
+            {children ? (
+                children
+            ) : (
+                <View>
+                    <Text style={styles.title}>Money</Text>
+                    <Text style={styles.paragraph}>
+                        Tieni sotto controllo entrate e uscite di tutti i tuoi viaggi.
+                    </Text>
+                </View>
+            )}
         </LinearGradient>
     )
 }

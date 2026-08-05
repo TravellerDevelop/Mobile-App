@@ -1,8 +1,8 @@
 import React from "react";
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import BarcodeCode from "../../components/tickets/BarcodeCode";
 
-export default function QrCodeModal({ data, visibility, setVisibility }) {
+export default function QrCodeModal({ data, format, visibility, setVisibility }) {
     return (
         <Modal visible={visibility} animationType="slide" transparent={true}>
             <View style={styles.container}>
@@ -10,9 +10,10 @@ export default function QrCodeModal({ data, visibility, setVisibility }) {
                     <Text style={{ color: "#FFF", fontSize: 20, fontFamily: "montserrat-bold", width: "100%", textAlign: "center" }}>Chiudi</Text>
                 </TouchableOpacity>
 
-                <View style={styles.qrContainer} > 
-                    <QRCode
+                <View style={styles.qrContainer} >
+                    <BarcodeCode
                         value={data}
+                        format={format}
                         size={250}
                     />
                 </View>

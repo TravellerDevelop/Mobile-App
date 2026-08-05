@@ -1,209 +1,315 @@
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { serverLink } from '../global/globalVariable';
-import { ds } from '../global/designSystem';
-import { EmptyState, InitialsAvatar } from '../components/ui';
-import axios from 'axios';
-import { getData } from '../shared/data/localdata';
-import { ApiFollow, ApiUser } from '../shared/types/api';
+/**
+ * Centro notifiche.
+ *
+ * Prima questa schermata mostrava soltanto le richieste di follow (le
+ * uniche "notifiche" che esistessero): ora è il feed completo delle
+ * notifiche persistite, con le richieste di follow ancora in cima perché
+ * sono le uniche che portano due azioni inline e vivono in un'altra
+ * collection lato server ("follow", non "notifications").
+ */
 
-export default function Notifications({ navigation, route }: { navigation: any; route: any }) {
-    // NOTA: riassegnata più sotto con la response di api/follow/takeFollowersRequest
-    // (forma diversa da route.params.notification): tenuta "any" per fedeltà al codice originale.
-    let data: any = route.params.notification;
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
+import { serverLink } from "../global/globalVariable";
+import { ds } from "../global/designSystem";
+import { EmptyState } from "../components/ui";
+import { getData } from "../shared/data/localdata";
+import { apiSend } from "../shared/data/apiClient";
+import { cacheKeys, readCache, writeCache } from "../shared/data/offlineCache";
+import { isNetworkError, markOffline, markOnline } from "../shared/data/netStatus";
+import { ApiFollow, ApiUser } from "../shared/types/api";
+import { useNotifications } from "../components/notifications/NotificationsProvider";
+import {
+  FollowRequestCard,
+  NotificationRow,
+  NotificationSection,
+} from "../components/notifications/parts";
+import { sectionFor } from "../components/notifications/catalog";
+import { NotificationItem } from "../components/notifications/types";
 
-    let [users, setUsers] = React.useState<ApiUser[]>([]);
-    let [myInfo, setMyInfo] = React.useState<Partial<ApiUser>>({});
+export default function Notifications({ navigation }: { navigation: any; route?: any }) {
+  const notifications = useNotifications();
 
-    let aus: string[] = [];
+  const [me, setMe] = useState<Partial<ApiUser>>({});
+  const [requests, setRequests] = useState<ApiUser[]>([]);
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
 
-    async function getUserData() {
-        let data = await getData("user");
-        setMyInfo(data);
-        getNotification(data._id);
+  /**
+   * Richieste di follow: due chiamate perché takeFollowersRequest torna
+   * solo le coppie (from, to) e i nomi vanno risolti a parte.
+   */
+  const loadRequests = useCallback(async (userId: string) => {
+    const cacheKey = cacheKeys.followRequests(userId);
+
+    try {
+      const { data } = await axios.get<ApiFollow[]>(
+        `${serverLink}api/follow/takeFollowersRequest?to=${encodeURIComponent(userId)}`
+      );
+      markOnline();
+
+      const ids = data.map((item) => item.from);
+      if (ids.length === 0) {
+        setRequests([]);
+        await writeCache<ApiUser[]>(cacheKey, []);
+        return;
+      }
+
+      const users = await axios.post<ApiUser[]>(`${serverLink}api/user/fromIdToUsernames`, {
+        id: ids,
+      });
+      setRequests(users.data ?? []);
+      await writeCache(cacheKey, users.data ?? []);
+    } catch (error) {
+      if (isNetworkError(error)) {
+        // Offline: mostriamo le richieste già viste. Non si può rispondere
+        // (accetta/rifiuta chiama il server), ma almeno si sa che ci sono.
+        markOffline();
+        setRequests((await readCache<ApiUser[]>(cacheKey))?.data ?? []);
+        return;
+      }
+      console.log("Notifiche — richieste di follow", error);
+      setRequests([]);
     }
+  }, []);
 
-    function getNotification(myid: string) {
-        axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowersRequest?to=" + myid)
-            .then((response) => {
-                data = response.data;
-                for (let item of data) {
-                    aus.push(item.from);
-                }
+  useEffect(() => {
+    (async () => {
+      const user = await getData("user");
+      setMe(user ?? {});
+      if (user?._id) loadRequests(user._id);
+    })();
+  }, [loadRequests]);
 
-                axios.post<ApiUser[]>(serverLink + "api/user/fromIdToUsernames", { id: aus })
-                    .then((response) => {
-                        setUsers(response.data);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    })
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+  /* Ricarica a ogni ingresso nella schermata: le notifiche possono essere
+     arrivate mentre l'app era altrove. Le dipendenze sono le sole funzioni
+     (stabili) e non l'intero oggetto del provider, che cambia identità a
+     ogni aggiornamento della lista e farebbe ri-registrare il listener in
+     continuazione. */
+  const { refresh } = notifications;
+  useEffect(() => {
+    const unsubscribe = navigation.addListener?.("focus", () => {
+      refresh();
+      if (me._id) loadRequests(me._id);
+    });
+    return unsubscribe;
+  }, [navigation, refresh, me._id, loadRequests]);
+
+  const respond = useCallback(
+    async (user: ApiUser, accept: boolean) => {
+      if (!me._id || respondingTo) return;
+
+      setRespondingTo(user._id);
+      try {
+        /* In coda se offline: accettare una richiesta di follow è
+           un'operazione idempotente e senza risposta da mostrare, quindi
+           differirla è sicuro. */
+        await apiSend(
+          `${serverLink}api/follow/${accept ? "accept" : "delete"}`,
+          { from: user._id, to: me._id },
+          {
+            queue: {
+              label: accept ? "Richiesta accettata" : "Richiesta rifiutata",
+              invalidates: [cacheKeys.followRequests(me._id)],
+            },
+          }
+        );
+        setRequests((prev) => prev.filter((item) => item._id !== user._id));
+        notifications.refreshBadge();
+      } catch (error) {
+        console.log("Notifiche — risposta alla richiesta", error);
+      } finally {
+        setRespondingTo(null);
+      }
+    },
+    [me._id, respondingTo, notifications]
+  );
+
+  const handlePress = useCallback(
+    (item: NotificationItem) => {
+      notifications.open(item);
+    },
+    [notifications]
+  );
+
+  /** Le notifiche raggruppate per fascia temporale, nell'ordine di arrivo. */
+  const groups = useMemo(() => {
+    const result: { label: string; items: NotificationItem[] }[] = [];
+    for (const item of notifications.items) {
+      const label = sectionFor(item.createdAt);
+      const last = result[result.length - 1];
+      if (last && last.label === label) last.items.push(item);
+      else result.push({ label, items: [item] });
     }
+    return result;
+  }, [notifications.items]);
 
-    React.useEffect(() => {
-        getUserData();
-    }, [])
+  const isEmpty = requests.length === 0 && notifications.items.length === 0;
 
-    // Accetta o rifiuta la richiesta di follow
-    function respond(item: ApiUser, accept: boolean) {
-        axios.post(serverLink + "api/follow/" + (accept ? "accept" : "delete"), {
-            from: item._id,
-            to: myInfo._id,
-        })
-            .then(() => getNotification(myInfo._id as string))
-            .catch((error) => console.log(error));
-    }
+  return (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={notifications.refreshing}
+          onRefresh={() => {
+            notifications.refresh();
+            if (me._id) loadRequests(me._id);
+          }}
+        />
+      }
+      onMomentumScrollEnd={({ nativeEvent }) => {
+        // Paginazione a scorrimento: si carica la pagina successiva quando
+        // mancano meno di due schermate alla fine.
+        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+        const remaining = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+        if (remaining < layoutMeasurement.height && notifications.hasMore) {
+          notifications.loadMore();
+        }
+      }}
+    >
+      <View style={styles.header}>
+        <TouchableOpacity
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={20} color={ds.colors.text} />
+        </TouchableOpacity>
 
-    return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <View style={styles.header}>
-                <TouchableOpacity
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    onPress={() => navigation.goBack()}
-                >
-                    <MaterialCommunityIcons name="arrow-left" size={20} color={ds.colors.text} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Notifiche</Text>
-            </View>
+        <Text style={styles.headerTitle}>Notifiche</Text>
 
-            {users.length == 0 ? (
-                <EmptyState
-                    icon="bell-outline"
-                    title="Nessuna notifica"
-                    description="Le richieste dei tuoi amici compariranno qui."
-                />
-            ) : null}
+        <View style={styles.headerActions}>
+          {notifications.unreadCount > 0 ? (
+            <TouchableOpacity onPress={() => notifications.markAllRead()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={styles.headerAction}>Segna lette</Text>
+            </TouchableOpacity>
+          ) : null}
 
-            <FlatList
-                scrollEnabled={false}
-                data={users}
-                keyExtractor={(item) => String(item._id)}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <InitialsAvatar name={item.name + " " + item.surname} size={34} />
-                            <Text style={styles.cardTitle}>
-                                @{item.username} ha richiesto di seguirti
-                            </Text>
-                        </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("NotificationSettings")}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={{ marginLeft: ds.space[4] }}
+          >
+            <MaterialCommunityIcons name="cog-outline" size={19} color={ds.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-                        <Text style={styles.cardSubtitle}>
-                            Accetta la richiesta di {item.name} {item.surname} per aggiungerla ai tuoi viaggi.
-                        </Text>
+      {notifications.error ? <Text style={styles.error}>{notifications.error}</Text> : null}
 
-                        <View style={styles.actions}>
-                            <TouchableOpacity
-                                activeOpacity={0.85}
-                                style={styles.actionSlot}
-                                onPress={() => respond(item, true)}
-                            >
-                                <View style={styles.accept}>
-                                    <Text style={styles.acceptText}>Accetta</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                activeOpacity={0.85}
-                                style={styles.actionSlot}
-                                onPress={() => respond(item, false)}
-                            >
-                                <View style={styles.reject}>
-                                    <Text style={styles.rejectText}>Rifiuta</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
+      {requests.length > 0 ? (
+        <>
+          <NotificationSection label="Richieste" />
+          {requests.map((user) => (
+            <FollowRequestCard
+              key={String(user._id)}
+              name={`${user.name} ${user.surname}`}
+              username={user.username}
+              busy={respondingTo === user._id}
+              onAccept={() => respond(user, true)}
+              onReject={() => respond(user, false)}
             />
-        </ScrollView>
-    );
+          ))}
+        </>
+      ) : null}
+
+      {notifications.loading && notifications.items.length === 0 ? (
+        <ActivityIndicator style={styles.loader} color={ds.colors.brand} />
+      ) : null}
+
+      {groups.map((group) => (
+        <View key={group.label}>
+          <NotificationSection label={group.label} />
+          {group.items.map((item) => (
+            <NotificationRow
+              key={item._id}
+              item={item}
+              onPress={handlePress}
+              onDismiss={(target) => notifications.remove(target._id)}
+            />
+          ))}
+        </View>
+      ))}
+
+      {notifications.loadingMore ? (
+        <ActivityIndicator style={styles.loader} color={ds.colors.brand} />
+      ) : null}
+
+      {isEmpty && !notifications.loading ? (
+        <EmptyState
+          icon="bell-outline"
+          title="Nessuna notifica"
+          description="Qui compariranno le richieste dei tuoi amici e gli aggiornamenti dei tuoi viaggi."
+        />
+      ) : null}
+
+      {notifications.items.length > 0 ? (
+        <TouchableOpacity style={styles.clearAll} onPress={() => notifications.clearAll()}>
+          <Text style={styles.clearAllText}>Svuota il centro notifiche</Text>
+        </TouchableOpacity>
+      ) : null}
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: ds.colors.surface,
-    },
-    content: {
-        paddingHorizontal: ds.layout.screenPadding,
-        paddingTop: 70,
-        paddingBottom: ds.layout.contentBottomPadding,
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: ds.space[6],
-    },
-    headerTitle: {
-        fontFamily: ds.fontFamily.bold,
-        fontSize: 18,
-        color: ds.colors.text,
-        marginLeft: ds.space[4],
-    },
-    card: {
-        borderWidth: 1,
-        borderColor: ds.colors.borderSubtle,
-        borderRadius: ds.radius.l,
-        backgroundColor: ds.colors.surface,
-        padding: ds.space[5],
-        marginBottom: ds.space[4],
-        ...ds.shadow.md,
-    },
-    cardHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: ds.space[3] + 2,
-    },
-    cardTitle: {
-        flex: 1,
-        fontFamily: ds.fontFamily.semibold,
-        fontSize: 13,
-        color: ds.colors.text,
-        marginLeft: ds.space[3] + 2,
-    },
-    cardSubtitle: {
-        fontFamily: ds.fontFamily.regular,
-        fontSize: 12,
-        lineHeight: 18,
-        color: ds.colors.textSecondary,
-        marginBottom: ds.space[4] + 2,
-    },
-    actions: {
-        flexDirection: "row",
-    },
-    actionSlot: {
-        flex: 1,
-    },
-    accept: {
-        height: ds.control.sm,
-        borderRadius: ds.radius.m,
-        backgroundColor: ds.colors.action,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: ds.space[3] - 1,
-    },
-    acceptText: {
-        fontFamily: ds.fontFamily.semibold,
-        fontSize: 12,
-        color: ds.colors.white,
-    },
-    reject: {
-        height: ds.control.sm,
-        borderRadius: ds.radius.m,
-        borderWidth: 1,
-        borderColor: ds.colors.border,
-        alignItems: "center",
-        justifyContent: "center",
-        marginLeft: ds.space[3] - 1,
-    },
-    rejectText: {
-        fontFamily: ds.fontFamily.semibold,
-        fontSize: 12,
-        color: ds.colors.errorText,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: ds.colors.surface,
+  },
+  content: {
+    paddingHorizontal: ds.layout.screenPadding,
+    paddingTop: 70,
+    paddingBottom: ds.layout.contentBottomPadding,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: ds.space[4],
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: ds.fontFamily.bold,
+    fontSize: 18,
+    color: ds.colors.text,
+    marginLeft: ds.space[4],
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerAction: {
+    fontFamily: ds.fontFamily.semibold,
+    fontSize: 12,
+    color: ds.colors.action,
+  },
+  error: {
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 12,
+    color: ds.colors.errorText,
+    marginBottom: ds.space[3],
+  },
+  loader: {
+    marginVertical: ds.space[5],
+  },
+  clearAll: {
+    alignItems: "center",
+    marginTop: ds.space[6],
+  },
+  clearAllText: {
+    fontFamily: ds.fontFamily.regular,
+    fontSize: 12,
+    color: ds.colors.textPlaceholder,
+    textDecorationLine: "underline",
+  },
 });

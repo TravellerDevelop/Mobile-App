@@ -9,6 +9,7 @@ import AnimatedLottieView from 'lottie-react-native';
 import { getData } from '../shared/data/localdata';
 import axios from 'axios';
 import { ApiFollow, ApiUser } from '../shared/types/api';
+import { useNotifications } from './notifications/NotificationsProvider';
 
 interface MainHeaderProps {
     navigation: any;
@@ -20,8 +21,13 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }: M
     let [user, setUser] = useState<Partial<ApiUser> | null>(null);
     let [touch, setTouch] = useState(0);
     let [easterVisibility, setEasterVisibility] = useState(false);
-    let [notification, setNotification] = useState(0);
-    let [friendRequest, setFriendRequest] = useState<ApiFollow[]>([]);
+
+    /* Il conteggio del badge arriva dal provider (notifiche non lette +
+       richieste di follow ancora in sospeso). Prima l'header faceva una sua
+       chiamata a takeFollowersRequest e mostrava solo quelle: le altre
+       notifiche non comparivano da nessuna parte. */
+    const notifications = useNotifications();
+    const badge = notifications.badgeCount;
 
     setInterval(() => { setTouch(0) }, 5000)
 
@@ -31,17 +37,7 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }: M
 
     async function userData() {
         let aus = await getData("user");
-
         setUser(aus);
-
-        axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowersRequest?to=" + aus._id)
-            .then((response) => {
-                setFriendRequest(response.data);
-                setNotification(response.data.length);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
     }
 
     if (refresh) {
@@ -77,13 +73,15 @@ export default function MainHeader({ navigation, updateJoinTravels, refresh }: M
 
                     <View style={styles.actions}>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate("Notifications", { notification: friendRequest })}
+                            onPress={() => navigation.navigate("Notifications")}
                         >
                             <View>
                                 <MaterialCommunityIcons name="bell-outline" size={20} color={ds.colors.white} />
-                                {notification > 0 && (
+                                {badge > 0 && (
                                     <View style={styles.notificationBadge}>
-                                        <Text style={styles.notificationBadgeText}>{notification}</Text>
+                                        <Text style={styles.notificationBadgeText}>
+                                            {badge > 99 ? "99+" : badge}
+                                        </Text>
                                     </View>
                                 )}
                             </View>

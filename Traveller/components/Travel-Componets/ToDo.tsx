@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { serverLink } from "../../global/globalVariable";
 import { ds } from "../../global/designSystem";
-import axios from "axios";
+import { apiSend } from "../../shared/data/apiClient";
+import { cacheKeys } from "../../shared/data/offlineCache";
 import PostCard from "./PostCard";
 import { ProgressTrack } from "../ui";
 
@@ -29,10 +30,19 @@ export default function ToDo({ data, home, travel, loadPosts, username }: ToDoPr
         setTemp({ ...temp, items: updatedItems });
 
         try {
-            await axios.post(serverLink + "api/post/updateToDo", {
-                id: data._id,
-                items: updatedItems,
-            });
+            /* La spunta è già applicata in locale: offline la richiesta va in
+               coda e parte al ritorno della rete, quindi l'utente non vede
+               mai la casella "tornare indietro" da sola. */
+            await apiSend(
+                serverLink + "api/post/updateToDo",
+                { id: data._id, items: updatedItems },
+                {
+                    queue: {
+                        label: "Lista di cose da fare",
+                        invalidates: data.travel ? [cacheKeys.travelPosts(data.travel)] : [],
+                    },
+                }
+            );
         } catch (error) {
             console.log(error);
         }

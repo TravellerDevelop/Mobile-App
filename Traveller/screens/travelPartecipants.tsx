@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Text, TouchableOpacity, ScrollView } from "react-native";
+import { StyleSheet, View, FlatList, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import { InitialsAvatar, OverscrollBackdrop, SectionLabel, Sheet, StatusBadge } from "../components/ui";
 import TravelPartecipantsHeader from "../shared/travelPartecipantsHeader";
-import axios from "axios";
 import { getData } from "../shared/data/localdata";
+import { apiGet, apiSend, isOfflineError } from "../shared/data/apiClient";
+import { cacheKeys } from "../shared/data/offlineCache";
 import ParticipantsLoading from "../components/loading/ParticipantsLoading";
 import { ApiTravelParticipantInfo } from "../shared/types/api";
 
@@ -35,34 +36,46 @@ export default function TravelPartecipants({ navigation, route }: { navigation: 
             }
         }
 
-        axios.get<ApiTravelParticipantInfo[]>(serverLink + "api/travel/takeParticipants?travel=" + route.params._id)
-            .then((response) => {
-                if (response.status == 200) {
-                    setUsersData(response.data);
-                    setIsLoadingParticipants(false);
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+        try {
+            const { data } = await apiGet<ApiTravelParticipantInfo[]>(
+                serverLink + "api/travel/takeParticipants?travel=" + route.params._id,
+                { cacheKey: cacheKeys.travelParticipants(route.params._id) }
+            );
+            setUsersData(data ?? []);
+        } catch (error) {
+            if (!isOfflineError(error)) console.log(error);
+        } finally {
+            setIsLoadingParticipants(false);
+        }
     }
 
     useEffect(() => {
         update();
     }, [])
 
-    // Abbandona il viaggio (o rimuove un partecipante se sei il creatore)
-    function leave(userid: string, goHome: boolean) {
-        axios.post(serverLink + "api/travel/leave", { userid: userid, travel: route.params._id })
-            .then((response) => {
-                if (response.status == 200) {
-                    if (goHome) navigation.navigate("Home");
-                    else update();
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+    /* Abbandonare il viaggio (o rimuovere un partecipante) non va in coda:
+       è un'azione con conseguenze visibili agli altri e con una navigazione
+       subito dopo, e differirla di ore sarebbe peggio che chiedere di
+       rifarla con la rete. */
+    async function leave(userid: string, goHome: boolean) {
+        try {
+            await apiSend(
+                serverLink + "api/travel/leave",
+                { userid: userid, travel: route.params._id },
+                { invalidates: [cacheKeys.travelParticipants(route.params._id)] }
+            );
+            if (goHome) navigation.navigate("Home");
+            else update();
+        } catch (error) {
+            if (isOfflineError(error)) {
+                Alert.alert(
+                    "Sei offline",
+                    "Serve una connessione per uscire dal viaggio. Riprova quando torna la rete."
+                );
+                return;
+            }
+            console.log(error);
+        }
     }
 
     return (
@@ -165,7 +178,7 @@ const styles = StyleSheet.create({
     },
     sheet: {
         paddingTop: ds.space[6],
-        paddingBottom: 110,
+        paddingBottom: ds.layout.actionBarContentPadding,
     },
     description: {
         fontFamily: ds.fontFamily.regular,
@@ -230,7 +243,8 @@ const styles = StyleSheet.create({
         position: "absolute",
         left: ds.layout.screenPadding,
         right: ds.layout.screenPadding,
-        bottom: ds.space[6],
+        // Sopra la tab bar flottante, non sotto (vedi ds.layout.actionBarBottom).
+        bottom: ds.layout.actionBarBottom,
         height: 50,
         borderRadius: ds.radius.m,
         backgroundColor: ds.colors.action,

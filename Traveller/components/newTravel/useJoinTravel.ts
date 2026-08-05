@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import axios from "axios";
+import { isNetworkError, markOffline } from "../../shared/data/netStatus";
 import { serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
 import { INVITE_CODE_LENGTH } from "./useCreateTravelForm";
@@ -67,6 +68,13 @@ export function useJoinTravel({ onJoined }: UseJoinTravelOptions) {
 
       setError(response.data?.message ?? "Codice non valido");
     } catch (error: unknown) {
+      if (isNetworkError(error)) {
+        // Il codice invito lo valida il server: offline non si può fare.
+        markOffline();
+        setError("Sei offline: per unirti a un viaggio serve una connessione.");
+        return;
+      }
+
       const message =
         axios.isAxiosError(error) && error.response?.data?.message
           ? String(error.response.data.message)

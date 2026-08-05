@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getData } from "../../shared/data/localdata";
+import { useTravelRealtime } from "../realtime/hooks";
+import { isOfflineError } from "../../shared/data/apiClient";
+import { isOnline } from "../../shared/data/netStatus";
+import { queueLengthSync } from "../../shared/data/syncQueue";
 import * as api from "./api";
 import { dayConflicts, stopsOfDay, todayIndex } from "./schedule";
 import type {
@@ -32,6 +36,8 @@ export function useItinerary({ travelId }: UseItineraryOptions) {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<ItineraryTab>("timeline");
   const [selectedDay, setSelectedDay] = useState(0);
+  /** Vero quando una modifica è in coda e non è ancora arrivata al server. */
+  const [pendingSync, setPendingSync] = useState(false);
 
   /* Il giorno mostrato all'apertura è quello di oggi se il viaggio è in
      corso: durante il viaggio è quasi sempre quello che si vuole vedere. */
@@ -48,16 +54,27 @@ export function useItinerary({ travelId }: UseItineraryOptions) {
         }
         setUserId(user._id);
 
+        // Senza rete fetchItinerary restituisce l'ultima copia salvata:
+        // il piano del giorno resta consultabile in viaggio, che è
+        // esattamente quando la connessione manca più spesso.
         const itinerary = await api.fetchItinerary(travelId, user._id);
         setData(itinerary);
         setError(null);
+
+        /* Coda svuotata e rete presente: quello che vediamo ora è la
+           versione del server, comprese le modifiche fatte offline. */
+        if (isOnline() && queueLengthSync() === 0) setPendingSync(false);
 
         if (!silent) {
           setTab(itinerary.days.length === 0 ? "ideas" : "timeline");
         }
       } catch (err) {
         console.log("Itinerario — caricamento", err);
-        setError("Non riesco a caricare l'itinerario");
+        setError(
+          isOfflineError(err)
+            ? "Sei offline e questo itinerario non è ancora stato scaricato"
+            : "Non riesco a caricare l'itinerario"
+        );
       } finally {
         setLoading(false);
       }
@@ -82,14 +99,61 @@ export function useItinerary({ travelId }: UseItineraryOptions) {
     setRefreshing(false);
   }, [load]);
 
+  /* ---- Realtime ---------------------------------------------
+     L'itinerario è il caso in cui il realtime serve di più: è l'unico
+     dato che più persone modificano *insieme*, spesso stando nella
+     stessa stanza con i telefoni in mano.
+
+     Si ricarica sempre dal server, mai applicando il payload: è la
+     stessa scelta già fatta per le mutazioni locali (vedi `run`), e
+     per lo stesso motivo — permessi, conflitti di orario e tappe
+     cancellate da altri rendono il piano qualcosa che solo il server
+     sa comporre. L'evento dice "è cambiato", non "cosa metterci".
+
+     La ricarica è accorpata perché un riordino trascinato genera un
+     evento per ogni assestamento della lista.
+     ------------------------------------------------------------ */
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+    },
+    []
+  );
+
+  useTravelRealtime(
+    travelId,
+    {
+      onItineraryChanged: () => {
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(() => {
+          realtimeTimer.current = null;
+          void load(true);
+        }, 400);
+      },
+    },
+    { currentUserId: userId }
+  );
+
   /* ---- Mutazioni ------------------------------------------- */
 
-  /** Esegue l'operazione e ricarica; l'errore torna al chiamante per l'alert. */
+  /**
+   * Esegue l'operazione e ricarica; l'errore torna al chiamante per l'alert.
+   *
+   * Offline l'operazione viene messa in coda da api.ts e `load` ricarica
+   * dalla cache, quindi la modifica NON compare subito a schermo: lo
+   * segnaliamo con `pendingSync`, che la schermata mostra come avviso.
+   * Applicarla in locale sarebbe fuorviante — il piano è condiviso e il
+   * server può rifiutarla (permessi, tappa cancellata da un altro).
+   */
   const run = useCallback(
     async <T,>(operation: (uid: string) => Promise<T>): Promise<T | null> => {
       if (!userId) return null;
+      const offline = !isOnline();
       try {
         const result = await operation(userId);
+        if (offline) setPendingSync(true);
         await load(true);
         return result;
       } catch (err: any) {
@@ -184,6 +248,7 @@ export function useItinerary({ travelId }: UseItineraryOptions) {
     loading,
     refreshing,
     error,
+    pendingSync,
     refresh,
     reload: load,
     tab,

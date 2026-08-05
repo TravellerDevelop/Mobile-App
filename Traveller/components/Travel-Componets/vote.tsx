@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect } from "react";
 import {
   StyleSheet,
@@ -10,6 +9,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { serverLink } from "../../global/globalVariable";
 import { ds } from "../../global/designSystem";
 import { getData } from "../../shared/data/localdata";
+import { apiSend } from "../../shared/data/apiClient";
+import { cacheKeys } from "../../shared/data/offlineCache";
 import PostCard from "./PostCard";
 import { ComponentStyles } from "./componentStyle";
 
@@ -106,8 +107,18 @@ export default function Vote({ item, home, travel, loadPosts, username }: VotePr
     while (checked != ausItem.content[i]) i++;
     aus[i].push(username);
 
-    axios
-      .post(serverLink + "api/post/updateVote", { id: item._id, vote: aus })
+    /* Il voto è già mostrato come dato (setChecked): offline la richiesta
+       va in coda e viene inviata al ritorno della rete. */
+    apiSend(
+      serverLink + "api/post/updateVote",
+      { id: item._id, vote: aus },
+      {
+        queue: {
+          label: "Voto",
+          invalidates: item.travel ? [cacheKeys.travelPosts(item.travel)] : [],
+        },
+      }
+    )
       .then(() => setCheckDisabled(true))
       .catch((err) => console.log(err));
   }

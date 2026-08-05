@@ -9,17 +9,20 @@ import {
   FlatList,
   LogBox,
   Alert,
+  ActivityIndicator,
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import QRCode from "react-native-qrcode-svg";
 import axios from "axios";
 import { serverLink } from "../../global/globalVariable";
 import { ds } from "../../global/designSystem";
 import { InitialsAvatar, OverscrollBackdrop, SectionLabel, SearchField, StatusBadge } from "../../components/ui";
 import { getData } from "../../shared/data/localdata";
+import { apiSend, isOfflineError } from "../../shared/data/apiClient";
+import { cacheKeys } from "../../shared/data/offlineCache";
 import QrCodeModal from "./qrCodeModal";
+import BarcodeCode from "../../components/tickets/BarcodeCode";
 import { ApiTicket, ApiTicketAirport, ApiUser } from "../../shared/types/api";
 
 const PLACEHOLDER = "--";
@@ -85,8 +88,8 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
   let [takeInfo, setTakeInfo] = useState<(() => void) | null>(null);
 
   let [qrVisibility, setQrVisibility] = useState(false);
-  let [showMenu, setShowMenu] = useState(false);
   let [showShare, setShowShare] = useState(false);
+  let [isDeleting, setIsDeleting] = useState(false);
 
   LogBox.ignoreLogs([
     "Non-serializable values were found in the navigation state",
@@ -137,17 +140,49 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
     uData();
   }, []);
 
-  function deleteTicket() {
-    axios
-      .post(serverLink + "api/tickets/delete", { id: data._id })
-      .then(() => {
-        if (takeInfo) takeInfo();
-        setShowMenu(false);
-        navigation.goBack();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  // L'eliminazione non va in coda offline: è irreversibile (e per i
+  // biglietti condivisi riguarda anche chi li ha ricevuti), quindi deve
+  // partire davanti agli occhi di chi la conferma — stesso ragionamento
+  // di deleteTravel in useEditTravelForm.ts.
+  async function deleteTicket() {
+    if (isDeleting) return;
+    setIsDeleting(true);
+
+    try {
+      const user = await getData("user");
+
+      await apiSend(
+        serverLink + "api/tickets/delete",
+        { id: data._id },
+        { invalidates: user?._id ? [cacheKeys.tickets(user._id)] : [] }
+      );
+
+      if (takeInfo) takeInfo();
+      navigation.goBack();
+    } catch (error) {
+      console.log(error);
+      if (isOfflineError(error)) {
+        Alert.alert(
+          "Sei offline",
+          "Per eliminare un biglietto serve una connessione. Riprova più tardi."
+        );
+      } else {
+        Alert.alert("Errore", "Non è stato possibile eliminare il biglietto. Riprova.");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function confirmDeleteTicket() {
+    Alert.alert(
+      "Eliminare il biglietto?",
+      "Il biglietto verrà eliminato definitivamente.",
+      [
+        { text: "Annulla", style: "cancel" },
+        { text: "Elimina", style: "destructive", onPress: deleteTicket },
+      ]
+    );
   }
 
   if (!data) return <></>;
@@ -163,6 +198,7 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
     <View style={styles.root}>
       <QrCodeModal
         data={data.qrdata}
+        format={data.qrtype}
         visibility={qrVisibility}
         setVisibility={setQrVisibility}
       />
@@ -192,15 +228,30 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
             <Text style={styles.headerTitle} numberOfLines={1}>
               {data.title || "Carta d'imbarco"}
             </Text>
-            <TouchableOpacity onPress={() => setShowMenu(true)}>
-              <View style={styles.headerIconChip}>
-                <MaterialCommunityIcons
-                  name="share-variant-outline"
-                  size={15}
-                  color={ds.colors.white}
-                />
-              </View>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity onPress={() => setShowShare(true)}>
+                <View style={styles.headerIconChip}>
+                  <MaterialCommunityIcons
+                    name="share-variant-outline"
+                    size={15}
+                    color={ds.colors.white}
+                  />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={confirmDeleteTicket} disabled={isDeleting}>
+                <View style={styles.headerIconChip}>
+                  {isDeleting ? (
+                    <ActivityIndicator color={ds.colors.white} size="small" />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="trash-can-outline"
+                      size={15}
+                      color={ds.colors.white}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.airlineRow}>
@@ -327,7 +378,7 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
             <TouchableOpacity activeOpacity={0.85} onPress={() => setQrVisibility(true)}>
               <View style={styles.codeCard}>
                 {data.qrdata ? (
-                  <QRCode value={data.qrdata} size={140} />
+                  <BarcodeCode value={data.qrdata} format={data.qrtype} size={140} />
                 ) : (
                   <View style={styles.codePlaceholder}>
                     <Text style={styles.codePlaceholderText}>{PLACEHOLDER}</Text>
@@ -367,47 +418,6 @@ export default function TicketModal({ navigation, route }: { navigation: any; ro
           </View>
         </View>
       </ScrollView>
-
-      {/* Azioni: condividi / elimina */}
-      <Modal transparent visible={showMenu} animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-          <View style={styles.sheetOverlay}>
-            <View style={styles.actionSheet}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  setShowMenu(false);
-                  setShowShare(true);
-                }}
-              >
-                <View style={styles.actionRow}>
-                  <MaterialCommunityIcons
-                    name="share-variant-outline"
-                    size={19}
-                    color={ds.colors.text}
-                    style={styles.actionIcon}
-                  />
-                  <Text style={styles.actionText}>Condividi il biglietto</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity activeOpacity={0.7} onPress={deleteTicket}>
-                <View style={[styles.actionRow, { borderBottomWidth: 0 }]}>
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={19}
-                    color={ds.colors.errorText}
-                    style={styles.actionIcon}
-                  />
-                  <Text style={[styles.actionText, { color: ds.colors.errorText }]}>
-                    Elimina biglietto
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
 
       {/* Condividi con un amico */}
       <Modal transparent visible={showShare} animationType="slide">
@@ -503,6 +513,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 24,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   headerIconChip: {
     width: 34,
@@ -811,40 +826,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  /* ---- Bottom sheet azioni ---- */
+  /* ---- Bottom sheet condivisione ---- */
   sheetOverlay: {
     flex: 1,
     backgroundColor: "rgba(1,13,55,0.4)",
   },
-  actionSheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: ds.colors.surface,
-    borderTopLeftRadius: ds.radius["2xl"],
-    borderTopRightRadius: ds.radius["2xl"],
-    paddingHorizontal: ds.space[6],
-    paddingTop: ds.space[6],
-    paddingBottom: ds.space[9],
-  },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: ds.space[4],
-    borderBottomWidth: 1,
-    borderBottomColor: ds.colors.borderSubtle,
-  },
-  actionIcon: {
-    marginRight: ds.space[4],
-  },
-  actionText: {
-    fontFamily: ds.fontFamily.medium,
-    fontSize: 15,
-    color: ds.colors.text,
-  },
-
-  /* ---- Bottom sheet condivisione ---- */
   shareSheet: {
     position: "absolute",
     left: 0,

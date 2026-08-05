@@ -2,11 +2,14 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import SkeletonScreen from "../SkeletonScreen";
 import { ds } from "../../global/designSystem";
+import { FeedGroup } from "../ui";
 
-/* Placeholder delle card post (stessa struttura di PostCard) */
-function PostSkeleton({ tall }) {
+/* Placeholder di una riga del feed — stessa struttura raggruppata di
+   PostCard.tsx (niente bordo/radius propri, solo un separatore in basso;
+   il "boxing" lo dà il FeedGroup che le contiene). */
+function PostSkeleton({ tall, last }) {
     return (
-        <View style={styles.card}>
+        <View style={[styles.row, last && styles.rowLast]}>
             <View style={styles.headerRow}>
                 <SkeletonScreen width={26} height={26} borderRadius={999} />
                 <View style={styles.headerText}>
@@ -27,22 +30,24 @@ function PostSkeleton({ tall }) {
 
 export default function PostLoading() {
     return (
-        <>
+        <FeedGroup>
             <PostSkeleton />
             <PostSkeleton tall />
-            <PostSkeleton />
-        </>
+            <PostSkeleton last />
+        </FeedGroup>
     )
 }
 
 const styles = StyleSheet.create({
-    card: {
-        borderWidth: 1,
-        borderColor: ds.colors.borderSubtle,
-        borderRadius: ds.radius.l,
+    row: {
         backgroundColor: ds.colors.surface,
-        padding: ds.space[5] - 2,
-        marginBottom: ds.space[4],
+        paddingVertical: ds.space[4] + 1,
+        paddingHorizontal: ds.space[4] + 2,
+        borderBottomWidth: 1,
+        borderBottomColor: ds.colors.borderSubtle,
+    },
+    rowLast: {
+        borderBottomWidth: 0,
     },
     headerRow: {
         flexDirection: "row",

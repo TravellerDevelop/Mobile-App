@@ -6,11 +6,11 @@ import {
   Text,
   Image,
 } from "react-native";
-import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import { BrandHeader, HeaderChip } from "../components/ui";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getData } from "./data/localdata";
+import { resolveImageUri } from "./imageUrl";
 
 export default function HeaderTravelDetail({ navigation, data }) {
   let [username, setUsername] = React.useState();
@@ -96,7 +96,7 @@ export default function HeaderTravelDetail({ navigation, data }) {
           ricalcolo lascia scoperto il bordo destro dell'immagine. */}
       <Image
         style={StyleSheet.absoluteFillObject}
-        source={{ uri: serverLink + "userImage/" + data.image }}
+        source={{ uri: resolveImageUri(data.image, "userImage/") }}
         resizeMode="cover"
       />
       <View style={styles.scrim} />

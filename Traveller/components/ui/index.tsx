@@ -177,13 +177,18 @@ export function HeaderChip({ icon, label, onPress, variant = "ghost", style }: H
   );
 }
 
-/* ---- Campo di ricerca --------------------------------------- */
+/* ---- Campo di ricerca ---------------------------------------
+   "onClear" e "value" sono opzionali: passandoli si ottiene anche
+   la crocetta per svuotare il campo, senza cambiare il comportamento
+   delle schermate che usano SearchField in modo non controllato.
+   ------------------------------------------------------------ */
 interface SearchFieldProps extends TextInputProps {
   style?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<TextStyle>;
+  onClear?: () => void;
 }
 
-export function SearchField({ style, inputStyle, ...props }: SearchFieldProps) {
+export function SearchField({ style, inputStyle, onClear, value, ...props }: SearchFieldProps) {
   return (
     <View style={[styles.searchField, style]}>
       <MaterialCommunityIcons
@@ -195,8 +200,22 @@ export function SearchField({ style, inputStyle, ...props }: SearchFieldProps) {
       <TextInput
         placeholderTextColor={ds.colors.textPlaceholder}
         style={[styles.searchInput, inputStyle]}
+        value={value}
         {...props}
       />
+      {!!onClear && !!value && (
+        <TouchableOpacity
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          activeOpacity={0.7}
+          onPress={onClear}
+        >
+          <MaterialCommunityIcons
+            name="close-circle"
+            size={16}
+            color={ds.colors.textPlaceholder}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -210,6 +229,21 @@ export function Card({
   style?: StyleProp<ViewStyle>;
 }) {
   return <View style={[styles.card, style]}>{children}</View>;
+}
+
+/* ---- Gruppo di feed (post, elenco) ---------------------------
+   Un unico bordo attorno a tutte le righe, che al loro interno
+   hanno solo un separatore in basso (vedi PostCard.tsx) — le righe
+   non hanno più bordo/ombra/radius proprie.
+   ------------------------------------------------------------ */
+export function FeedGroup({
+  children,
+  style,
+}: {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
+  return <View style={[styles.feedGroup, style]}>{children}</View>;
 }
 
 /* ---- Bottone primario --------------------------------------- */
@@ -451,6 +485,13 @@ const styles = StyleSheet.create({
     borderRadius: ds.radius.l,
     backgroundColor: ds.colors.surface,
     padding: ds.space[5] - 2,
+  },
+  feedGroup: {
+    borderWidth: 1,
+    borderColor: ds.colors.borderSubtle,
+    borderRadius: ds.radius.l,
+    backgroundColor: ds.colors.surface,
+    overflow: "hidden",
   },
   primaryButton: {
     flexDirection: "row",

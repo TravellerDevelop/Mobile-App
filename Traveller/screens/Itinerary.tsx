@@ -268,6 +268,15 @@ export default function Itinerary({ navigation, route }: { navigation: any; rout
               onChange={itinerary.setTab}
             />
 
+            {/* Il piano è condiviso: una modifica fatta offline non viene
+                applicata in locale (il server potrebbe rifiutarla), quindi
+                va detto che non è ancora visibile né agli altri né qui. */}
+            {itinerary.pendingSync ? (
+              <Text style={styles.pendingSync}>
+                Modifiche in attesa di invio: compariranno quando torna la connessione.
+              </Text>
+            ) : null}
+
             {itinerary.loading ? (
               <ActivityIndicator style={styles.loader} color={ds.colors.action} />
             ) : itinerary.error ? (
@@ -568,6 +577,11 @@ function TimelineTab({
 const hitSlop = { top: 10, bottom: 10, left: 10, right: 10 };
 
 const styles = StyleSheet.create({
+  pendingSync: {
+    ...ds.type.meta,
+    color: ds.colors.warningText,
+    marginBottom: ds.space[3],
+  },
   container: {
     flex: 1,
     backgroundColor: ds.colors.bgApp,

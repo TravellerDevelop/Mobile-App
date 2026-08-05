@@ -5,7 +5,10 @@ import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import { EmptyState, OverscrollBackdrop, SearchField, Sheet } from "../components/ui";
 import { getData } from "../shared/data/localdata";
-import axios from "axios";
+import { apiGet, isOfflineError } from "../shared/data/apiClient";
+import { cacheKeys } from "../shared/data/offlineCache";
+import { useOnReconnect } from "../global/networkContext";
+import { useTravelsListRealtime } from "../components/realtime";
 import Card from "../shared/card";
 import { ApiJoinedTravel } from "../shared/types/api";
 
@@ -14,23 +17,40 @@ export default function Travels({ navigation }: { navigation: any }) {
     let [username, setUsername] = useState("");
     let [search, setSearch] = useState("");
 
-    useEffect(() => {
-        async function test() {
-            let userData = await getData("user");
-            setUsername(userData.username);
+    /* Stessa chiave di cache della home (cacheKeys.joinedTravels): le due
+       schermate leggono lo stesso endpoint, quindi si aggiornano a vicenda
+       invece di tenere due copie che possono divergere. */
+    async function loadTravels() {
+        const userData = await getData("user");
+        if (!userData?._id) return;
+        setUsername(userData.username);
 
-            axios.get<ApiJoinedTravel[]>(serverLink + "api/travel/takeJoined?username=" + userData.username + "&userid=" + userData._id)
-                .then(res => {
-                    if (res.status == 200)
-                        setMyTravel(res.data);
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+        try {
+            const { data } = await apiGet<ApiJoinedTravel[]>(
+                serverLink + "api/travel/takeJoined?username=" + userData.username + "&userid=" + userData._id,
+                { cacheKey: cacheKeys.joinedTravels(userData._id) }
+            );
+            setMyTravel(data ?? []);
+        } catch (err) {
+            if (!isOfflineError(err)) console.log(err);
         }
+    }
 
-        test();
+    useEffect(() => {
+        loadTravels();
     }, []);
+
+    useOnReconnect(() => {
+        loadTravels();
+    });
+
+    /* Viaggio creato, chiuso, eliminato, o un partecipante che entra/esce:
+       tutti eventi che cambiano questa lista. Arrivano sulla stanza
+       personale perché riguardano anche i viaggi appena lasciati, dalla
+       cui stanza il dispositivo è già fuori. */
+    useTravelsListRealtime(() => {
+        loadTravels();
+    });
 
     const filtered = myTravel.filter((item) =>
         search.length == 0

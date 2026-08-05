@@ -19,6 +19,8 @@ import ItineraryStopDetail from '../screens/ItineraryStopDetail'
 import ItineraryToday from '../screens/ItineraryToday'
 import ItineraryRecap from '../screens/ItineraryRecap'
 import ItineraryPermissions from '../screens/Modals/ItineraryPermissions'
+import NotificationSettings from '../screens/Modals/NotificationSettings'
+import { homeNavigationRef } from '../components/notifications/navigation'
 
 const Stack = createStackNavigator()
 
@@ -26,6 +28,11 @@ export default function Navigator() {
   return (
     <NavigationContainer
       independent={true}
+      /* Il deep-link da una notifica deve poter raggiungere queste route
+         dall'esterno: essendo un container indipendente, il navigator
+         radice non le vede e serve un ref dedicato (vedi openTarget in
+         components/notifications/navigation.ts). */
+      ref={homeNavigationRef}
     >
       <Stack.Navigator initialRouteName='Home' >
         <Stack.Screen name='Home' component={Home}
@@ -95,6 +102,7 @@ export default function Navigator() {
         <Stack.Screen name='EditTravel' component={EditTravel}
           options={{
             headerShown: false,
+            presentation: 'modal',
           }}
         />
 
@@ -123,6 +131,13 @@ export default function Navigator() {
         />
 
         <Stack.Screen name='ItineraryPermissions' component={ItineraryPermissions}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+
+        <Stack.Screen name='NotificationSettings' component={NotificationSettings}
           options={{
             headerShown: false,
             presentation: 'modal',

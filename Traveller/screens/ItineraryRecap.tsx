@@ -24,7 +24,7 @@ import {
 } from "../components/itinerary/api";
 import { formatCurrency, formatDateRange } from "../components/itinerary/schedule";
 import { getData } from "../shared/data/localdata";
-import { serverLink } from "../global/globalVariable";
+import { resolveImageUri } from "../shared/imageUrl";
 import type { ItineraryRecap as RecapData, Stop } from "../components/itinerary/types";
 
 /* ============================================================
@@ -243,7 +243,7 @@ export default function ItineraryRecap({ navigation, route }: { navigation: any;
                         {day.preview.length > 0 ? (
                           <Image
                             style={styles.photoThumb}
-                            source={{ uri: `${serverLink}userImage/posts/${day.preview[0]}` }}
+                            source={{ uri: resolveImageUri(day.preview[0], "userImage/posts/") }}
                           />
                         ) : (
                           <MaterialCommunityIcons

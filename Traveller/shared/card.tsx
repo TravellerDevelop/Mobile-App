@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
+import { resolveImageUri } from "./imageUrl";
 import { StatusBadge } from "../components/ui";
 
 interface CardProps {
@@ -116,7 +116,7 @@ export default function Card({ navigation, data, vertical, grid, isLoading, user
               height esplicita (header) il ricalcolo può risultare in una
               copertura incompleta (bordo destro/basso scoperto). */}
           <Image
-            source={{ uri: serverLink + "userImage/" + data.image }}
+            source={{ uri: resolveImageUri(data.image, "userImage/") }}
             style={[StyleSheet.absoluteFillObject, styles.coverImage]}
             resizeMode="cover"
           />
@@ -124,6 +124,18 @@ export default function Card({ navigation, data, vertical, grid, isLoading, user
         </>
       ) : null}
       {content}
+
+      {/* Quante cose non ha ancora visto l'utente su questo viaggio (vedi
+          unseenCount in api/travel/takeJoined): stessa forma del badge
+          notifiche di mainHeader, in basso a destra — sopra al nome del
+          viaggio, di proposito, così si nota anche a colpo d'occhio. */}
+      {Number(data.unseenCount) > 0 && (
+        <View style={styles.unseenBadge}>
+          <Text style={styles.unseenBadgeText}>
+            {data.unseenCount > 99 ? "99+" : data.unseenCount}
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -214,6 +226,26 @@ const styles = StyleSheet.create({
     top: ds.space[3] + 2,
     right: ds.space[3] + 2,
     zIndex: 2,
+  },
+  unseenBadge: {
+    position: "absolute",
+    bottom: ds.space[3] - 2,
+    right: ds.space[3] - 2,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: ds.radius.full,
+    backgroundColor: ds.colors.scale.accent[9],
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 3,
+    ...ds.shadow.md,
+  },
+  unseenBadgeText: {
+    color: ds.colors.white,
+    fontFamily: ds.fontFamily.metaSemibold,
+    fontSize: 10,
+    textAlign: "center",
   },
   cardTitle: {
     fontFamily: ds.fontFamily.bold,

@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert } from "react-native";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import { serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
+import { apiSend } from "../../shared/data/apiClient";
+import { cacheKeys } from "../../shared/data/offlineCache";
+import { isOnline } from "../../shared/data/netStatus";
 import type {
   NewPostPayload,
   PickedImage,
@@ -256,18 +260,47 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
   const submit = useCallback(async () => {
     if (!canSubmit || isSubmitting) return;
 
+    /* I post con immagini richiedono l'upload dei file prima della
+       creazione: metterli in coda vorrebbe dire conservare i base64
+       (spesso alcuni MB l'uno) dentro AsyncStorage, che non è pensato per
+       quel volume. Sono l'unico tipo di post bloccato offline. */
+    if (type === "images" && !isOnline()) {
+      Alert.alert(
+        "Sei offline",
+        "Le foto vanno caricate sul server: riprova quando torna la connessione. Gli altri tipi di post si possono creare anche offline."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload = await buildPayload();
-      await axios.post(`${serverLink}api/post/create`, { param: payload });
+      const { queued } = await apiSend(
+        `${serverLink}api/post/create`,
+        { param: payload },
+        {
+          queue: {
+            label: "Nuovo post",
+            invalidates: [cacheKeys.travelPosts(travel._id)],
+          },
+        }
+      );
+
+      if (queued) {
+        Alert.alert(
+          "Post in coda",
+          "Sei offline: il post verrà pubblicato automaticamente appena torna la connessione."
+        );
+      }
+
       onCreated(payload);
     } catch (error) {
       console.log("Creazione post", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [canSubmit, isSubmitting, buildPayload, onCreated]);
+  }, [canSubmit, isSubmitting, type, buildPayload, onCreated, travel._id]);
 
   return {
     type,

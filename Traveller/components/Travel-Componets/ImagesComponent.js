@@ -2,10 +2,10 @@ import * as FileSystem from "expo-file-system/legacy";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { serverLink } from "../../global/globalVariable";
 import { ds } from "../../global/designSystem";
 import { getData } from "../../shared/data/localdata";
 import { isFilePresent } from "../utils/fileSystem";
+import { imageFileName, resolveImageUri } from "../../shared/imageUrl";
 import PostCard from "./PostCard";
 
 const styles = StyleSheet.create({
@@ -62,12 +62,12 @@ export default function ImagesComponent({ item, home, loadPosts, travel, usernam
   async function downloadImages() {
     let x = item;
     for (let i of item.source) {
-      const filePath = FileSystem.documentDirectory + "post" + i.source;
+      const filePath = FileSystem.documentDirectory + "post" + imageFileName(i.source);
       if (!(await isFilePresent(filePath))) {
         x.source[i.id].defSource = i.source;
         try {
           const downloadedFile = await FileSystem.downloadAsync(
-            serverLink + "userImage/posts/" + i.source,
+            resolveImageUri(i.source, "userImage/posts/"),
             filePath
           );
         } catch (error) {
@@ -102,7 +102,7 @@ export default function ImagesComponent({ item, home, loadPosts, travel, usernam
                   source={{
                     uri: item.source.includes("uripost:")
                       ? item.source.replace("uripost:", "")
-                      : serverLink + "userImage/posts/" + item.source,
+                      : resolveImageUri(item.source, "userImage/posts/"),
                   }}
                   style={{
                     width: galleryWidth,

@@ -27,7 +27,17 @@ export default function PaymentComponent({
     const test = async () => {
       let aus = await getData("user");
 
-      if (aus.username == item.creator && item.paymentType == "normal") {
+      /* `creator` è l'ObjectId dell'utente, non lo username: confrontarlo
+         con `aus.username` (come faceva la versione precedente) non era mai
+         vero, così chi creava un pagamento non lo vedeva nel proprio feed
+         se non era anche fra i destinatari. Fallback sullo username per i
+         post storici. */
+      const myId = String(aus?._id || "");
+      const creatorId = String(item.creatorData?.[0]?._id || item.creator || "");
+      const iAmCreator =
+        (myId !== "" && myId === creatorId) || aus?.username === item.creator;
+
+      if (iAmCreator && item.paymentType == "normal") {
         setIsMine(true);
         setIsCreator(true);
       }

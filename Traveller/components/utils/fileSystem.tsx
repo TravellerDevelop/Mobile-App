@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import { serverLink } from '../../global/globalVariable';
 import * as MediaLibrary from "expo-media-library";
+import { imageFileName, resolveImageUri } from '../../shared/imageUrl';
 
 export const isFilePresent = async (filePath: string) => {
   try {
@@ -14,13 +14,15 @@ export const isFilePresent = async (filePath: string) => {
 
 export const savePostToGallery = async (url: string) => {
   const filePath =
-    FileSystem.documentDirectory + "post" + url;
+    FileSystem.documentDirectory + "post" + imageFileName(url);
 
   if (!(await isFilePresent(filePath))) {
     try {
       const downloadedFile =
         await FileSystem.downloadAsync(
-          serverLink + "userImage/posts/" + url,
+          // `url` è già una stringa non vuota (tipo del parametro): resolveImageUri
+          // torna undefined solo per input falsy, qui non applicabile.
+          resolveImageUri(url, "userImage/posts/")!,
           filePath
         );
 

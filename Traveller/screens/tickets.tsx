@@ -5,10 +5,12 @@ import { ds } from "../global/designSystem";
 import { EmptyState, OverscrollBackdrop, SearchField, Sheet } from "../components/ui";
 import TicketsHeader from "../shared/Headers/ticketsHeaders";
 import TicketsPreview from "../components/tickets/ticketsPreview";
-import axios from "axios";
 import { getData } from "../shared/data/localdata";
 import { FlatList } from "react-native-gesture-handler";
-import { storeJsonData } from "../shared/data/localdata";
+import { apiGet, isOfflineError } from "../shared/data/apiClient";
+import { cacheKeys } from "../shared/data/offlineCache";
+import { useOnReconnect } from "../global/networkContext";
+import { useTicketsRealtime } from "../components/realtime";
 import TicketsLoading from "../components/loading/tiketsLoading";
 import { ApiTicket } from "../shared/types/api";
 
@@ -24,24 +26,48 @@ export default function Tickets({ navigation }: { navigation: any }) {
         setExtraData(!extraData);
     }
 
+    /* I biglietti erano già l'unica parte dell'app consultabile offline,
+       ma con un salvataggio tutto suo (storeJsonData("tickets")) e una
+       schermata separata dentro App.tsx. Ora usano la stessa cache di
+       tutto il resto: la lista qui funziona senza rete come le altre. */
     async function takeInfo() {
         setIsLoading(true);
-        personalData = await getData("user");
-        axios.get<ApiTicket[]>(serverLink + "api/tickets/take?userid=" + personalData._id)
-            .then(res => {
-                setData(res.data);
-                setAusTicket(res.data);
-                setIsLoading(false);
-                storeJsonData("tickets", res.data);
-            }).catch(err => {
-                console.log(err);
-                setIsLoading(false);
-            })
+        const user = await getData("user");
+        setPersonalData(user);
+
+        if (!user?._id) {
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const { data: tickets } = await apiGet<ApiTicket[]>(
+                serverLink + "api/tickets/take?userid=" + user._id,
+                { cacheKey: cacheKeys.tickets(user._id) }
+            );
+            setData(tickets ?? []);
+            setAusTicket(tickets ?? []);
+        } catch (err) {
+            if (!isOfflineError(err)) console.log(err);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     useEffect(() => {
         takeInfo();
     }, []);
+
+    useOnReconnect(() => {
+        takeInfo();
+    });
+
+    /* Un biglietto condiviso con noi compare mentre la schermata è aperta,
+       invece di apparire solo dopo un pull-to-refresh o un rientro nella
+       tab. Copre anche lo stesso account su un secondo dispositivo. */
+    useTicketsRealtime(() => {
+        takeInfo();
+    });
 
     return (
         <View style={styles.flex}>

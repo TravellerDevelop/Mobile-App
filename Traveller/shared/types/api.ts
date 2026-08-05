@@ -16,7 +16,19 @@ export interface ApiUser {
     surname: string;
     username: string;
     email: string;
+    /**
+     * Presente solo nelle richieste inviate al server: le response non lo
+     * contengono più (vedi `forClient()` in Server/func/user.ts).
+     * @deprecated non leggerlo da una response.
+     */
     password: string;
+    /**
+     * Credenziale firmata dal server per l'handshake Socket.io, restituita
+     * da login/registrazione/takeUserById. Va trattata come una password:
+     * vive solo in SecureStore (vedi global/authContext.tsx) e non finisce
+     * nella copia in chiaro su AsyncStorage.
+     */
+    socketToken?: string;
     notifToken?: (string | null)[];
     /**
      * Nome file dell'immagine profilo. Il client la legge e prova a
@@ -60,6 +72,11 @@ export interface ApiTravelParticipant {
     creator?: boolean;
     /** Presente solo nelle risposte arricchite via lookup (es. api/travel/takeJoined). */
     username?: string;
+    /**
+     * Tetto di spesa personale del partecipante su quel viaggio, salvato via
+     * api/travel/setPersonalBudget. Assente finché non viene impostato.
+     */
+    personalBudget?: number | null;
 }
 
 export interface ApiTravel {
@@ -81,6 +98,8 @@ export interface ApiTravel {
 /** Viaggio con lo username di ogni partecipante già risolto (api/travel/takeJoined). */
 export interface ApiJoinedTravel extends Omit<ApiTravel, "participants"> {
     participants: (ApiTravelParticipant & { username: string })[];
+    /** Quante cose non ha ancora visto l'utente su questo viaggio (badge in home). */
+    unseenCount: number;
 }
 
 /** Riga restituita da api/travel/takeParticipants. */

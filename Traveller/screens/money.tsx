@@ -1,197 +1,372 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, Text, ScrollView, RefreshControl } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { serverLink } from "../global/globalVariable";
-import { ds } from "../global/designSystem";
-import { EmptyState, OverscrollBackdrop, Sheet } from "../components/ui";
-import { getData } from "../shared/data/localdata";
-import MoneyHeader from "../shared/Headers/moneyHeaders";
-import axios from "axios";
-import SkeletonScreen from "../components/SkeletonScreen";
-import { ApiPayedGroupByTravel } from "../shared/types/api";
+/* ============================================================
+   Tab "Money" — riepilogo economico di tutti i viaggi.
 
-/* Altezza massima delle colonne del grafico (come da design) */
-const MAX_BAR_HEIGHT = 130;
+   Tre viste sulla stessa risposta di api/post/takeMoneyOverview:
+   - Panoramica: quanto ho speso e dove;
+   - Saldi: con chi sono in credito o in debito, con azione di saldo;
+   - Movimenti: l'elenco filtrabile dei singoli pagamenti.
+
+   Tutta la logica sta in components/money/useMoney; qui c'è solo
+   composizione di UI.
+   ============================================================ */
+
+import React, { useMemo, useState } from "react";
+import {
+    Modal,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { ds } from "../global/designSystem";
+import { EmptyState, OverscrollBackdrop, SearchField, SectionLabel, Sheet } from "../components/ui";
+import MoneyHeader from "../shared/Headers/moneyHeaders";
+import SkeletonScreen from "../components/SkeletonScreen";
+import { useMoney } from "../components/money/useMoney";
+import { money, percentChange } from "../components/money/format";
+import {
+    BalanceRow,
+    ErrorNotice,
+    FilterBar,
+    MovementDetail,
+    MovementRow,
+    MoneyHero,
+    SegmentedTabs,
+    StatCard,
+    TrendChart,
+    TravelBreakdown,
+} from "../components/money/parts";
+import { MoneyMovement, MoneyTab } from "../components/money/types";
+import { formatSavedAt } from "../shared/data/offlineCache";
+
+/** Quante righe di movimenti mostrare prima del "carica altri". */
+const PAGE_SIZE = 25;
 
 export default function Money() {
-    let [lastYear, setLastYear] = React.useState("-- ");
-    let [totalToPay, setTotalToPay] = React.useState("-- ");
-    let [totalToGet, setTotalToGet] = React.useState("-- ");
-    let [payedGroupByTravel, setPayedGroupByTravel] = React.useState<ApiPayedGroupByTravel[]>([]);
-    let [isLoading, setIsLoading] = React.useState(true);
+    const {
+        overview,
+        loading,
+        refreshing,
+        error,
+        stale,
+        refresh,
+        reload,
+        filter,
+        setFilter,
+        travelFilter,
+        setTravelFilter,
+        query,
+        setQuery,
+        hasFilters,
+        clearFilters,
+        movements,
+        credits,
+        debts,
+        settleUp,
+        settlingId,
+        nudge,
+    } = useMoney();
 
-    useEffect(() => {
-        takeUserData();
-    }, [])
+    const [tab, setTab] = useState<MoneyTab>("overview");
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [selected, setSelected] = useState<MoneyMovement | null>(null);
 
-    async function takeUserData() {
-        setIsLoading(true)
-        let aus = await getData("user");
+    const totals = overview?.totals;
+    const byMonth = overview?.byMonth ?? [];
 
-        // Le prime tre chiamate restituiscono un totale come stringa
-        // (es. "123.45"), l'ultima l'elenco delle spese raggruppate per viaggio.
-        // NOTA: axios.all/axios.spread richiedono che tutte le response abbiano lo
-        // stesso tipo, quindi qui si usa Promise.all (che axios.all comunque avvolge)
-        // per mantenere le 4 response tipizzate singolarmente.
-        Promise.all([
-            axios.get<string>(serverLink + "api/post/takeTotalExpenses?userid=" + aus._id),
-            axios.get<string>(serverLink + "api/post/takeTotalToPay?userid=" + aus._id),
-            axios.get<string>(serverLink + "api/post/takeTotalToReceive?username=" + aus.username + "&userid=" + aus._id),
-            axios.get<ApiPayedGroupByTravel[]>(serverLink + "api/post/takePayedGroupByTravel?userid=" + aus._id),
-        ]).then(
-            ([takeTotalExpenses, takeTotalToPay, takeTotalToReceive, takePayedGroupByTravel]) => {
-                setLastYear(takeTotalExpenses.data);
-                setTotalToPay(takeTotalToPay.data);
-                setTotalToGet(takeTotalToReceive.data);
-                setPayedGroupByTravel(takePayedGroupByTravel.data || []);
-                setIsLoading(false);
-            })
-    }
+    /* Variazione del mese corrente rispetto al precedente: dà un contesto
+       che il valore assoluto da solo non ha. */
+    const monthDelta = useMemo(() => {
+        if (byMonth.length < 2) return null;
+        const current = byMonth[byMonth.length - 1];
+        const previous = byMonth[byMonth.length - 2];
+        const change = percentChange(current.total, previous.total);
+        if (change === null || change === 0) return null;
+        return {
+            text: `${change > 0 ? "+" : ""}${change}% sul mese scorso`,
+            tone: (change > 0 ? "up" : "down") as "up" | "down",
+        };
+    }, [byMonth]);
 
-    let [refreshing, setRefreshing] = React.useState(false);
+    const currentMonth = byMonth.length ? byMonth[byMonth.length - 1].total : 0;
+    const openBalances = credits.length + debts.length;
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        takeUserData();
-        setRefreshing(false);
-    }
-
-    const money = (value: string) =>
-        !isNaN(Number(value)) ? "€ " + Number(value).toFixed(2) : "€ --";
-
-    /* Card statistica del riquadro 2x2 */
-    const StatCard = ({
-        label,
-        value,
-        color,
-        icon,
-        iconBg,
-        iconColor,
-    }: {
-        label: string;
-        value: string;
-        color?: string;
-        icon: string;
-        iconBg: string;
-        iconColor: string;
-    }) => (
-        <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: iconBg }]}>
-                <MaterialCommunityIcons name={icon as any} size={14} color={iconColor} />
-            </View>
-            <Text style={styles.statLabel}>{label}</Text>
-            {isLoading ? (
-                <SkeletonScreen width={"80%"} height={22} borderRadius={4} />
-            ) : (
-                <Text style={[styles.statValue, color ? { color } : null]}>{value}</Text>
-            )}
-        </View>
-    );
-
-    const maxTotal = payedGroupByTravel.reduce(
-        (max, item) => (item.total > max ? item.total : max),
-        0
-    );
+    /* Se cambio filtro, la paginazione riparte: altrimenti restando a
+       pagina 3 di un elenco che ora ha 4 righe si vedrebbe un "carica
+       altri" che non carica nulla. */
+    const resetPaging = () => setVisibleCount(PAGE_SIZE);
 
     return (
         <View style={styles.flex}>
             <OverscrollBackdrop topColor={ds.colors.brand} />
+
             <ScrollView
                 style={styles.screen}
-                contentContainerStyle={{ backgroundColor: ds.colors.brand, flexGrow: 1 }}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
             >
-            <View style={styles.container}>
-                <MoneyHeader />
+                <View style={styles.container}>
+                    <MoneyHeader>
+                        <MoneyHero
+                            net={totals?.net ?? 0}
+                            toReceive={totals?.toReceive ?? 0}
+                            toPay={totals?.toPay ?? 0}
+                            loading={loading}
+                        />
+                    </MoneyHeader>
 
-                <Sheet style={styles.sheet}>
-                    <View style={styles.grid}>
-                        <StatCard
-                            label="Spese ultimi 12 mesi"
-                            value={money(lastYear)}
-                            icon="chart-timeline-variant"
-                            iconBg={ds.colors.actionSubtle}
-                            iconColor={ds.colors.action}
-                        />
-                        <StatCard
-                            label="Spese ultimo mese"
-                            value={money(lastYear)}
-                            icon="calendar-month-outline"
-                            iconBg={ds.colors.scale.primary[3]}
-                            iconColor={ds.colors.scale.primary[11]}
-                        />
-                        <StatCard
-                            label="Da pagare"
-                            value={money(totalToPay)}
-                            color={ds.colors.errorText}
-                            icon="arrow-up-circle-outline"
-                            iconBg={ds.colors.errorSoft}
-                            iconColor={ds.colors.errorText}
-                        />
-                        <StatCard
-                            label="Da ricevere"
-                            value={money(totalToGet)}
-                            color={ds.colors.successText}
-                            icon="arrow-down-circle-outline"
-                            iconBg={ds.colors.successSoft}
-                            iconColor={ds.colors.successText}
-                        />
-                    </View>
+                    <Sheet style={styles.sheet}>
+                        {error ? <ErrorNotice message={error} onRetry={() => reload()} /> : null}
 
-                    <View style={styles.chartCard}>
-                        <Text style={styles.chartTitle}>Spese per viaggio</Text>
+                        {/* Saldi e movimenti sono numeri su cui si prendono
+                            decisioni ("chi deve cosa a chi"): se arrivano dalla
+                            cache va detto quando sono stati scaricati. */}
+                        {!error && stale ? (
+                            <Text style={styles.staleNotice}>
+                                Dati offline, aggiornati alle {formatSavedAt(stale)}
+                            </Text>
+                        ) : null}
 
-                        {isLoading ? (
-                            <SkeletonScreen height={MAX_BAR_HEIGHT} width={"100%"} borderRadius={4} />
-                        ) : payedGroupByTravel.length > 0 ? (
-                            <View style={styles.chart}>
-                                {payedGroupByTravel.map((item, index) => (
-                                    <View key={index} style={styles.barGroup}>
-                                        <Text style={styles.barAmount}>
-                                            €{Math.round(item.total)}
-                                        </Text>
-                                        <LinearGradient
-                                            colors={[ds.colors.action, ds.colors.brand]}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 0, y: 1 }}
-                                            style={[
-                                                styles.bar,
-                                                {
-                                                    height: maxTotal
-                                                        ? Math.max(6, (item.total / maxTotal) * MAX_BAR_HEIGHT)
-                                                        : 6,
-                                                },
-                                            ]}
-                                        />
-                                        <Text style={styles.barLabel} numberOfLines={1}>
-                                            {item.name}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        ) : (
-                            <EmptyState
-                                icon="chart-bar"
-                                title="Nessuna spesa registrata"
-                            />
-                        )}
-                    </View>
-                </Sheet>
-            </View>
+                        <SegmentedTabs
+                            value={tab}
+                            onChange={(next) => {
+                                setTab(next);
+                                resetPaging();
+                            }}
+                            badges={{
+                                balances: openBalances,
+                                // Il conteggio è quello delle righe effettivamente
+                                // scaricate (il server ne restituisce al massimo 200).
+                                movements: overview?.movements.length,
+                            }}
+                        />
+
+                        {/* ---- Panoramica ---------------------------------- */}
+                        {tab === "overview" ? (
+                            <>
+                                <View style={styles.grid}>
+                                    <StatCard
+                                        label="Spese ultimi 12 mesi"
+                                        value={money(totals?.last12Months)}
+                                        icon="chart-timeline-variant"
+                                        iconBg={ds.colors.actionSubtle}
+                                        iconColor={ds.colors.action}
+                                        loading={loading}
+                                    />
+                                    <StatCard
+                                        label="Questo mese"
+                                        value={money(currentMonth)}
+                                        icon="calendar-month-outline"
+                                        iconBg={ds.colors.scale.primary[3]}
+                                        iconColor={ds.colors.scale.primary[11]}
+                                        hint={monthDelta?.text}
+                                        hintTone={monthDelta?.tone}
+                                        loading={loading}
+                                    />
+                                    <StatCard
+                                        label="Ultimi 30 giorni"
+                                        value={money(totals?.last30Days)}
+                                        icon="clock-outline"
+                                        iconBg={ds.colors.warningSoft}
+                                        iconColor={ds.colors.warningText}
+                                        loading={loading}
+                                    />
+                                    <StatCard
+                                        label="Spese personali"
+                                        value={money(totals?.personal)}
+                                        icon="account-outline"
+                                        iconBg={ds.colors.infoSoft}
+                                        iconColor={ds.colors.infoText}
+                                        loading={loading}
+                                    />
+                                </View>
+
+                                <TrendChart data={byMonth} loading={loading} />
+
+                                <TravelBreakdown
+                                    data={overview?.byTravel ?? []}
+                                    loading={loading}
+                                    onSelect={(travel) => {
+                                        // Dal viaggio si salta ai suoi movimenti già filtrati.
+                                        setTravelFilter(travel.travelId);
+                                        setFilter("all");
+                                        setTab("movements");
+                                        resetPaging();
+                                    }}
+                                />
+                            </>
+                        ) : null}
+
+                        {/* ---- Saldi --------------------------------------- */}
+                        {tab === "balances" ? (
+                            loading ? (
+                                <SkeletonScreen width={"100%"} height={220} borderRadius={ds.radius.l} />
+                            ) : openBalances === 0 ? (
+                                <EmptyState
+                                    icon="handshake-outline"
+                                    title="Sei in pari"
+                                    description="Nessun debito o credito aperto con i tuoi compagni di viaggio."
+                                />
+                            ) : (
+                                <>
+                                    {credits.length > 0 ? (
+                                        <View style={styles.section}>
+                                            <SectionLabel>Ti devono</SectionLabel>
+                                            <View style={styles.listCard}>
+                                                {credits.map((balance, index) => (
+                                                    <BalanceRow
+                                                        key={balance.userid}
+                                                        balance={balance}
+                                                        incoming
+                                                        busy={settlingId === balance.userid}
+                                                        onSettle={() => settleUp(balance)}
+                                                        onNudge={() => nudge(balance)}
+                                                        last={index === credits.length - 1}
+                                                    />
+                                                ))}
+                                            </View>
+                                        </View>
+                                    ) : null}
+
+                                    {debts.length > 0 ? (
+                                        <View style={styles.section}>
+                                            <SectionLabel>Devi</SectionLabel>
+                                            <View style={styles.listCard}>
+                                                {debts.map((balance, index) => (
+                                                    <BalanceRow
+                                                        key={balance.userid}
+                                                        balance={balance}
+                                                        incoming={false}
+                                                        onNudge={() => nudge(balance)}
+                                                        last={index === debts.length - 1}
+                                                    />
+                                                ))}
+                                            </View>
+                                            <Text style={styles.note}>
+                                                Un debito lo può chiudere solo chi ha anticipato la spesa:
+                                                da qui puoi avvisarlo che hai pagato.
+                                            </Text>
+                                        </View>
+                                    ) : null}
+                                </>
+                            )
+                        ) : null}
+
+                        {/* ---- Movimenti ----------------------------------- */}
+                        {tab === "movements" ? (
+                            <>
+                                <SearchField
+                                    placeholder="Cerca per descrizione o viaggio"
+                                    value={query}
+                                    onChangeText={(text) => {
+                                        setQuery(text);
+                                        resetPaging();
+                                    }}
+                                    style={styles.search}
+                                />
+
+                                <FilterBar
+                                    value={filter}
+                                    onChange={(next) => {
+                                        setFilter(next);
+                                        resetPaging();
+                                    }}
+                                    travels={overview?.byTravel ?? []}
+                                    travelFilter={travelFilter}
+                                    onTravelChange={(next) => {
+                                        setTravelFilter(next);
+                                        resetPaging();
+                                    }}
+                                />
+
+                                {loading ? (
+                                    <SkeletonScreen width={"100%"} height={260} borderRadius={ds.radius.l} />
+                                ) : movements.length === 0 ? (
+                                    <EmptyState
+                                        icon="receipt"
+                                        title={hasFilters ? "Nessun risultato" : "Nessun movimento"}
+                                        description={
+                                            hasFilters
+                                                ? "Prova a togliere qualche filtro."
+                                                : "Le spese divise con i tuoi compagni di viaggio compariranno qui."
+                                        }
+                                    />
+                                ) : (
+                                    <>
+                                        <View style={styles.listCard}>
+                                            {movements.slice(0, visibleCount).map((movement, index, list) => (
+                                                <MovementRow
+                                                    key={movement._id}
+                                                    movement={movement}
+                                                    onPress={() => setSelected(movement)}
+                                                    last={index === list.length - 1}
+                                                />
+                                            ))}
+                                        </View>
+
+                                        {movements.length > visibleCount ? (
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                                onPress={() => setVisibleCount((v) => v + PAGE_SIZE)}
+                                            >
+                                                <View style={styles.loadMore}>
+                                                    <Text style={styles.loadMoreText}>
+                                                        Mostra altri {Math.min(PAGE_SIZE, movements.length - visibleCount)}
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ) : null}
+                                    </>
+                                )}
+
+                                {hasFilters ? (
+                                    <TouchableOpacity activeOpacity={0.7} onPress={clearFilters}>
+                                        <Text style={styles.clearFilters}>Azzera i filtri</Text>
+                                    </TouchableOpacity>
+                                ) : null}
+                            </>
+                        ) : null}
+                    </Sheet>
+                </View>
             </ScrollView>
+
+            {/* Dettaglio di un movimento: pannello locale, perché la schermata
+                "Dettagli pagamento" vive in un altro NavigationContainer. */}
+            <Modal
+                visible={selected !== null}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setSelected(null)}
+            >
+                <Pressable style={styles.modalBackdrop} onPress={() => setSelected(null)} />
+                <View style={styles.modalBody}>
+                    {selected ? (
+                        <MovementDetail movement={selected} onClose={() => setSelected(null)} />
+                    ) : null}
+                </View>
+            </Modal>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
+    staleNotice: {
+        ...ds.type.meta,
+        color: ds.colors.warningText,
+        marginBottom: ds.space[3],
+    },
     screen: {
         backgroundColor: "transparent",
+    },
+    scrollContent: {
+        backgroundColor: ds.colors.brand,
+        flexGrow: 1,
     },
     container: {
         flex: 1,
@@ -204,75 +379,56 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         justifyContent: "space-between",
+    },
+    section: {
         marginBottom: ds.space[6],
     },
-    statCard: {
-        width: "48.5%",
+    listCard: {
         borderWidth: 1,
         borderColor: ds.colors.borderSubtle,
         borderRadius: ds.radius.l,
-        padding: ds.space[5] - 2,
-        marginBottom: ds.space[3] + 2,
-    },
-    statIcon: {
-        width: 30,
-        height: 30,
-        borderRadius: ds.radius.m,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: ds.space[3] + 2,
-    },
-    statLabel: {
-        fontFamily: ds.fontFamily.medium,
-        fontSize: 11,
-        color: ds.colors.textSecondary,
-        marginBottom: ds.space[3] + 2,
-    },
-    statValue: {
-        fontFamily: ds.fontFamily.metaBold,
-        fontSize: 19,
-        color: ds.colors.text,
-    },
-    chartCard: {
-        borderWidth: 1,
-        borderColor: ds.colors.borderSubtle,
-        borderRadius: ds.radius.l,
-        padding: ds.space[5],
-    },
-    chartTitle: {
-        fontFamily: ds.fontFamily.semibold,
-        fontSize: 14,
-        color: ds.colors.text,
-        marginBottom: ds.space[5],
-    },
-    chart: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        justifyContent: "center",
-        minHeight: MAX_BAR_HEIGHT + 40,
-    },
-    barGroup: {
-        alignItems: "center",
-        marginHorizontal: ds.space[3],
-    },
-    barAmount: {
-        fontFamily: ds.fontFamily.metaSemibold,
-        fontSize: 11,
-        color: ds.colors.textSecondary,
-        marginBottom: ds.space[3],
-    },
-    bar: {
-        width: 34,
-        borderTopLeftRadius: ds.radius.s,
-        borderTopRightRadius: ds.radius.s,
+        backgroundColor: ds.colors.surface,
         overflow: "hidden",
     },
-    barLabel: {
-        maxWidth: 60,
-        fontFamily: ds.fontFamily.medium,
-        fontSize: 10,
+    note: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        lineHeight: 16,
         color: ds.colors.textSecondary,
         marginTop: ds.space[3],
+    },
+    search: {
+        marginBottom: ds.space[4],
+    },
+    loadMore: {
+        height: ds.control.md,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: ds.radius.m,
+        borderWidth: 1,
+        borderColor: ds.colors.border,
+        marginTop: ds.space[4],
+    },
+    loadMoreText: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 12,
+        color: ds.colors.action,
+    },
+    clearFilters: {
+        fontFamily: ds.fontFamily.medium,
+        fontSize: 12,
+        color: ds.colors.textSecondary,
         textAlign: "center",
+        marginTop: ds.space[5],
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: ds.colors.scrim,
+    },
+    modalBody: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
 });

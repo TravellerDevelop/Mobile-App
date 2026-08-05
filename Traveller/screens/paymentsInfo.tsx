@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
@@ -7,6 +7,11 @@ import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import { InitialsAvatar, OverscrollBackdrop, SectionLabel, StatusBadge } from "../components/ui";
 import { getData } from "../shared/data/localdata";
+import { apiSend } from "../shared/data/apiClient";
+import { cacheKeys, readCache, writeCache } from "../shared/data/offlineCache";
+import { isNetworkError, markOffline, markOnline } from "../shared/data/netStatus";
+import { money } from "../components/money/format";
+import { notifyDebt } from "../components/money/api";
 import { ApiPaymentPost, ApiPostCreatorData, ApiPostDestinator, ApiUser } from "../shared/types/api";
 
 /** Destinatario di un pagamento, arricchito lato client con il nome da mostrare. */
@@ -20,17 +25,15 @@ interface PaymentItem extends Omit<ApiPaymentPost, "destinator"> {
     creatorData?: ApiPostCreatorData[];
 }
 
-/* Stesso formato usato in Money: "€ " + due decimali */
-const money = (value: number | string) =>
-    !isNaN(Number(value)) ? "€ " + Number(value).toFixed(2) : "€ --";
+/** Esito dell'ultima notifica inviata, mostrato al posto della vecchia Alert "in arrivo". */
+type NotifyState = "idle" | "sending" | "sent" | "error";
 
 export default function PaymentInfo({ navigation, route }: { navigation: any; route: any }) {
     let [items, setItems] = useState<PaymentItem>(route.params.item);
     let [myData, setMyData] = useState<any>({});
-    let [extraData, setExtraData] = useState(false);
     let [savingId, setSavingId] = useState<string | null>(null);
-
-    const toggleExtraData = () => setExtraData((v) => !v);
+    let [settlingAll, setSettlingAll] = useState(false);
+    let [notifyState, setNotifyState] = useState<NotifyState>("idle");
 
     async function getUserData() {
         const data = await getData("user");
@@ -38,55 +41,140 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
 
         const ids = items.destinator.map((d) => d.userid);
 
-        axios.post<ApiUser[]>(serverLink + "api/user/fromIdToUsernames", { id: ids })
-            .then((response) => {
-                for (const user of response.data) {
-                    for (const dest of items.destinator) {
-                        if (user._id == dest.userid) {
-                            dest.nameShow = `${user.name} ${user.surname}`;
-                        }
-                    }
-                }
-                setItems({ ...items });
-                toggleExtraData();
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+        /* I nomi dei destinatari sono l'unica cosa che manca al post per
+           essere leggibile: senza, offline si vedrebbero degli ObjectId.
+           L'endpoint è una POST (la lista di id sta nel body) e quindi non
+           passa da apiGet: la cache la gestiamo qui a mano. */
+        const cacheKey = cacheKeys.usernames(items._id);
+        let users: ApiUser[] | null = null;
+
+        try {
+            const response = await axios.post<ApiUser[]>(
+                serverLink + "api/user/fromIdToUsernames",
+                { id: ids }
+            );
+            users = response.data;
+            markOnline();
+            await writeCache(cacheKey, users);
+        } catch (error) {
+            if (isNetworkError(error)) markOffline();
+            else console.log(error);
+            users = (await readCache<ApiUser[]>(cacheKey))?.data ?? null;
+        }
+
+        if (!users) return;
+
+        // Copia nuova invece di mutare `items.destinator` in place: la
+        // versione precedente mutava l'oggetto e si affidava a uno state
+        // fittizio ("extraData") per forzare il re-render.
+        const resolved = users;
+        setItems((prev) => ({
+            ...prev,
+            destinator: prev.destinator.map((dest) => {
+                const user = resolved.find((u) => u._id == dest.userid);
+                return user ? { ...dest, nameShow: `${user.name} ${user.surname}` } : dest;
+            }),
+        }));
     }
 
     useEffect(() => {
         getUserData();
     }, []);
 
-    const isCreator = myData.username == items.creator;
+    /* `creator` sul post è l'ObjectId dell'utente, non lo username: il
+       confronto precedente (`myData.username == items.creator`) non era mai
+       vero, quindi nemmeno chi aveva creato il pagamento riusciva a segnare
+       una quota come saldata. Si confrontano gli id, con fallback sullo
+       username per i post storici salvati prima della conversione. */
+    const myId = String(myData?._id || "");
+    const creatorId = String(items.creatorData?.[0]?._id || items.creator || "");
+    const isCreator =
+        (myId !== "" && myId === creatorId) || myData?.username === items.creator;
+
+    /** Salva l'elenco destinatari sul server e allinea lo stato locale. */
+    const persist = (nextDestinator: PaymentDestinatorWithName[]) =>
+        apiSend(
+            serverLink + "api/post/updatePayment",
+            {
+                id: items._id,
+                // Il travel id serve al server per invalidare la cache del feed:
+                // senza, il viaggio continuava a mostrare lo stato di pagamento vecchio.
+                travelid: items.travel,
+                destinator: nextDestinator.map(({ userid, payed }) => ({ userid, payed })),
+            },
+            {
+                /* Offline va in coda e lo stato locale viene comunque
+                   aggiornato: chi ha creato il pagamento sta spuntando
+                   "ha pagato" al tavolo, spesso senza campo. */
+                queue: {
+                    label: "Quote pagate",
+                    invalidates: [
+                        cacheKeys.travelPosts(items.travel),
+                        ...(myData?._id ? [cacheKeys.moneyOverview(myData._id)] : []),
+                    ],
+                },
+            }
+        ).then(() => {
+            setItems((prev) => ({ ...prev, destinator: nextDestinator }));
+        });
 
     /* Tocca la riga di un destinatario per segnarlo pagato/non pagato
        (solo il creatore del pagamento può farlo). Sostituisce la vecchia
        modale di modifica con un'interazione diretta sulla riga. */
     const togglePaid = (dest: PaymentDestinatorWithName) => {
-        if (!isCreator || savingId) return;
+        if (!isCreator || savingId || settlingAll) return;
 
         const nextDestinator = items.destinator.map((d) =>
             d.userid === dest.userid ? { ...d, payed: !d.payed } : d
         );
 
         setSavingId(dest.userid);
-
-        axios.post(serverLink + "api/post/updatePayment", {
-            id: items._id,
-            destinator: nextDestinator.map(({ userid, payed }) => ({ userid, payed })),
-        })
-            .then((response) => {
-                if (response.status == 200) {
-                    setItems({ ...items, destinator: nextDestinator });
-                    toggleExtraData();
-                }
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+        persist(nextDestinator)
+            .catch((error) => console.log(error))
             .finally(() => setSavingId(null));
+    };
+
+    /** Segna saldati in un colpo solo tutti i destinatari mancanti. */
+    const settleAll = () => {
+        if (!isCreator || savingId || settlingAll) return;
+
+        setSettlingAll(true);
+        persist(items.destinator.map((d) => ({ ...d, payed: true })))
+            .catch((error) => console.log(error))
+            .finally(() => setSettlingAll(false));
+    };
+
+    /**
+     * Sollecito (se ho creato io il pagamento) verso chi non ha ancora
+     * saldato, oppure avviso "ho pagato" verso il creatore.
+     * Prima era un placeholder che apriva una Alert "disponibile presto".
+     */
+    const sendNotification = async () => {
+        if (notifyState === "sending" || !myData._id) return;
+
+        setNotifyState("sending");
+        try {
+            const targets = isCreator
+                ? items.destinator.filter((d) => !d.payed).map((d) => d.userid)
+                : [items.creatorData?.[0]?._id].filter(Boolean) as string[];
+
+            await Promise.all(
+                targets.map((userid) =>
+                    notifyDebt({
+                        fromUserId: myData._id,
+                        toUserId: userid,
+                        kind: isCreator ? "reminder" : "paid",
+                        amount: Number(items.amount) || undefined,
+                        travelName: route.params?.travelName,
+                    })
+                )
+            );
+
+            setNotifyState(targets.length ? "sent" : "idle");
+        } catch (error) {
+            console.log(error);
+            setNotifyState("error");
+        }
     };
 
     const destinator = items.destinator || [];
@@ -174,9 +262,17 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
 
                     <View style={styles.sectionHeader}>
                         <SectionLabel style={styles.sectionLabel}>Destinatari</SectionLabel>
-                        <Text style={styles.countText}>
-                            {totalPeople} {totalPeople === 1 ? "persona" : "persone"}
-                        </Text>
+                        {isCreator && paidCount < totalPeople ? (
+                            <TouchableOpacity activeOpacity={0.7} onPress={settleAll} disabled={settlingAll}>
+                                <Text style={styles.settleAll}>
+                                    {settlingAll ? "Salvataggio…" : "Segna tutti pagati"}
+                                </Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <Text style={styles.countText}>
+                                {totalPeople} {totalPeople === 1 ? "persona" : "persone"}
+                            </Text>
+                        )}
                     </View>
 
                     <View style={styles.recipientsCard}>
@@ -200,26 +296,60 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
                                         </Text>
                                         <Text style={styles.recipientShare}>Quota {money(items.amount)}</Text>
                                     </View>
-                                    <StatusBadge
-                                        label={dest.payed ? "Pagato" : "Non pagato"}
-                                        intent={dest.payed ? "success" : "error"}
-                                    />
+                                    {savingId === dest.userid ? (
+                                        <ActivityIndicator size="small" color={ds.colors.action} />
+                                    ) : (
+                                        <StatusBadge
+                                            label={dest.payed ? "Pagato" : "Non pagato"}
+                                            intent={dest.payed ? "success" : "error"}
+                                        />
+                                    )}
                                 </View>
                             </TouchableOpacity>
                         ))}
                     </View>
 
-                    <TouchableOpacity
-                        activeOpacity={0.85}
-                        onPress={() =>
-                            Alert.alert("In arrivo", "L'invio dei promemoria sarà disponibile presto.")
-                        }
-                    >
-                        <View style={styles.reminderButton}>
-                            <MaterialCommunityIcons name="bell-outline" size={15} color={ds.colors.white} />
-                            <Text style={styles.reminderButtonText}>Invia promemoria</Text>
+                    {notifyState === "sent" ? null : (
+                        <TouchableOpacity
+                            activeOpacity={0.85}
+                            onPress={sendNotification}
+                            disabled={notifyState === "sending"}
+                        >
+                            <View style={styles.reminderButton}>
+                                {notifyState === "sending" ? (
+                                    <ActivityIndicator size="small" color={ds.colors.white} />
+                                ) : (
+                                    <>
+                                        <MaterialCommunityIcons
+                                            name={isCreator ? "bell-outline" : "send-outline"}
+                                            size={15}
+                                            color={ds.colors.white}
+                                        />
+                                        <Text style={styles.reminderButtonText}>
+                                            {isCreator ? "Invia promemoria" : "Avvisa che hai pagato"}
+                                        </Text>
+                                    </>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
+                    {notifyState === "sent" ? (
+                        <View style={styles.notifyResult}>
+                            <MaterialCommunityIcons
+                                name="check-circle-outline"
+                                size={15}
+                                color={ds.colors.successText}
+                            />
+                            <Text style={styles.notifySent}>Notifica inviata</Text>
                         </View>
-                    </TouchableOpacity>
+                    ) : null}
+
+                    {notifyState === "error" ? (
+                        <Text style={styles.notifyError}>
+                            Non siamo riusciti a inviare la notifica. Riprova più tardi.
+                        </Text>
+                    ) : null}
                 </View>
             </ScrollView>
         </View>
@@ -368,6 +498,11 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: ds.colors.textSecondary,
     },
+    settleAll: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 11,
+        color: ds.colors.action,
+    },
     recipientsCard: {
         borderWidth: 1,
         borderColor: ds.colors.borderSubtle,
@@ -414,5 +549,26 @@ const styles = StyleSheet.create({
         fontFamily: ds.fontFamily.semibold,
         fontSize: 14,
         color: ds.colors.white,
+    },
+    notifyResult: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: ds.space[2] + 2,
+        height: ds.control.lg,
+        borderRadius: ds.radius.m,
+        backgroundColor: ds.colors.successSoft,
+    },
+    notifySent: {
+        fontFamily: ds.fontFamily.semibold,
+        fontSize: 13,
+        color: ds.colors.successText,
+    },
+    notifyError: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: ds.colors.errorText,
+        textAlign: "center",
+        marginTop: ds.space[3],
     },
 });

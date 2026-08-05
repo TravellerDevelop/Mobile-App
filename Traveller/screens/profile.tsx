@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
+import { resolveImageUri } from "../shared/imageUrl";
 import {
   EmptyState,
   InitialsAvatar,
@@ -22,11 +23,22 @@ import {
   Sheet,
 } from "../components/ui";
 import { getData, storeJsonData } from "../shared/data/localdata";
+import { cacheKeys, readCache, writeCache } from "../shared/data/offlineCache";
+import { isNetworkError, markOffline, markOnline } from "../shared/data/netStatus";
 import axios from "axios";
 import Card from "../shared/card";
 import SkeletonScreen from "../components/SkeletonScreen";
 import { ApiCountResponse, ApiFollow, ApiTravel, ApiUser } from "../shared/types/api";
 import { useAuth } from "../global/authContext";
+import { useOnReconnect } from "../global/networkContext";
+
+/** Numeri e viaggi mostrati sul profilo: una sola voce di cache. */
+interface ProfileStats {
+  ntravel: number;
+  myTravel: ApiTravel[];
+  followers: number;
+  followed: number;
+}
 
 export default function MyProfile({ navigation, route }: { navigation: any; route: any }) {
   const { logout } = useAuth();
@@ -41,54 +53,63 @@ export default function MyProfile({ navigation, route }: { navigation: any; rout
 
   let [refreshing, setRefreshing] = React.useState(false);
 
+  /* Le quattro chiamate del profilo sono indipendenti fra loro ma
+     finiscono tutte in una sola voce di cache: senza rete o si mostra il
+     profilo intero (viaggi + numeri) o non si mostra niente, e tenere
+     quattro chiavi separate significherebbe solo poter mostrare mezza
+     schermata. `setIsLoading(false)` dipende dal fatto che tutti e tre i
+     contatori siano valorizzati (vedi useEffect sotto), quindi in caso di
+     errore vanno messi comunque a zero. */
   async function getUserData() {
     setIsLoading(true);
-    setNtravel(null);
-    setMyTravel([]);
-    setFollowers(null);
-    setFollowed(null);
     let data = await getData("user");
-    axios
-      .get<ApiCountResponse>(serverLink + "api/user/takeTravelsNum?userid=" + data._id)
-      .then((response) => {
-        setNtravel(response.data.count);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
     setUser(data);
+    if (!data?._id) return;
 
-    axios
-      .get<ApiTravel[]>(serverLink + "api/travel/takeByCreator?userid=" + data._id)
-      .then((response) => {
-        setMyTravel(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const key = cacheKeys.profileStats(data._id);
 
-    axios
-      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowers?to=" + data._id)
-      .then((response) => {
-        setFollowers(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    try {
+      const [travelsNum, created, followersList, followingList] = await Promise.all([
+        axios.get<ApiCountResponse>(serverLink + "api/user/takeTravelsNum?userid=" + data._id),
+        axios.get<ApiTravel[]>(serverLink + "api/travel/takeByCreator?userid=" + data._id),
+        axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowers?to=" + data._id),
+        axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowings?from=" + data._id),
+      ]);
 
-    axios
-      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowings?from=" + data._id)
-      .then((response) => {
-        setFollowed(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      markOnline();
+
+      const stats = {
+        ntravel: travelsNum.data.count,
+        myTravel: created.data ?? [],
+        followers: followersList.data.length,
+        followed: followingList.data.length,
+      };
+
+      await writeCache(key, stats);
+      applyProfileStats(stats);
+    } catch (error) {
+      if (isNetworkError(error)) markOffline();
+      else console.log(error);
+
+      const cached = (await readCache<ProfileStats>(key))?.data;
+      applyProfileStats(cached ?? { ntravel: 0, myTravel: [], followers: 0, followed: 0 });
+    }
+  }
+
+  function applyProfileStats(stats: ProfileStats) {
+    setNtravel(stats.ntravel);
+    setMyTravel(stats.myTravel);
+    setFollowers(stats.followers);
+    setFollowed(stats.followed);
   }
 
   React.useEffect(() => {
     getUserData();
   }, []);
+
+  useOnReconnect(() => {
+    getUserData();
+  });
 
   React.useEffect(() => {
     if (ntravel != null && followers != null && followed != null) {
@@ -218,7 +239,7 @@ export default function MyProfile({ navigation, route }: { navigation: any; rout
                   <SkeletonScreen width={92} height={92} borderRadius={999} />
                 ) : user.image ? (
                   <Image
-                    source={{ uri: serverLink + "userImage/" + user.image }}
+                    source={{ uri: resolveImageUri(user.image, "userImage/") }}
                     style={styles.avatarImage}
                   />
                 ) : (
@@ -290,6 +311,22 @@ export default function MyProfile({ navigation, route }: { navigation: any; rout
                 <View style={styles.shareButton}>
                   <MaterialCommunityIcons
                     name="share-variant"
+                    size={16}
+                    color={ds.colors.text}
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {/* Preferenze notifiche: raggiungibili anche dal centro
+                  notifiche, ma qui è dove l'utente le cerca. */}
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate("NotificationSettings")}
+                accessibilityLabel="Preferenze notifiche"
+              >
+                <View style={styles.shareButton}>
+                  <MaterialCommunityIcons
+                    name="bell-cog-outline"
                     size={16}
                     color={ds.colors.text}
                   />

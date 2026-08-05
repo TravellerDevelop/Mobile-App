@@ -11,7 +11,9 @@ import { ds } from "../../global/designSystem";
 import { HeaderChip } from "../../components/ui";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from "axios";
-import { getData, storeJsonData } from "../data/localdata.js";
+import { getData } from "../data/localdata.js";
+import { apiSend } from "../data/apiClient";
+import { cacheKeys, readCache, writeCache } from "../data/offlineCache";
 import { ApiUser, ApiTicket } from "../types/api";
 import { buildTicketFromScan, suggestTitle, ScannedTicketDraft } from "../../components/tickets/enrich";
 import { BcbpParseError, looksLikeBcbp } from "../../components/tickets/bcbp";
@@ -22,6 +24,19 @@ import { decodeBarcodeFromJpegBytes } from "../../components/tickets/decodeImage
 // decodeImage.ts) veloce e leggera in memoria anche su una foto ad alta
 // risoluzione, senza perdere dettaglio utile per leggere il barcode.
 const GALLERY_IMPORT_MAX_WIDTH = 1600;
+
+/**
+ * Aggiunge un biglietto creato offline alla cache dei biglietti, così la
+ * lista lo mostra prima ancora che la richiesta parta. Il server, quando
+ * la coda verrà svuotata, invaliderà la chiave e la lista si riallineerà
+ * con l'_id vero.
+ */
+async function appendTicketToCache(userId: string, ticket: Partial<ApiTicket>) {
+    const key = cacheKeys.tickets(userId);
+    const cached = await readCache<ApiTicket[]>(key);
+    const current = Array.isArray(cached?.data) ? cached!.data : [];
+    await writeCache(key, [...current, { ...ticket, _id: `local-${Date.now()}` } as ApiTicket]);
+}
 
 // Quanti frame "non validi" tollerare in silenzio prima di arrendersi e
 // mostrare l'errore all'utente. Aztec/PDF417 (usati per i boarding pass da
@@ -457,6 +472,11 @@ export default function TicketsHeader({ update }: TicketsHeaderProps) {
     async function submitTicket() {
         if (!draft) return;
 
+        // Serve per la chiave di cache dei biglietti: senza id non c'è nulla
+        // da salvare in locale (né, lato server, a chi intestare il biglietto).
+        const ownerId = userInfo?._id;
+        if (!ownerId) return;
+
         const out: Partial<ApiTicket> = {
             ...draft.ticket,
             title: ticketTitle,
@@ -465,7 +485,23 @@ export default function TicketsHeader({ update }: TicketsHeaderProps) {
         };
 
         try {
-            await axios.post(serverLink + "api/tickets/create", { data: out });
+            /* Offline la creazione finisce in coda e parte al ritorno della
+               rete; nel frattempo il biglietto viene aggiunto alla cache
+               locale, così compare subito nella lista — è il caso d'uso
+               tipico: si aggiunge un biglietto in aeroporto, senza rete. */
+            const { queued } = await apiSend(
+                serverLink + "api/tickets/create",
+                { data: out },
+                {
+                    queue: {
+                        label: "Nuovo biglietto",
+                        invalidates: [cacheKeys.tickets(ownerId)],
+                    },
+                }
+            );
+
+            if (queued) await appendTicketToCache(ownerId, out);
+
             update();
             setScaned(false);
             setData(null);
@@ -474,10 +510,13 @@ export default function TicketsHeader({ update }: TicketsHeaderProps) {
             setModalVisible(false);
             scanLockRef.current = false;
             scanRetryCountRef.current = 0;
-            let aus = await getData("tickets");
-            if (aus == null) aus = [];
-            aus.push(out);
-            await storeJsonData("tickets", aus);
+
+            if (queued) {
+                Alert.alert(
+                    "Biglietto salvato in locale",
+                    "Sei offline: il biglietto è già consultabile qui e verrà sincronizzato appena torna la connessione."
+                );
+            }
         } catch (error) {
             console.error(error);
             Alert.alert("Errore", "Non è stato possibile salvare il biglietto. Riprova.");

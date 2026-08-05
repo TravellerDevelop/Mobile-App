@@ -95,12 +95,15 @@ const PostCard = ({ children, item, home, travel, loadPosts, username }: any) =>
 };
 
 const styles = StyleSheet.create({
+    /* Riga di un elenco raggruppato (vedi FeedGroup in components/ui): niente
+       più bordo/ombra/radius per riga, solo un filo separatore in basso —
+       il "boxing" sta tutto nel contenitore che avvolge l'intero feed. */
     card: {
-        borderRadius: ds.radius.xl,
         backgroundColor: ds.colors.surface,
-        padding: ds.space[5],
-        marginBottom: ds.space[5],
-        ...ds.shadow.md,
+        paddingVertical: ds.space[4] + 1,
+        paddingHorizontal: ds.space[4] + 2,
+        borderBottomWidth: 1,
+        borderBottomColor: ds.colors.borderSubtle,
     },
     pin: {
         alignSelf: 'flex-start',

@@ -1,13 +1,13 @@
 import axios from "axios";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  Keyboard,
   Linking,
   Modal,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Swiper from "react-native-swiper";
 import InteractiveCard from "../components/interactiveCard";
 import MainHeader from "../components/mainHeader";
@@ -23,6 +24,7 @@ import { appVersion, color, font, serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import {
   EmptyState,
+  FeedGroup,
   InitialsAvatar,
   OverscrollBackdrop,
   SearchField,
@@ -35,9 +37,13 @@ import {
   getStringData,
   storeStringData,
 } from "../shared/data/localdata";
+import { apiGet, isOfflineError } from "../shared/data/apiClient";
+import { cacheKeys } from "../shared/data/offlineCache";
+import { shapeFeed } from "../shared/data/postShape";
+import { useOnReconnect } from "../global/networkContext";
+import { useTravelRealtime, useTravelsListRealtime } from "../components/realtime";
 import { fetchUserById } from "../components/auth/api";
 import LoadingCard from "../shared/loadingCard";
-import Constants from "expo-constants";
 
 // Componenti
 import ImagesComponent from "../components/Travel-Componets/ImagesComponent";
@@ -45,16 +51,12 @@ import PaymentComponent from "../components/Travel-Componets/payments";
 import TextComponent from "../components/Travel-Componets/textcomponent";
 import Vote from "../components/Travel-Componets/vote";
 import PostLoading from "../components/loading/PostLoading";
-import * as SecureStore from "expo-secure-store";
-import { getNotifications } from "../shared/notificationsClient";
 import ToDo from "../components/Travel-Componets/ToDo";
 import ItineraryEvent from "../components/Travel-Componets/ItineraryEvent";
 import {
   ApiAppVersionDoc,
   ApiJoinedTravel,
-  ApiSetNotifTokenResponse,
   ApiUser,
-  ApiVerifyTokenResponse,
 } from "../shared/types/api";
 
 export default function Home({ navigation }: { navigation: any }) {
@@ -68,89 +70,17 @@ export default function Home({ navigation }: { navigation: any }) {
   let [userData, setUserData] = useState<Partial<ApiUser> | false>(false);
   let [joinedTravels, setJoinedTravels] = useState<ApiJoinedTravel[] | false>(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [query, setQuery] = useState("");
   const [serchData, setSerchData] = useState<ApiUser[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const lastQueryRef = useRef("");
   const [showNew, setShowNew] = useState(false);
-  const [notification, setNotification] = useState<any>(false);
-  const notificationListener = useRef<any>(null);
-  const responseListener = useRef<any>(null);
 
-  // Verifica se l'utente ha abilitato le notifiche e se sono presenti su DB
-  const verifyNotifications = async () => {
-    // Le notifiche push remote non sono supportate in Expo Go (rimosse da SDK 53):
-    // vengono abilitate solo nei development/production build.
-    const Notifications = getNotifications();
-    if (!Notifications) return;
-
-    let data = await getData("user");
-    let notificationToken = await SecureStore.getItemAsync("notif-token");
-    if (!notificationToken) {
-      await registerForPushNotificationsAsync()
-        .then((token) => {
-          SecureStore.setItemAsync("notif-token", token);
-          axios
-            .post<ApiSetNotifTokenResponse>(serverLink + "api/user/setNotifToken", {
-              userid: data._id,
-              notifToken: token,
-            })
-            .then((response) => {
-              notificationListener.current =
-                Notifications.addNotificationReceivedListener(
-                  (notification: any) => {
-                    setNotification(notification);
-                  }
-                );
-
-              responseListener.current =
-                Notifications.addNotificationResponseReceivedListener(
-                  (response: any) => {}
-                );
-
-              Notifications.setNotificationHandler({
-                handleNotification: async () => ({
-                  shouldShowAlert: true,
-                  shouldPlaySound: false,
-                  shouldSetBadge: false,
-                }),
-              });
-            })
-            .catch(() => {
-              SecureStore.deleteItemAsync("notif-token");
-            });
-        })
-        .catch((ex) => {
-          console.error(ex);
-        });
-    } else {
-      axios
-        .post<ApiVerifyTokenResponse>(serverLink + "api/user/verifyToken", {
-          userid: data._id,
-          notificationToken: notificationToken,
-        })
-        .then((response) => {
-          notificationListener.current =
-            Notifications.addNotificationReceivedListener((notification: any) => {
-              setNotification(notification);
-            });
-
-          responseListener.current =
-            Notifications.addNotificationResponseReceivedListener(
-              (response: any) => {}
-            );
-
-          Notifications.setNotificationHandler({
-            handleNotification: async () => ({
-              shouldShowAlert: true,
-              shouldPlaySound: false,
-              shouldSetBadge: false,
-            }),
-          });
-        })
-        .catch((ex) => {
-          console.error(ex);
-        });
-    }
-  };
+  /* Le notifiche push non vivono più qui: registrazione del token, handler e
+     listener stanno in components/notifications (pushClient + provider), che
+     li monta una volta sola a livello di app invece che a ogni rimontaggio
+     della Home — e li rimuove quando serve. */
 
   async function verifyUserData() {
     // App.tsx (AuthProvider) garantisce che questa schermata monti solo con
@@ -165,15 +95,23 @@ export default function Home({ navigation }: { navigation: any }) {
     // fetchUserById ripulisce sempre il campo "password" dalla risposta del
     // server, a differenza di una chiamata axios diretta allo stesso
     // endpoint: evitiamo così di tenerlo anche solo in memoria qui.
+    // Offline restituisce null: in quel caso si prosegue con l'utente in
+    // cache, altrimenti la home resterebbe vuota per un dettaglio (il
+    // refresh del profilo) che non serve a disegnarla.
     const freshUser = await fetchUserById(data._id);
-    if (freshUser) {
-      setUserData(freshUser);
-      await loadJoinedTravels(freshUser.username, freshUser._id);
-      await takePost(freshUser._id, freshUser.username);
-    }
+    const user = freshUser ?? data;
+    if (freshUser) setUserData(freshUser);
 
-    verifyNotifications();
+    await loadJoinedTravels(user.username, user._id);
+    await takePost(user._id, user.username);
   }
+
+  /* Rete tornata: ricarichiamo, così i dati in cache mostrati finora
+     vengono sostituiti da quelli veri senza che l'utente debba fare
+     pull-to-refresh. */
+  useOnReconnect(() => {
+    verifyUserData();
+  });
 
   useEffect(() => {
     verifyUserData();
@@ -217,6 +155,108 @@ export default function Home({ navigation }: { navigation: any }) {
       });
   }, []);
 
+  // Ricerca account: con debounce (evita una chiamata per ogni carattere) e
+  // guardia anti-race (una risposta lenta a una query precedente non deve
+  // sovrascrivere risultati più recenti).
+  useEffect(() => {
+    const trimmed = query.trim();
+    lastQueryRef.current = trimmed;
+
+    if (trimmed.length < 3) {
+      setSerchData([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    const timeout = setTimeout(() => {
+      axios
+        .get<ApiUser[]>(serverLink + "api/user/search?username=" + trimmed)
+        .then((response) => {
+          if (response.status == 200 && lastQueryRef.current === trimmed) {
+            setSerchData(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          if (lastQueryRef.current === trimmed) setSearchLoading(false);
+        });
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
+
+  const visibleSearchResults = serchData.filter(
+    (item) => !userData || userData._id != item._id
+  );
+
+  /* ---------------------------------------------------------------
+     Realtime
+
+     La home aggrega i post di TUTTI i viaggi dell'utente, quindi si
+     iscrive alla stanza di ciascuno: gli id arrivano da joinedTravels,
+     cioè dalla stessa lista che alimenta il feed.
+
+     Qui si ricarica sempre invece di applicare il post in locale
+     (come fa travelDetail): il feed è una risposta composita
+     [post, mappa id→nome viaggio] limitata ai 10 più recenti lato
+     server, e inserire una riga a mano significherebbe replicare qui
+     quel troncamento. Meglio una richiesta accorpata.
+     --------------------------------------------------------------- */
+  const travelIds = Array.isArray(joinedTravels)
+    ? joinedTravels.map((travel: any) => String(travel._id))
+    : [];
+
+  const feedReloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleFeedReload = () => {
+    if (feedReloadTimer.current) clearTimeout(feedReloadTimer.current);
+    feedReloadTimer.current = setTimeout(() => {
+      feedReloadTimer.current = null;
+      if (userData && userData._id && userData.username) {
+        takePost(userData._id, userData.username);
+        // Stessa attività che aggiorna il feed cambia anche il badge "non
+        // letti" delle card in alto (vedi unseenCount in api/travel/takeJoined):
+        // le si ricarica insieme, sotto lo stesso debounce.
+        loadJoinedTravels(userData.username, userData._id);
+      }
+    }, 400);
+  };
+
+  useEffect(
+    () => () => {
+      if (feedReloadTimer.current) clearTimeout(feedReloadTimer.current);
+    },
+    []
+  );
+
+  useTravelRealtime(
+    travelIds,
+    {
+      onPostNew: scheduleFeedReload,
+      onPostUpdated: scheduleFeedReload,
+      onPostDeleted: scheduleFeedReload,
+      onItineraryChanged: scheduleFeedReload,
+      onTravelUpdated: () => {
+        if (userData && userData._id && userData.username) {
+          loadJoinedTravels(userData.username, userData._id);
+        }
+      },
+    },
+    { currentUserId: userData ? userData._id : null }
+  );
+
+  // Viaggio creato, eliminato, o qualcuno che entra/esce: cambia la lista
+  // in alto, non il feed. Arriva sulla stanza personale perché riguarda
+  // anche i viaggi da cui si è appena usciti (dalla cui stanza si è fuori).
+  useTravelsListRealtime(() => {
+    if (userData && userData._id && userData.username) {
+      loadJoinedTravels(userData.username, userData._id);
+    }
+  }, Boolean(userData && userData._id));
+
   const onRefresh = async () => {
     setRefreshing(true);
     let data = await getData("user");
@@ -225,95 +265,47 @@ export default function Home({ navigation }: { navigation: any }) {
     setRefreshing(false);
   };
 
-  function loadJoinedTravels(username: string, userid: string) {
-    axios
-      .get<ApiJoinedTravel[]>(
+  /* Entrambe le letture passano da apiGet: se il server non risponde
+     mostrano l'ultima copia salvata invece di lasciare la home sugli
+     scheletri di caricamento all'infinito. */
+  async function loadJoinedTravels(username: string, userid: string) {
+    try {
+      const { data } = await apiGet<ApiJoinedTravel[]>(
         serverLink +
           "api/travel/takeJoined?username=" +
           username +
           "&userid=" +
-          userid
-      )
-      .then(async (response) => {
-        if (response.status == 200) {
-          setJoinedTravels(response.data);
-          setJoinedTravelsLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+          userid,
+        { cacheKey: cacheKeys.joinedTravels(userid) }
+      );
+      setJoinedTravels(data);
+    } catch (error) {
+      if (!isOfflineError(error)) console.log(error);
+      // Offline e senza cache: la EmptyState "Nessun viaggio" è già il
+      // messaggio giusto, il banner in alto spiega il perché.
+      setJoinedTravels(false);
+    } finally {
+      setJoinedTravelsLoading(false);
+    }
   }
 
-  function takePost(userid: string, username: string) {
-    axios
-      .get<[any[], Record<string, string>]>(
+  async function takePost(userid: string, username: string) {
+    try {
+      const { data } = await apiGet<[any[], Record<string, string>]>(
         serverLink +
           "api/post/takeLastsByUsername?userid=" +
           userid +
           "&username=" +
-          username
-      )
-      .then(async (response) => {
-        if (response.status == 200) {
-          for (let item of response.data[0]) {
-            item.dateTime = new Date(item.dateTime).toLocaleString("it-IT", {
-              timeZone: "Europe/Andorra",
-            });
-            if (item.type == "images") {
-              let i = 0;
-              let aus = [];
-
-              for (let image of item.source) {
-                aus.push({ id: i, source: image });
-                item.source = aus;
-                i++;
-              }
-            }
-          }
-          setLastPosts(response.data);
-          setLastPostsLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.log("Last Post", error);
-      });
-  }
-
-  // Produce il token per le notifiche (solo su development/production build)
-  async function registerForPushNotificationsAsync() {
-    const Notifications = getNotifications();
-    if (!Notifications) return null;
-
-    let token;
-
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
+          username,
+        { cacheKey: cacheKeys.homeFeed(userid), transform: shapeFeed }
+      );
+      setLastPosts(data);
+    } catch (error) {
+      if (!isOfflineError(error)) console.log("Last Post", error);
+      setLastPosts(false);
+    } finally {
+      setLastPostsLoading(false);
     }
-
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      Alert.alert("Errore", "Failed to get push token for push notification!");
-      return null;
-    }
-    token = (
-      await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      })
-    ).data;
-
-    return token;
   }
 
   // App.tsx monta questa schermata solo quando l'utente è autenticato
@@ -325,6 +317,7 @@ export default function Home({ navigation }: { navigation: any }) {
         <ScrollView
         style={styles.screen}
         contentContainerStyle={{ backgroundColor: ds.colors.brand, flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -488,110 +481,88 @@ export default function Home({ navigation }: { navigation: any }) {
           />
           <Sheet style={styles.sheet}>
             <View style={styles.content}>
-              <SearchField
-                placeholder="Cerca un account"
-                style={styles.search}
-                onSubmitEditing={(event: any) => {
-                  setSerchData([]);
-                  if (
-                    event.nativeEvent.text == "" ||
-                    event.nativeEvent.text.length < 3
-                  )
-                    setSerchData([]);
-                  else {
-                    setSearchLoading(true);
-                    axios
-                      .get<ApiUser[]>(
-                        serverLink +
-                          "api/user/search?username=" +
-                          event.nativeEvent.text
-                      )
-                      .then((response) => {
-                        if (response.status == 200) {
-                          setSerchData(response.data);
-                          setSearchLoading(false);
-                        }
-                      })
-                      .catch((error) => {
-                        console.log(error);
-                      });
-                  }
-                }}
-                onChangeText={(text: string) => {
-                  setSerchData([]);
+              <View style={styles.searchWrap}>
+                <SearchField
+                  placeholder="Cerca un account"
+                  style={styles.search}
+                  value={query}
+                  onChangeText={setQuery}
+                  onClear={() => setQuery("")}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+                  returnKeyType="search"
+                  onSubmitEditing={() => Keyboard.dismiss()}
+                  autoCorrect={false}
+                />
 
-                  if (
-                    text == "" ||
-                    text.length < 3 ||
-                    text == null ||
-                    text == undefined
-                  )
-                    setSerchData([]);
-                  else {
-                    setSearchLoading(true);
-                    axios
-                      .get<ApiUser[]>(serverLink + "api/user/search?username=" + text)
-                      .then((response) => {
-                        if (response.status == 200) {
-                          setSerchData(response.data);
-                          setSearchLoading(false);
-                        }
-                      })
-                      .catch((error) => {
-                        console.log(error);
-                      });
-                  }
-                }}
-              />
-
-              {serchData.length == 0 &&
-              !searchLoading ? null : !searchLoading && serchData.length > 0 ? (
-                <View style={styles.searchResults}>
-                  <FlatList
-                    scrollEnabled={false}
-                    data={serchData}
-                    renderItem={({ item }) => (
-                      <>
-                        {userData && userData._id != item._id && (
+                {searchFocused && query.trim().length > 0 && (
+                  <View style={styles.searchDropdown}>
+                    {query.trim().length < 3 ? (
+                      <Text style={styles.searchHint}>
+                        Scrivi almeno 3 caratteri per cercare
+                      </Text>
+                    ) : searchLoading ? (
+                      <View style={styles.searchLoadingRow}>
+                        <ActivityIndicator color={ds.colors.action} />
+                      </View>
+                    ) : visibleSearchResults.length > 0 ? (
+                      // ScrollView (non FlatList) di proposito: è già annidato
+                      // dentro lo ScrollView verticale della home, e una
+                      // VirtualizedList nella stessa orientazione romperebbe il
+                      // windowing (warning RN). I risultati sono comunque pochi.
+                      <ScrollView
+                        style={styles.searchList}
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled
+                      >
+                        {visibleSearchResults.map((item, index) => (
                           <TouchableOpacity
-                            activeOpacity={0.7}
+                            key={item._id}
+                            activeOpacity={0.6}
+                            style={[
+                              styles.usercard,
+                              index === visibleSearchResults.length - 1 &&
+                                styles.usercardLast,
+                            ]}
                             onPress={() => {
+                              Keyboard.dismiss();
+                              setQuery("");
+                              setSearchFocused(false);
                               navigation.navigate("OtherProfile", {
                                 userid: item._id,
                               });
                             }}
                           >
-                            <View style={styles.usercard}>
-                              <InitialsAvatar
-                                name={item.name + " " + item.surname}
-                                size={38}
-                              />
-                              <View style={styles.usercardText}>
-                                <Text style={styles.usercardName}>
-                                  {item.name} {item.surname}
-                                </Text>
-                                <Text style={styles.usercardUsername}>
-                                  @{item.username}
-                                </Text>
-                              </View>
+                            <InitialsAvatar
+                              name={item.name + " " + item.surname}
+                              size={38}
+                            />
+                            <View style={styles.usercardText}>
+                              <Text style={styles.usercardName}>
+                                {item.name} {item.surname}
+                              </Text>
+                              <Text style={styles.usercardUsername}>
+                                @{item.username}
+                              </Text>
                             </View>
+                            <MaterialCommunityIcons
+                              name="chevron-right"
+                              size={18}
+                              color={ds.colors.textPlaceholder}
+                            />
                           </TouchableOpacity>
-                        )}
-                      </>
+                        ))}
+                      </ScrollView>
+                    ) : (
+                      <EmptyState
+                        icon="account-search-outline"
+                        title="Nessun utente trovato"
+                        style={styles.searchEmpty}
+                      />
                     )}
-                  />
-                </View>
-              ) : searchLoading ? (
-                <ActivityIndicator
-                  style={{ marginBottom: ds.space[5] }}
-                  color={ds.colors.action}
-                />
-              ) : (
-                <EmptyState
-                  icon="account-search-outline"
-                  title="Nessun utente trovato"
-                />
-              )}
+                  </View>
+                )}
+              </View>
 
               <SectionLabel>I tuoi prossimi viaggi</SectionLabel>
               {joinedTravelsLoading && (
@@ -641,59 +612,61 @@ export default function Home({ navigation }: { navigation: any }) {
                 lastPosts &&
                 lastPosts[0].length > 0 &&
                 !lastPostsLoading && (
-                  <FlatList
-                    scrollEnabled={false}
-                    data={lastPosts[0]}
-                    renderItem={({ item }) => (
-                      <>
-                        {item.type == "text" ? (
-                          <TextComponent
-                            home={true}
-                            item={item}
-                            travel={lastPosts && lastPosts[1][item.travel]}
-                            username={(userData && userData.username) || ""}
-                          />
-                        ) : item.type == "vote" ? (
-                          <Vote
-                            item={item}
-                            home={true}
-                            travel={lastPosts && lastPosts[1][item.travel]}
-                            username={(userData && userData.username) || ""}
-                          />
-                        ) : item.type == "payments" ? (
-                          <PaymentComponent
-                            item={item}
-                            home={true}
-                            travel={lastPosts && lastPosts[1][item.travel]}
-                            username={(userData && userData.username) || ""}
-                          />
-                        ) : item.type == "images" ? (
-                          <ImagesComponent
-                            item={item}
-                            home={true}
-                            travel={lastPosts && lastPosts[1][item.travel]}
-                            username={(userData && userData.username) || ""}
-                          />
-                        ) : item.type === "todo" ? (
-                          <ToDo
-                            data={item}
-                            home={true}
-                            travel={lastPosts && lastPosts[1][item.travel]}
-                            username={(userData && userData.username) || ""}
-                          />
-                        ) : (
-                          item.type === "itinerary" && (
-                            <ItineraryEvent
+                  <FeedGroup>
+                    <FlatList
+                      scrollEnabled={false}
+                      data={lastPosts[0]}
+                      renderItem={({ item }) => (
+                        <>
+                          {item.type == "text" ? (
+                            <TextComponent
+                              home={true}
+                              item={item}
+                              travel={lastPosts && lastPosts[1][item.travel]}
+                              username={(userData && userData.username) || ""}
+                            />
+                          ) : item.type == "vote" ? (
+                            <Vote
                               item={item}
                               home={true}
                               travel={lastPosts && lastPosts[1][item.travel]}
                               username={(userData && userData.username) || ""}
                             />
-                          )
-                        )}
-                      </>
-                    )}
-                  />
+                          ) : item.type == "payments" ? (
+                            <PaymentComponent
+                              item={item}
+                              home={true}
+                              travel={lastPosts && lastPosts[1][item.travel]}
+                              username={(userData && userData.username) || ""}
+                            />
+                          ) : item.type == "images" ? (
+                            <ImagesComponent
+                              item={item}
+                              home={true}
+                              travel={lastPosts && lastPosts[1][item.travel]}
+                              username={(userData && userData.username) || ""}
+                            />
+                          ) : item.type === "todo" ? (
+                            <ToDo
+                              data={item}
+                              home={true}
+                              travel={lastPosts && lastPosts[1][item.travel]}
+                              username={(userData && userData.username) || ""}
+                            />
+                          ) : (
+                            item.type === "itinerary" && (
+                              <ItineraryEvent
+                                item={item}
+                                home={true}
+                                travel={lastPosts && lastPosts[1][item.travel]}
+                                username={(userData && userData.username) || ""}
+                              />
+                            )
+                          )}
+                        </>
+                      )}
+                    />
+                  </FeedGroup>
                 )}
               {(lastPosts == null || lastPosts == false || lastPosts[0].length == 0) && (
                 <EmptyState
@@ -727,18 +700,54 @@ const styles = StyleSheet.create({
   content: {
     backgroundColor: ds.colors.surface,
   },
+  searchWrap: {
+    position: "relative",
+    zIndex: 30,
+    elevation: 30,
+  },
   search: {
     marginBottom: ds.space[7] - 2,
   },
-  searchResults: {
-    marginBottom: ds.space[5],
+  searchDropdown: {
+    position: "absolute",
+    top: ds.control.md + ds.space[3],
+    left: 0,
+    right: 0,
+    backgroundColor: ds.colors.surface,
+    borderWidth: 1,
+    borderColor: ds.colors.borderSubtle,
+    borderRadius: ds.radius.l,
+    overflow: "hidden",
+    zIndex: 30,
+    elevation: 12,
+    ...ds.shadow.lg,
+  },
+  searchList: {
+    maxHeight: 320,
+  },
+  searchHint: {
+    ...ds.type.caption,
+    textAlign: "center",
+    paddingVertical: ds.space[4],
+    paddingHorizontal: ds.space[4],
+  },
+  searchLoadingRow: {
+    paddingVertical: ds.space[6],
+    alignItems: "center",
+  },
+  searchEmpty: {
+    paddingVertical: ds.space[6],
   },
   usercard: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: ds.space[3] + 2,
+    paddingHorizontal: ds.space[4],
     borderBottomWidth: 1,
     borderBottomColor: ds.colors.borderSubtle,
+  },
+  usercardLast: {
+    borderBottomWidth: 0,
   },
   usercardText: {
     flex: 1,

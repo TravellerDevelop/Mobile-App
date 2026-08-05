@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { Alert } from "react-native";
+import { isNetworkError, isOnline, markOffline } from "../../shared/data/netStatus";
 import * as ImagePicker from "expo-image-picker";
 import { serverLink } from "../../global/globalVariable";
 import { getData } from "../../shared/data/localdata";
@@ -105,6 +107,18 @@ export function useCreateTravelForm({ onCreated }: UseCreateTravelFormOptions) {
   const submit = useCallback(async () => {
     if (!canSubmit || isSubmitting || !creator) return;
 
+    /* Creare un viaggio richiede la rete: il codice invito e l'id del
+       viaggio li genera il server, e senza di quelli non c'è nulla da
+       aprire dopo la creazione. Meglio dirlo che accodare in silenzio
+       un'operazione che l'utente si aspetta di vedere subito. */
+    if (!isOnline()) {
+      Alert.alert(
+        "Sei offline",
+        "Per creare un viaggio serve una connessione. Riprova quando torna la rete."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -139,6 +153,10 @@ export function useCreateTravelForm({ onCreated }: UseCreateTravelFormOptions) {
       onCreated(creator.username, creator.userid);
     } catch (error) {
       console.log("Creazione viaggio", error);
+      if (isNetworkError(error)) {
+        markOffline();
+        Alert.alert("Sei offline", "Il viaggio non è stato creato: riprova con la connessione attiva.");
+      }
     } finally {
       setIsSubmitting(false);
     }

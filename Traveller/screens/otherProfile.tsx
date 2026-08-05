@@ -12,11 +12,25 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { serverLink } from "../global/globalVariable";
 import { ds } from "../global/designSystem";
 import { EmptyState, InitialsAvatar, OverscrollBackdrop, Sheet } from "../components/ui";
+import { resolveImageUri } from "../shared/imageUrl";
 import axios from "axios";
 import Card from "../shared/card";
 import SkeletonScreen from "../components/SkeletonScreen";
-import * as SecureStore from "expo-secure-store";
+import { getData } from "../shared/data/localdata";
+import { apiSend } from "../shared/data/apiClient";
+import { cacheKeys, readCache, writeCache } from "../shared/data/offlineCache";
+import { isNetworkError, markOffline, markOnline } from "../shared/data/netStatus";
 import { ApiCountResponse, ApiFollow, ApiTravel, ApiUser } from "../shared/types/api";
+
+/** Tutto quello che serve a disegnare la scheda di un altro utente. */
+interface OtherProfileSnapshot {
+  user: ApiUser;
+  ntravel: number;
+  myTravel: ApiTravel[];
+  followers: number;
+  followed: number;
+  requestStatus: "Not sent" | "Sent" | "Followed";
+}
 
 export default function OtherProfile({ navigation, route }: any) {
   let [myData, setMyData]: any = React.useState({});
@@ -31,101 +45,89 @@ export default function OtherProfile({ navigation, route }: any) {
   let [isLoading, setIsLoading] = useState(false);
 
   async function getUserData() {
-    setMyData(await SecureStore.getItemAsync("user-info") as string);
+    const stored = (await getData("user")) || {};
+    setMyData(stored);
+    return stored;
   }
 
   React.useEffect(() => {
     setIsLoading(true);
-    getUserData();
 
-    axios
-      .get<ApiUser[]>(serverLink + "api/user/takeUserById?id=" + route.params.userid)
-      .then((response) => {
-        setUser(response.data[0]);
-        axios
-          .get<ApiCountResponse>(
-            serverLink +
-            "api/user/takeTravelsNum?userid=" +
-            route.params.userid
-          )
-          .then((response) => {
-            setNtravel(response.data.count);
-
-            axios
-              .get<ApiFollow[]>(
-                serverLink +
-                "api/follow/takeFromTo?from=" +
-                myData._id +
-                "&to=" +
-                route.params.userid
-              )
-              .then((response) => {
-                if (response.data.length > 0) {
-                  if (response.data[0].accepted === false)
-                    setRequestStatus("Sent");
-                  else setRequestStatus("Followed");
-                } else if (response.data.length == 0) {
-                  setRequestStatus("Not sent");
-                }
-
-                setIsLoading(false);
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-
-        axios
-          .get<ApiTravel[]>(
-            serverLink +
-            "api/travel/takeByCreator?userid=" +
-            route.params.userid
-          )
-          .then((response) => {
-            setMyTravel(response.data);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    axios
-      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowers?to=" + route.params.userid)
-      .then((response) => {
-        setFollowers(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
-    axios
-      .get<ApiFollow[]>(serverLink + "api/follow/takeFollowings?from=" + route.params.userid)
-      .then((response) => {
-        setFollowed(response.data.length);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    (async () => {
+      const currentUser = await getUserData();
+      loadProfile(currentUser);
+    })();
   }, []);
+
+  /* Profilo di un altro utente: cinque chiamate annidate diventano una
+     sola voce di cache. Erano una catena di `.then` in cui ogni errore
+     lasciava la schermata a metà (e `isLoading` a true per sempre, se a
+     fallire era la prima); ora l'esito è uno solo, per tutta la scheda. */
+  async function loadProfile(currentUser: any) {
+    const targetId = route.params.userid;
+    const key = cacheKeys.profile(targetId);
+
+    try {
+      const [profile, travelsNum, relation, created, followersList, followingList] =
+        await Promise.all([
+          axios.get<ApiUser[]>(serverLink + "api/user/takeUserById?id=" + targetId),
+          axios.get<ApiCountResponse>(serverLink + "api/user/takeTravelsNum?userid=" + targetId),
+          axios.get<ApiFollow[]>(
+            serverLink + "api/follow/takeFromTo?from=" + currentUser?._id + "&to=" + targetId
+          ),
+          axios.get<ApiTravel[]>(serverLink + "api/travel/takeByCreator?userid=" + targetId),
+          axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowers?to=" + targetId),
+          axios.get<ApiFollow[]>(serverLink + "api/follow/takeFollowings?from=" + targetId),
+        ]);
+
+      markOnline();
+
+      const relationRow = relation.data[0];
+      const snapshot: OtherProfileSnapshot = {
+        user: profile.data[0],
+        ntravel: travelsNum.data.count,
+        myTravel: created.data ?? [],
+        followers: followersList.data.length,
+        followed: followingList.data.length,
+        requestStatus: !relationRow ? "Not sent" : relationRow.accepted === false ? "Sent" : "Followed",
+      };
+
+      await writeCache(key, snapshot);
+      applySnapshot(snapshot);
+    } catch (error) {
+      if (isNetworkError(error)) markOffline();
+      else console.log(error);
+
+      const cached = (await readCache<OtherProfileSnapshot>(key))?.data;
+      if (cached) applySnapshot(cached);
+      else setIsLoading(false);
+    }
+  }
+
+  function applySnapshot(snapshot: OtherProfileSnapshot) {
+    setUser(snapshot.user);
+    setNtravel(snapshot.ntravel);
+    setMyTravel(snapshot.myTravel);
+    setFollowers(snapshot.followers);
+    setFollowed(snapshot.followed);
+    setRequestStatus(snapshot.requestStatus);
+    setIsLoading(false);
+  }
 
   // Invia o annulla la richiesta di follow
   function toggleFollow() {
-    if (requestStatus == "Sent" || requestStatus == "Followed") {
-      axios
-        .post(serverLink + "api/follow/delete", { from: myData._id, to: user._id })
-        .then(() => setRequestStatus("Not sent"))
-        .catch((error) => console.log(error));
-    } else if (requestStatus == "Not sent") {
-      axios
-        .post(serverLink + "api/follow/create", { from: myData._id, to: user._id })
-        .then(() => setRequestStatus("Sent"))
-        .catch((error) => console.log(error));
-    }
+    /* Segui/smetti di seguire va in coda se offline: lo stato mostrato
+       cambia subito ed è quello che il server applicherà. */
+    const following = requestStatus == "Sent" || requestStatus == "Followed";
+    const next = following ? "Not sent" : "Sent";
+
+    apiSend(
+      serverLink + (following ? "api/follow/delete" : "api/follow/create"),
+      { from: myData._id, to: user._id },
+      { queue: { label: following ? "Smetti di seguire" : "Richiesta di follow", invalidates: [cacheKeys.profile(route.params.userid)] } }
+    )
+      .then(() => setRequestStatus(next))
+      .catch((error) => console.log(error));
   }
 
   // Condivide il profilo con il foglio di sistema
@@ -193,7 +195,7 @@ export default function OtherProfile({ navigation, route }: any) {
                   <SkeletonScreen width={92} height={92} borderRadius={999} />
                 ) : user.image ? (
                   <Image
-                    source={{ uri: serverLink + "userImage/" + user.image }}
+                    source={{ uri: resolveImageUri(user.image, "userImage/") }}
                     style={styles.avatarImage}
                   />
                 ) : (

@@ -1,108 +1,159 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-    Animated,
-    Dimensions,
+    ActivityIndicator,
+    KeyboardAvoidingView,
     Modal,
-    PanResponder,
+    Platform,
+    Pressable,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ds } from "../../global/designSystem";
 import { ProgressTrack } from "../ui";
+import { money } from "../money/format";
+import { setPersonalBudget as savePersonalBudget } from "../money/api";
 
 interface BudgetIndicatorProps {
-    budget: number,
-    spent: number,
-    creator: boolean,
-    personalbudget: number,
-    setPersonalBudget: any
+    /** Budget condiviso deciso dal creatore del viaggio. */
+    budget: number;
+    /** Quanto ho già speso in questo viaggio (somma delle mie quote). */
+    spent: number;
+    /** true se l'utente è il creatore del viaggio: cambia solo il testo di aiuto. */
+    creator: boolean;
+    /** Budget personale corrente; null/0 se non impostato. */
+    personalbudget: number;
+    setPersonalBudget: (value: number) => void;
+    /**
+     * Id del viaggio e dell'utente: se presenti il budget personale viene
+     * salvato sul server (api/travel/setPersonalBudget) e sopravvive alla
+     * chiusura della schermata. Senza, resta solo in memoria come prima.
+     */
+    travelId?: string;
+    userId?: string;
 }
 
-export default function BudgetIndicator({ budget, spent, creator, personalbudget, setPersonalBudget }: BudgetIndicatorProps) {
-    let budgetInput: any = useRef<TextInput>(null);
-    let [modalVisibility, setModalVisibility] = useState(false);
-    const [selectedBudget, setselectedBudget] = useState("personal");
-    const [translateY] = useState(new Animated.Value(-Dimensions.get("screen").height));
+type Tab = "personal" | "travel";
 
-    let [percent, setPercent] = useState(0);
-    let [personalPercent, setPersonalPercent] = useState(0);
+export default function BudgetIndicator({
+    budget,
+    spent,
+    creator,
+    personalbudget,
+    setPersonalBudget,
+    travelId,
+    userId,
+}: BudgetIndicatorProps) {
+    const [modalVisibility, setModalVisibility] = useState(false);
+    const [selectedBudget, setSelectedBudget] = useState<Tab>("personal");
+    const [draft, setDraft] = useState("");
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const insets = useSafeAreaInsets();
 
-    React.useEffect(() => {
-        if (spent < budget) setPercent(spent / budget);
-        else setPercent(1);
+    const hasTravelBudget = Number.isFinite(budget) && budget > 0;
+    const hasPersonalBudget = Number.isFinite(personalbudget) && personalbudget > 0;
 
-        if (spent < personalbudget) setPersonalPercent(spent / personalbudget);
-        else setPersonalPercent(1);
-    }, [spent, budget, personalbudget]);
+    /* Le percentuali sono derivate, non stato: tenerle in useState come
+       prima significava un render in più a ogni cambio di spesa e il
+       rischio di mostrare un valore vecchio per un frame. */
+    const percent = useMemo(
+        () => (hasTravelBudget ? Math.min(1, spent / budget) : 0),
+        [spent, budget, hasTravelBudget]
+    );
+    const personalPercent = useMemo(
+        () => (hasPersonalBudget ? Math.min(1, spent / personalbudget) : 0),
+        [spent, personalbudget, hasPersonalBudget]
+    );
+
+    useEffect(() => {
+        if (modalVisibility) {
+            setDraft(hasPersonalBudget ? String(personalbudget) : "");
+            setSaveError(null);
+        }
+    }, [modalVisibility, personalbudget, hasPersonalBudget]);
 
     const closeModal = () => {
+        if (saving) return;
         setModalVisibility(false);
-        Animated.timing(translateY, {
-            toValue: -Dimensions.get("screen").height,
-            duration: 300,
-            useNativeDriver: false,
-        }).start();
     };
 
-    const openModal = () => {
-        setModalVisibility(true);
-        Animated.timing(translateY, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: false,
-        }).start();
+    const openModal = () => setModalVisibility(true);
+
+    /**
+     * Salva il budget personale. Il valore viene letto dallo state del
+     * TextInput: la versione precedente leggeva `ref.current._lastNativeText`
+     * (API privata di React Native) e faceva `parseInt`, perdendo i decimali.
+     */
+    const confirmBudget = async () => {
+        const value = parseFloat(draft.replace(",", "."));
+
+        if (!Number.isFinite(value) || value <= 0) {
+            setSaveError("Inserisci un importo maggiore di zero.");
+            return;
+        }
+
+        setSaving(true);
+        setSaveError(null);
+
+        try {
+            if (travelId && userId) await savePersonalBudget(travelId, userId, value);
+            setPersonalBudget(value);
+            setModalVisibility(false);
+        } catch (error) {
+            console.log("Budget personale", error);
+            setSaveError("Non siamo riusciti a salvare il budget. Riprova.");
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const panResponder: any = PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderMove: (event, gestureState) => {
-            if (gestureState.dy > 0) {
-                translateY.setValue(gestureState.dy);
-            }
-        },
-        onPanResponderRelease: (event, gestureState) => {
-            if (gestureState.dy > Dimensions.get("screen").height / 20) {
-                closeModal();
-            } else {
-                Animated.timing(translateY, {
-                    toValue: 0,
-                    duration: 300,
-                    useNativeDriver: false,
-                }).start();
-            }
-        },
-    });
+    const onDraftChange = (text: string) => {
+        setDraft(text);
+        if (saveError) setSaveError(null);
+    };
 
     /* Riga "speso / totale" + barra di avanzamento */
-    const renderBar = (total: number, progress: number) => (
-        <>
-            <View style={styles.amountRow}>
-                <Text style={styles.label}>
-                    {selectedBudget === "travel" ? "Budget viaggio" : "Budget personale"}
-                </Text>
-                <Text style={styles.amount}>
-                    € {Number(spent).toFixed(2)}
-                    <Text style={styles.amountTotal}> / € {Number(total).toFixed(2)}</Text>
-                </Text>
-            </View>
+    const renderBar = (total: number, progress: number, editable: boolean) => {
+        const over = spent > total;
 
-            <ProgressTrack
-                progress={progress}
-                color={spent < total ? ds.colors.action : ds.colors.error}
-            />
+        return (
+            <>
+                <View style={styles.amountRow}>
+                    <Text style={styles.label}>
+                        {selectedBudget === "travel" ? "Budget viaggio" : "Budget personale"}
+                    </Text>
+                    <View style={styles.amountRight}>
+                        <Text style={styles.amount}>
+                            {money(spent)}
+                            <Text style={styles.amountTotal}> / {money(total)}</Text>
+                        </Text>
+                        {editable ? (
+                            <TouchableOpacity onPress={openModal} hitSlop={8}>
+                                <MaterialCommunityIcons
+                                    name="pencil-outline"
+                                    size={14}
+                                    color={ds.colors.textSecondary}
+                                />
+                            </TouchableOpacity>
+                        ) : null}
+                    </View>
+                </View>
 
-            <Text style={styles.hint}>
-                {spent < total
-                    ? "Hai ancora € " + (total - spent).toFixed(2) + " a disposizione"
-                    : "Hai sforato il budget di € " + (spent - total).toFixed(2)}
-            </Text>
-        </>
-    );
+                <ProgressTrack progress={progress} color={over ? ds.colors.error : ds.colors.action} />
+
+                <Text style={[styles.hint, over && { color: ds.colors.errorText }]}>
+                    {over
+                        ? "Hai sforato il budget di " + money(spent - total)
+                        : "Hai ancora " + money(total - spent) + " a disposizione"}
+                </Text>
+            </>
+        );
+    };
 
     return (
         <View style={styles.card}>
@@ -110,33 +161,76 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                 animationType="slide"
                 transparent={true}
                 visible={modalVisibility}
-                onRequestClose={() => setModalVisibility(false)}
+                onRequestClose={closeModal}
             >
-                <TouchableWithoutFeedback onPress={closeModal}>
-                    <View style={styles.modalBackground} />
-                </TouchableWithoutFeedback>
+                <Pressable style={styles.modalBackdrop} onPress={closeModal} />
 
-                <Animated.View
-                    style={[styles.main, panResponder.panHandlers, { transform: [{ translateY }] }]}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    style={styles.modalBody}
                 >
-                    <View style={styles.main}>
-                        {/* Contenuto della modale impostazione budget personale */}
-                        <Text style={styles.modalTitle}>Imposta budget personale</Text>
-                        <Text style={styles.modalSubtitle}>Imposta un budget unico per te</Text>
-                        <TextInput
-                            style={styles.input}
-                            ref={budgetInput}
-                            placeholder="Scrivi il budget"
-                            placeholderTextColor={ds.colors.textPlaceholder}
-                            inputMode="decimal"
-                        />
-                        <View style={styles.rowRight}>
+                    <View style={[styles.sheet, { paddingBottom: ds.space[6] + insets.bottom }]}>
+                        <View style={styles.sheetHandle} />
+
+                        <View style={styles.sheetHead}>
+                            <View style={styles.sheetIcon}>
+                                <MaterialCommunityIcons
+                                    name="wallet-outline"
+                                    size={18}
+                                    color={ds.colors.action}
+                                />
+                            </View>
+                            <View style={styles.sheetHeadText}>
+                                <Text style={styles.modalTitle}>
+                                    {hasPersonalBudget ? "Modifica budget personale" : "Imposta budget personale"}
+                                </Text>
+                                <Text style={styles.modalSubtitle}>
+                                    Un tetto di spesa solo tuo, indipendente da quello del gruppo.
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={closeModal} hitSlop={10} disabled={saving}>
+                                <MaterialCommunityIcons
+                                    name="close"
+                                    size={20}
+                                    color={ds.colors.textSecondary}
+                                />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={[styles.inputRow, saveError && styles.inputRowError]}>
+                            <Text style={styles.inputPrefix}>€</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={draft}
+                                onChangeText={onDraftChange}
+                                placeholder="0"
+                                placeholderTextColor={ds.colors.textPlaceholder}
+                                inputMode="decimal"
+                                autoFocus
+                            />
+                        </View>
+
+                        {saveError ? (
+                            <View style={styles.errorRow}>
+                                <MaterialCommunityIcons
+                                    name="alert-circle-outline"
+                                    size={14}
+                                    color={ds.colors.errorText}
+                                />
+                                <Text style={styles.error}>{saveError}</Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.hintSmall}>
+                                Speso finora in questo viaggio: {money(spent)}
+                            </Text>
+                        )}
+
+                        <View style={styles.actions}>
                             <TouchableOpacity
                                 activeOpacity={0.85}
-                                onPress={() => {
-                                    budgetInput.current.value = '';
-                                    setModalVisibility(false);
-                                }}
+                                onPress={closeModal}
+                                disabled={saving}
+                                style={{ flex: 1 }}
                             >
                                 <View style={[styles.btn, styles.btnGhost]}>
                                     <Text style={[styles.btnText, { color: ds.colors.text }]}>Annulla</Text>
@@ -144,30 +238,33 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
                             </TouchableOpacity>
                             <TouchableOpacity
                                 activeOpacity={0.85}
-                                onPress={() => {
-                                    setPersonalBudget(parseInt(budgetInput.current._lastNativeText));
-                                    setModalVisibility(false);
-                                }}
+                                onPress={confirmBudget}
+                                disabled={saving}
+                                style={{ flex: 1 }}
                             >
-                                <View style={styles.btn}>
-                                    <Text style={styles.btnText}>Conferma</Text>
+                                <View style={[styles.btn, saving && styles.btnDisabled]}>
+                                    {saving ? (
+                                        <ActivityIndicator size="small" color={ds.colors.white} />
+                                    ) : (
+                                        <Text style={styles.btnText}>Conferma</Text>
+                                    )}
                                 </View>
                             </TouchableOpacity>
                         </View>
                     </View>
-                </Animated.View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* Selettore budget personale / del viaggio */}
             <View style={styles.tabs}>
-                <TouchableOpacity style={{ flex: 1 }} onPress={() => setselectedBudget("personal")}>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setSelectedBudget("personal")}>
                     <View style={[styles.tab, selectedBudget === "personal" && styles.tabActive]}>
                         <Text style={[styles.tabText, selectedBudget === "personal" && styles.tabTextActive]}>
                             Personale
                         </Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={{ flex: 1 }} onPress={() => setselectedBudget("travel")}>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setSelectedBudget("travel")}>
                     <View style={[styles.tab, selectedBudget === "travel" && styles.tabActive]}>
                         <Text style={[styles.tabText, selectedBudget === "travel" && styles.tabTextActive]}>
                             Del viaggio
@@ -177,8 +274,8 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
             </View>
 
             {selectedBudget === "travel" && (
-                budget && !isNaN(budget)
-                    ? renderBar(budget, percent)
+                hasTravelBudget
+                    ? renderBar(budget, percent, false)
                     : (
                         <>
                             <Text style={styles.emptyTitle}>Nessun budget impostato</Text>
@@ -192,8 +289,8 @@ export default function BudgetIndicator({ budget, spent, creator, personalbudget
             )}
 
             {selectedBudget === "personal" && (
-                personalbudget && !isNaN(personalbudget)
-                    ? renderBar(personalbudget, personalPercent)
+                hasPersonalBudget
+                    ? renderBar(personalbudget, personalPercent, true)
                     : (
                         <TouchableOpacity activeOpacity={0.7} onPress={openModal}>
                             <View>
@@ -245,6 +342,11 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         marginBottom: ds.space[3],
     },
+    amountRight: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: ds.space[3],
+    },
     label: {
         fontFamily: ds.fontFamily.semibold,
         fontSize: 12,
@@ -277,62 +379,124 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: ds.colors.textSecondary,
     },
-    modalBackground: {
+    modalBackdrop: {
         flex: 1,
         backgroundColor: ds.colors.scrim,
     },
-    main: {
+    modalBody: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    sheet: {
         backgroundColor: ds.colors.surface,
         borderTopLeftRadius: ds.radius["2xl"],
         borderTopRightRadius: ds.radius["2xl"],
-        width: "100%",
-        position: "absolute",
-        bottom: 0,
-        paddingTop: ds.space[5],
-        paddingBottom: ds.space[6],
+        paddingTop: ds.space[4],
+        paddingBottom: ds.space[8],
         paddingHorizontal: ds.space[5],
+    },
+    sheetHandle: {
+        alignSelf: "center",
+        width: 38,
+        height: 4,
+        borderRadius: ds.radius.full,
+        backgroundColor: ds.colors.scale.neutral[5],
+        marginBottom: ds.space[5],
+    },
+    sheetHead: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: ds.space[4] - 1,
+        marginBottom: ds.space[6],
+    },
+    sheetIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: ds.radius.full,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: ds.colors.actionSubtle,
+    },
+    sheetHeadText: {
+        flex: 1,
     },
     modalTitle: {
         fontFamily: ds.fontFamily.bold,
-        fontSize: 16,
+        fontSize: 15,
         color: ds.colors.text,
         marginBottom: ds.space[1],
     },
     modalSubtitle: {
         fontFamily: ds.fontFamily.regular,
         fontSize: 12,
+        lineHeight: 16,
         color: ds.colors.textSecondary,
-        marginBottom: ds.space[4],
     },
-    input: {
-        fontFamily: ds.fontFamily.regular,
-        fontSize: 13,
-        color: ds.colors.text,
-        height: ds.control.md,
+    inputRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        height: ds.control.lg,
         backgroundColor: ds.colors.surfaceSunken,
         borderWidth: 1,
         borderColor: ds.colors.border,
         borderRadius: ds.radius.m,
         paddingHorizontal: ds.space[4],
+        marginBottom: ds.space[3],
+    },
+    inputRowError: {
+        borderColor: ds.colors.error,
+    },
+    inputPrefix: {
+        fontFamily: ds.fontFamily.metaBold,
+        fontSize: 18,
+        color: ds.colors.textSecondary,
+        marginRight: ds.space[2] + 2,
+    },
+    input: {
+        flex: 1,
+        padding: 0,
+        fontFamily: ds.fontFamily.metaBold,
+        fontSize: 18,
+        color: ds.colors.text,
+    },
+    errorRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: ds.space[2],
         marginBottom: ds.space[5],
     },
-    rowRight: {
+    error: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: ds.colors.errorText,
+    },
+    hintSmall: {
+        fontFamily: ds.fontFamily.regular,
+        fontSize: 11,
+        color: ds.colors.textSecondary,
+        marginBottom: ds.space[5],
+    },
+    actions: {
         flexDirection: "row",
-        justifyContent: "flex-end",
+        gap: ds.space[3],
     },
     btn: {
+        flex: 1,
         backgroundColor: ds.colors.action,
-        height: ds.control.sm,
-        minWidth: 100,
+        height: ds.control.md,
         alignItems: "center",
         justifyContent: "center",
         borderRadius: ds.radius.m,
-        marginLeft: ds.space[3],
     },
     btnGhost: {
         backgroundColor: ds.colors.surface,
         borderWidth: 1,
         borderColor: ds.colors.border,
+    },
+    btnDisabled: {
+        backgroundColor: ds.colors.disabledBg,
     },
     btnText: {
         fontFamily: ds.fontFamily.semibold,

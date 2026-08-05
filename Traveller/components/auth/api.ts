@@ -4,6 +4,7 @@ import { serverLink } from "../../global/globalVariable";
 import type { ApiUser } from "../../shared/types/api";
 import type { AuthUser } from "./types";
 import { deriveUsernameFromEmail } from "./validation";
+import { isNetworkError, markOffline, markOnline } from "../../shared/data/netStatus";
 
 /**
  * Errore applicativo dell'autenticazione: il messaggio è già pensato per
@@ -28,15 +29,15 @@ export function sanitizeUser(user: ApiUser): AuthUser {
 }
 
 /**
- * NOTA SICUREZZA: il backend attuale confronta un digest SHA-256 della
- * password invece della password in chiaro. Questo digest, non salato e
- * sempre uguale per la stessa password, va trattato a tutti gli effetti
- * come "la password" (chi lo intercetta o lo trova su disco può accedere
- * all'account): non protegge da nulla che HTTPS non protegga già, e NON
- * sostituisce un hashing salato lato server (bcrypt/argon2), che resta la
- * cosa giusta da implementare sul backend. Lo manteniamo qui solo per
- * compatibilità con l'API esistente; il client non lo salva mai da nessuna
- * parte (né in AsyncStorage né in SecureStore) una volta inviata la richiesta.
+ * Il client manda un digest SHA-256 della password, non la password in
+ * chiaro — ma va comunque trattato come "la password": non salato e sempre
+ * uguale per la stessa password, non protegge da nulla che HTTPS non
+ * protegga già da solo in transito. La protezione vera è lato server:
+ * Server/func/passwordHash.ts hasha questo digest con bcrypt (salt per
+ * utente, costo intenzionalmente alto) prima di salvarlo, quindi un dump
+ * del database non basta più a riusare le credenziali direttamente. Il
+ * client non lo salva mai da nessuna parte (né in AsyncStorage né in
+ * SecureStore) una volta inviata la richiesta.
  */
 async function hashPassword(password: string): Promise<string> {
   return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password);
@@ -158,10 +159,21 @@ export async function fetchUserById(id: string): Promise<AuthUser | null> {
   try {
     const response = await axios.get<ApiUser[]>(`${serverLink}api/user/takeUserById`, {
       params: { id },
-    });
+      // Questa chiamata è essa stessa il meccanismo di rinnovo del token
+      // (vedi authContext.tsx:refreshSession e authToken.ts). Se prendesse
+      // 401 e l'interceptor globale provasse a "rinnovare e ritentare" come
+      // fa per le altre richieste, chiamerebbe di nuovo fetchUserById da capo:
+      // un loop. Il flag dice all'interceptor di non provarci qui.
+      __isAuthBootstrap: true,
+    } as any);
+    markOnline();
     if (!response.data?.[0]) return null;
     return sanitizeUser(response.data[0]);
-  } catch {
+  } catch (error) {
+    // Offline il profilo non si può rinfrescare: chi chiama continua con
+    // la copia locale (AsyncStorage["user"]). Segnaliamo però lo stato di
+    // rete, perché questa è spesso la prima richiesta dell'app.
+    if (isNetworkError(error)) markOffline();
     return null;
   }
 }
