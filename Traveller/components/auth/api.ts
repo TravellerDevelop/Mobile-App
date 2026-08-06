@@ -87,14 +87,19 @@ interface RegisterInput {
 
 const MAX_USERNAME_ATTEMPTS = 4;
 
+/**
+ * Esito di un tentativo di registrazione: lo username è preso ("taken"),
+ * oppure l'account è stato creato e il server restituisce subito l'utente
+ * completo (token incluso — vedi Server/func/user.ts:registerUser).
+ */
 async function registerOnce(
   name: string,
   surname: string,
   username: string,
   email: string,
   digest: string
-): Promise<"ok" | "taken"> {
-  const response = await axios.post(`${serverLink}api/user/register`, {
+): Promise<ApiUser | "taken"> {
+  const response = await axios.post<ApiUser[]>(`${serverLink}api/user/register`, {
     name,
     surname,
     username,
@@ -102,7 +107,11 @@ async function registerOnce(
     password: digest,
   });
 
-  if (response.status === 200) return "ok";
+  if (response.status === 200) {
+    const created = response.data?.[0];
+    if (!created) throw new AuthApiError(GENERIC_ERROR);
+    return created;
+  }
   if (response.status === 202) return "taken";
   throw new AuthApiError(GENERIC_ERROR);
 }
@@ -118,30 +127,28 @@ export async function registerRequest({
 
   try {
     let username = baseUsername;
-    let outcome: "ok" | "taken" = "taken";
+    let result: ApiUser | "taken" = "taken";
 
     // Il mockup non ha un campo "username": ne generiamo uno dall'email e,
     // se risulta già occupato (status 202), riproviamo con un suffisso
     // numerico casuale, senza obbligare l'utente a sceglierne uno a mano.
     for (let attempt = 0; attempt < MAX_USERNAME_ATTEMPTS; attempt++) {
       username = attempt === 0 ? baseUsername : `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
-      outcome = await registerOnce(name, surname, username, email, digest);
-      if (outcome === "ok") break;
+      result = await registerOnce(name, surname, username, email, digest);
+      if (result !== "taken") break;
     }
 
-    if (outcome !== "ok") {
+    if (result === "taken") {
       throw new AuthApiError("Non è stato possibile completare la registrazione. Riprova.");
     }
 
-    const info = await axios.get<ApiUser[]>(`${serverLink}api/user/info`, {
-      params: { username },
-    });
-
-    if (!info.data?.[0]) {
-      throw new AuthApiError(GENERIC_ERROR);
-    }
-
-    return sanitizeUser(info.data[0]);
+    // Il server ha già restituito l'utente completo (token incluso): non
+    // serve più una seconda chiamata (api/user/info) solo per recuperarlo.
+    // Quella seconda chiamata era anche, prima di questo fix, il punto in
+    // cui chiunque conoscesse (o indovinasse) uno username otteneva un
+    // token valido 30 giorni per quell'account — vedi il commento su
+    // forClient() in Server/func/user.ts.
+    return sanitizeUser(result);
   } catch (error) {
     if (error instanceof AuthApiError) throw error;
     if (isAxiosNetworkError(error)) throw new AuthApiError(NETWORK_ERROR);
@@ -154,25 +161,56 @@ export async function registerRequest({
 
 /* ---- Aggiornamento dati utente ---------------------------------
    Usato all'avvio app per rinfrescare il profilo di una sessione già
-   valida (stesso endpoint già usato altrove nell'app). */
+   valida (stesso endpoint già usato per "guarda il profilo di..."). */
 export async function fetchUserById(id: string): Promise<AuthUser | null> {
   try {
     const response = await axios.get<ApiUser[]>(`${serverLink}api/user/takeUserById`, {
       params: { id },
-      // Questa chiamata è essa stessa il meccanismo di rinnovo del token
-      // (vedi authContext.tsx:refreshSession e authToken.ts). Se prendesse
-      // 401 e l'interceptor globale provasse a "rinnovare e ritentare" come
-      // fa per le altre richieste, chiamerebbe di nuovo fetchUserById da capo:
-      // un loop. Il flag dice all'interceptor di non provarci qui.
+      // Se il token attuale non è più valido questa chiamata prende 401:
+      // il flag dice all'interceptor globale di non provare da solo a
+      // "rinnovare e ritentare" (vedi authToken.ts), perché il rinnovo qui
+      // passa da refreshSession(), che chiama ANCHE questa stessa funzione
+      // — un retry automatico la richiamerebbe da capo, un loop.
       __isAuthBootstrap: true,
     } as any);
     markOnline();
     if (!response.data?.[0]) return null;
+    // Da qui in poi la risposta non porta più un socketToken (vedi
+    // Server/func/user.ts: takeUserById usa toPublicUser, non forClient):
+    // il rinnovo del token è compito di renewSocketToken, non di questa
+    // funzione, che serve solo ai dati di profilo.
     return sanitizeUser(response.data[0]);
   } catch (error) {
     // Offline il profilo non si può rinfrescare: chi chiama continua con
     // la copia locale (AsyncStorage["user"]). Segnaliamo però lo stato di
     // rete, perché questa è spesso la prima richiesta dell'app.
+    if (isNetworkError(error)) markOffline();
+    return null;
+  }
+}
+
+/**
+ * Rinnova il token di sessione esibendo quello attuale, anche se scaduto:
+ * vedi Server/func/user.ts:renewToken sul perché questo è sicuro su un
+ * endpoint pubblico (il server verifica la firma del token vecchio, non si
+ * fida del solo id). Sostituisce l'uso implicito che se ne faceva prima
+ * tramite fetchUserById/takeUserById, che riemetteva un token per QUALSIASI
+ * id passato — bastava conoscerlo, senza alcuna prova.
+ *
+ * Restituisce null se il rinnovo non riesce (offline, o il token esibito
+ * non è mai stato emesso da questo server per questo id): a quel punto la
+ * sessione non è più rinnovabile e serve un nuovo login.
+ */
+export async function renewSocketToken(userId: string, token: string): Promise<string | null> {
+  try {
+    const response = await axios.post<{ socketToken: string }>(
+      `${serverLink}api/user/renewToken`,
+      { userid: userId, token },
+      { __isAuthBootstrap: true } as any
+    );
+    markOnline();
+    return response.data?.socketToken ?? null;
+  } catch (error) {
     if (isNetworkError(error)) markOffline();
     return null;
   }

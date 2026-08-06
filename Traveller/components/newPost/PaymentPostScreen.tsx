@@ -1,6 +1,7 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -183,6 +184,33 @@ export default function PaymentPostScreen({ form, onClose }: PaymentPostScreenPr
             </View>
           )}
 
+          <SectionLabel>Scontrino</SectionLabel>
+
+          {form.receipt ? (
+            <View style={styles.receiptPreviewWrap}>
+              <Image source={{ uri: form.receipt.uri }} style={styles.receiptPreview} />
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={form.removeReceipt}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={styles.receiptRemove}
+              >
+                <MaterialCommunityIcons name="close" size={14} color={ds.colors.white} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity activeOpacity={0.8} onPress={form.pickReceipt}>
+              <View style={styles.receiptAdd}>
+                <MaterialCommunityIcons
+                  name="receipt-text-outline"
+                  size={16}
+                  color={ds.colors.action}
+                />
+                <Text style={styles.receiptAddText}>Allega scontrino</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
           <ToggleRow
             icon="pin-outline"
             label="Fissa il post in alto"
@@ -347,6 +375,45 @@ const styles = StyleSheet.create({
     fontFamily: ds.fontFamily.semibold,
     fontSize: 11,
     color: ds.colors.white,
+  },
+  receiptAdd: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: ds.control.md,
+    borderRadius: ds.radius.m,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: ds.colors.action,
+    marginBottom: ds.space[5],
+  },
+  receiptAddText: {
+    fontFamily: ds.fontFamily.semibold,
+    fontSize: 12,
+    color: ds.colors.action,
+    marginLeft: ds.space[2],
+  },
+  receiptPreviewWrap: {
+    position: "relative",
+    alignSelf: "flex-start",
+    marginBottom: ds.space[5],
+  },
+  receiptPreview: {
+    width: 96,
+    height: 96,
+    borderRadius: ds.radius.l,
+    backgroundColor: ds.colors.scale.neutral[4],
+  },
+  receiptRemove: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: ds.radius.full,
+    backgroundColor: ds.colors.scale.neutral[9],
+    alignItems: "center",
+    justifyContent: "center",
   },
   submitWrap: {
     marginTop: ds.space[6],

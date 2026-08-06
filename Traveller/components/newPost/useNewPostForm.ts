@@ -48,6 +48,7 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
   const [paymentNote, setPaymentNote] = useState("");
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("all");
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [receipt, setReceipt] = useState<PickedImage | null>(null);
 
   // Immagini
   const [images, setImages] = useState<PickedImage[]>([]);
@@ -93,6 +94,29 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
       prev.includes(userid) ? prev.filter((id) => id !== userid) : [...prev, userid]
     );
   }, []);
+
+  /* Scontrino: foto opzionale allegata al pagamento, un'unica immagine
+     (a differenza del post "images" non serve una galleria). */
+  const pickReceipt = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const [asset] = result.assets;
+    setReceipt({
+      uri: asset.uri,
+      base64: asset.base64,
+      width: asset.width,
+      height: asset.height,
+    });
+  }, []);
+
+  const removeReceipt = useCallback(() => setReceipt(null), []);
 
   /* ---- Immagini -------------------------------------------- */
   const pickImages = useCallback(async () => {
@@ -168,18 +192,21 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
     todoItems,
   ]);
 
-  /* Carica le immagini sul server e restituisce i nomi file salvati */
-  const uploadImages = useCallback(async (): Promise<string[]> => {
-    const uploads = images.map(async (image) => {
-      const { data } = await axios.post<string>(`${serverLink}api/post/addImage`, {
-        img: image.base64,
-        name: image.uri.split("/").pop(),
-      });
-      return data;
+  /* Carica una singola immagine sul server e restituisce il nome file
+     (o URL S3) salvato. Condivisa fra il post "images" e lo scontrino
+     di un pagamento: stesso endpoint, stesso contratto. */
+  const uploadImage = useCallback(async (image: PickedImage): Promise<string> => {
+    const { data } = await axios.post<string>(`${serverLink}api/post/addImage`, {
+      img: image.base64,
+      name: image.uri.split("/").pop(),
     });
+    return data;
+  }, []);
 
-    return Promise.all(uploads);
-  }, [images]);
+  const uploadImages = useCallback(
+    async (): Promise<string[]> => Promise.all(images.map(uploadImage)),
+    [images, uploadImage]
+  );
 
   /* Costruisce il payload richiesto dal server per il tipo corrente */
   const buildPayload = useCallback(async (): Promise<NewPostPayload> => {
@@ -219,6 +246,7 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
           description: paymentNote.trim(),
           paymentType: recipientMode === "me" ? "personal" : "normal",
           destinator,
+          ...(receipt ? { receipt: await uploadImage(receipt) } : {}),
         };
       }
 
@@ -251,6 +279,8 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
     selectedRecipients,
     parsedAmount,
     paymentNote,
+    receipt,
+    uploadImage,
     uploadImages,
     imagesDescription,
     todoDescription,
@@ -263,8 +293,9 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
     /* I post con immagini richiedono l'upload dei file prima della
        creazione: metterli in coda vorrebbe dire conservare i base64
        (spesso alcuni MB l'uno) dentro AsyncStorage, che non è pensato per
-       quel volume. Sono l'unico tipo di post bloccato offline. */
-    if (type === "images" && !isOnline()) {
+       quel volume. Stesso discorso per un pagamento con scontrino
+       allegato: senza foto invece resta in coda come tutti i pagamenti. */
+    if ((type === "images" || (type === "payments" && receipt)) && !isOnline()) {
       Alert.alert(
         "Sei offline",
         "Le foto vanno caricate sul server: riprova quando torna la connessione. Gli altri tipi di post si possono creare anche offline."
@@ -300,7 +331,7 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
     } finally {
       setIsSubmitting(false);
     }
-  }, [canSubmit, isSubmitting, type, buildPayload, onCreated, travel._id]);
+  }, [canSubmit, isSubmitting, type, receipt, buildPayload, onCreated, travel._id]);
 
   return {
     type,
@@ -330,6 +361,9 @@ export function useNewPostForm({ travel, initialType, onCreated }: UseNewPostFor
     selectedRecipients,
     toggleRecipient,
     otherParticipants,
+    receipt,
+    pickReceipt,
+    removeReceipt,
 
     images,
     pickImages,

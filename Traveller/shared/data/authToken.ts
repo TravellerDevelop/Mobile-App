@@ -4,9 +4,9 @@ import axios from "axios";
    Traveller — Credenziali per le chiamate REST
 
    Il backend ora richiede un token valido su ogni rotta /api/*
-   tranne login/registrazione (vedi Server/func/socketAuth.ts:
+   tranne login/registrazione/renewToken (vedi Server/func/socketAuth.ts:
    requireAuth). Il token è lo stesso "socketToken" già emesso da
-   login/registrazione/takeUserById e già usato per il canale
+   login/registrazione/renewToken e già usato per il canale
    realtime — qui viene solo riusato anche per il REST, non è una
    seconda credenziale da gestire.
 
@@ -87,14 +87,16 @@ export function installAuthInterceptor(): void {
   // dopo il rinnovo è un errore vero (non autorizzato, non "scaduto") e va
   // propagato invece di rientrare in loop.
   //
-  // `__isAuthBootstrap` protegge un caso diverso: `refresh()` stesso rilegge
-  // il profilo (fetchUserById → GET takeUserById), che è una richiesta axios
-  // come le altre e passerebbe da qui. Se ANCHE quella prendesse 401 e
-  // richiamassimo refresh() per lei, richiameremmo la stessa funzione che
-  // l'ha generata — un loop fra questo interceptor e fetchUserById, che è
-  // esattamente quello che si è visto in pratica (vedi CLAUDE.md/commenti in
-  // server.ts su PUBLIC_API_PATHS). Su questa richiesta un 401 è un rinnovo
-  // fallito e basta: va propagato, non ritentato.
+  // `__isAuthBootstrap` protegge un caso diverso: `refresh()` stesso chiama
+  // fetchUserById (profilo) e renewSocketToken (token, POST api/user/
+  // renewToken) — richieste axios come le altre, che passerebbero da qui.
+  // Se ANCHE una di quelle prendesse 401 e richiamassimo refresh() per lei,
+  // richiameremmo la stessa funzione che l'ha generata — un loop fra questo
+  // interceptor e refreshSession, che è esattamente quello che si è visto
+  // in pratica quando il meccanismo di rinnovo passava (in modo non
+  // sicuro) da GET takeUserById invece che da renewToken (vedi
+  // Server/func/user.ts). Su queste richieste un 401 è un rinnovo fallito
+  // e basta: va propagato, non ritentato.
   axios.interceptors.response.use(
     (response) => response,
     async (error) => {

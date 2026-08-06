@@ -38,6 +38,29 @@ export const homeNavigationRef = createNavigationContainerRef<any>();
 /** Route che vivono nel tab navigator radice invece che nello stack di Home. */
 const ROOT_ROUTES = ["Home", "Tickets", "Money", "TicketsModal"];
 
+/**
+ * Schermate che una notifica può davvero aprire — l'unione di ROOT_ROUTES e
+ * di ogni `target.screen` che il server emette (grep su "screen:" in
+ * Server/func/*.ts: post.ts, tickets.ts, itinerary.ts, money.ts, travels.ts,
+ * follow.ts). `target` arriva nel payload di una push: un server compromesso,
+ * un token rubato o un payload malformato potrebbero far arrivare qui una
+ * stringa qualunque, che altrimenti finirebbe direttamente in
+ * `rootNavigate`/`homeNavigate` — nomi non in questa lista non esistono in
+ * nessun navigator (nessun crash), ma senza controllo passerebbero comunque
+ * senza motivo. Difesa in profondità, non l'unica barriera: il server è già
+ * l'unico a scrivere `target`.
+ */
+const KNOWN_DEEPLINK_SCREENS = new Set([
+  ...ROOT_ROUTES,
+  "TravelDetail",
+  "PaymentInfo",
+  "Itinerary",
+  "ItineraryStopDetail",
+  "TravelPartecipants",
+  "Notifications",
+  "OtherProfile",
+]);
+
 interface TargetParams {
   travelId?: string;
   postId?: string;
@@ -129,6 +152,11 @@ async function hydrate(screen: string, params: TargetParams): Promise<Record<str
 export async function openTarget(target: NotificationTarget | null | undefined): Promise<void> {
   if (!target?.screen) return;
   if (!rootNavigationRef.isReady()) return;
+
+  if (!KNOWN_DEEPLINK_SCREENS.has(target.screen)) {
+    console.log("Notifiche — target.screen sconosciuto, ignorato:", target.screen);
+    return;
+  }
 
   const isRoot = target.root || ROOT_ROUTES.includes(target.screen);
 

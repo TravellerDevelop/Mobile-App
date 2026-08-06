@@ -95,6 +95,14 @@ export default function PaymentComponent({
                 </Text>
                 <Text style={styles.amount}>€ {item.amount}</Text>
               </View>
+              {item.receipt ? (
+                <MaterialCommunityIcons
+                  name="receipt-text-outline"
+                  size={16}
+                  color={ds.colors.textSecondary}
+                  style={styles.receiptIcon}
+                />
+              ) : null}
               <StatusBadge label={badge.label} intent={badge.intent} />
             </View>
 
@@ -136,6 +144,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: ds.colors.text,
     marginTop: 2,
+  },
+  receiptIcon: {
+    marginRight: ds.space[2] + 2,
   },
   hint: {
     fontFamily: ds.fontFamily.regular,

@@ -38,8 +38,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => realtimeClient.onStateChange(setState), []);
 
-  // Come rinnovare il token quando il server rifiuta l'handshake: rileggere
-  // il profilo, da cui il server rimanda un socketToken nuovo.
+  // Come rinnovare il token quando il server rifiuta l'handshake:
+  // refreshSession() esibisce il token attuale a api/user/renewToken (vedi
+  // global/authContext.tsx) e restituisce l'utente con il token nuovo.
   useEffect(() => {
     realtimeClient.setAuthRenewer(async () => {
       const fresh = await refreshRef.current();

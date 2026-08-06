@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Modal } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
@@ -10,6 +10,7 @@ import { getData } from "../shared/data/localdata";
 import { apiSend } from "../shared/data/apiClient";
 import { cacheKeys, readCache, writeCache } from "../shared/data/offlineCache";
 import { isNetworkError, markOffline, markOnline } from "../shared/data/netStatus";
+import { resolveImageUri } from "../shared/imageUrl";
 import { money } from "../components/money/format";
 import { notifyDebt } from "../components/money/api";
 import { ApiPaymentPost, ApiPostCreatorData, ApiPostDestinator, ApiUser } from "../shared/types/api";
@@ -34,6 +35,7 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
     let [savingId, setSavingId] = useState<string | null>(null);
     let [settlingAll, setSettlingAll] = useState(false);
     let [notifyState, setNotifyState] = useState<NotifyState>("idle");
+    let [receiptVisible, setReceiptVisible] = useState(false);
 
     async function getUserData() {
         const data = await getData("user");
@@ -309,6 +311,18 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
                         ))}
                     </View>
 
+                    {items.receipt ? (
+                        <View style={styles.receiptSection}>
+                            <SectionLabel style={styles.sectionLabel}>Scontrino</SectionLabel>
+                            <TouchableOpacity activeOpacity={0.85} onPress={() => setReceiptVisible(true)}>
+                                <Image
+                                    source={{ uri: resolveImageUri(items.receipt, "userImage/posts/") }}
+                                    style={styles.receiptThumb}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    ) : null}
+
                     {notifyState === "sent" ? null : (
                         <TouchableOpacity
                             activeOpacity={0.85}
@@ -352,6 +366,30 @@ export default function PaymentInfo({ navigation, route }: { navigation: any; ro
                     ) : null}
                 </View>
             </ScrollView>
+
+            {items.receipt ? (
+                <Modal
+                    visible={receiptVisible}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setReceiptVisible(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.receiptModalBackdrop}
+                        activeOpacity={1}
+                        onPress={() => setReceiptVisible(false)}
+                    >
+                        <TouchableOpacity style={styles.receiptModalClose} onPress={() => setReceiptVisible(false)}>
+                            <MaterialCommunityIcons name="close" size={20} color={ds.colors.white} />
+                        </TouchableOpacity>
+                        <Image
+                            source={{ uri: resolveImageUri(items.receipt, "userImage/posts/") }}
+                            style={styles.receiptModalImage}
+                            resizeMode="contain"
+                        />
+                    </TouchableOpacity>
+                </Modal>
+            ) : null}
         </View>
     );
 }
@@ -534,6 +572,37 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: ds.colors.textSecondary,
         marginTop: 2,
+    },
+    receiptSection: {
+        marginBottom: ds.space[7],
+    },
+    receiptThumb: {
+        width: 96,
+        height: 96,
+        borderRadius: ds.radius.l,
+        backgroundColor: ds.colors.scale.neutral[4],
+    },
+    receiptModalBackdrop: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.9)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    receiptModalClose: {
+        position: "absolute",
+        top: 56,
+        right: ds.layout.headerPaddingH,
+        width: 36,
+        height: 36,
+        borderRadius: ds.radius.full,
+        backgroundColor: "rgba(255,255,255,0.16)",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1,
+    },
+    receiptModalImage: {
+        width: "92%",
+        height: "80%",
     },
     reminderButton: {
         height: ds.control.lg,

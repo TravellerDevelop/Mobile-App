@@ -23,10 +23,14 @@ export interface ApiUser {
      */
     password: string;
     /**
-     * Credenziale firmata dal server per l'handshake Socket.io, restituita
-     * da login/registrazione/takeUserById. Va trattata come una password:
-     * vive solo in SecureStore (vedi global/authContext.tsx) e non finisce
-     * nella copia in chiaro su AsyncStorage.
+     * Credenziale firmata dal server per l'handshake Socket.io (e per il
+     * REST, vedi requireAuth), restituita solo da login/registrazione/
+     * renewToken — MAI da una lookup che riguarda un altro utente
+     * (takeUserById/takeUserInfo/search restituiscono un utente "pubblico",
+     * senza questo campo: vedi `forClient()` vs `toPublicUser()` in
+     * Server/func/user.ts). Va trattata come una password: vive solo in
+     * SecureStore (vedi global/authContext.tsx) e non finisce nella copia
+     * in chiaro su AsyncStorage.
      */
     socketToken?: string;
     notifToken?: (string | null)[];
@@ -133,6 +137,8 @@ export interface ApiPaymentPost extends ApiPostBase {
     destinator: ApiPostDestinator[];
     paymentType: "normal" | "personal";
     description: string;
+    /** Nome file (o URL S3) dello scontrino allegato, se presente. */
+    receipt?: string;
 }
 
 export interface ApiTextPost extends ApiPostBase {

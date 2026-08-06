@@ -73,7 +73,7 @@ class RealtimeClient {
    * Tentativi di rinnovo consecutivi senza una riconnessione riuscita.
    * Senza un tetto, un server che rifiuta sempre il token nuovo (es.
    * SOCKET_SECRET non fisso, invalidato a ogni riavvio) genera un loop
-   * infinito di GET api/user/takeUserById: ogni rinnovo produce un token
+   * infinito di POST api/user/renewToken: ogni rinnovo produce un token
    * "diverso" ma comunque non valido, si riconnette subito, il server lo
    * rifiuta di nuovo, e così via senza pause.
    */
@@ -206,7 +206,7 @@ class RealtimeClient {
 
     if (this.renewAttempts >= RealtimeClient.MAX_RENEW_ATTEMPTS) {
       // Troppi rifiuti di fila (es. server che invalida il token a ogni
-      // riavvio): ci fermiamo per non martellare api/user/takeUserById.
+      // riavvio): ci fermiamo per non martellare api/user/renewToken.
       // Si riparte da capo al prossimo handshake accettato o alla prossima
       // connect() "voluta" (login, cambio utente, rientro in foreground).
       return;

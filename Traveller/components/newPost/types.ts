@@ -54,6 +54,8 @@ export interface PaymentPostPayload extends BasePostPayload {
   description: string;
   paymentType: "normal" | "personal";
   destinator: PaymentDestinator[];
+  /** Nome file (o URL S3) dello scontrino, restituito da api/post/addImage. */
+  receipt?: string;
 }
 
 export interface ImagesPostPayload extends BasePostPayload {

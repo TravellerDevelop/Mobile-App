@@ -29,7 +29,7 @@ import React, {
 import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchUserById } from "../components/auth/api";
+import { fetchUserById, renewSocketToken } from "../components/auth/api";
 import { releasePushToken } from "../components/notifications/pushClient";
 import { clearAllCache } from "../shared/data/offlineCache";
 import { clearDropped, clearQueue } from "../shared/data/syncQueue";
@@ -169,15 +169,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setStatus("signedIn");
           syncCredentials(sessionUser);
 
-          // Rinfresca i dati in background: se il profilo è cambiato (o
-          // l'account non esiste più) li allineiamo, ma un errore di rete
-          // qui non deve buttare fuori l'utente da una sessione altrimenti
-          // valida (stesso comportamento, best-effort, del vecchio App.tsx).
-          const fresh = await fetchUserById(sessionUser._id);
-          if (!cancelled && fresh) {
-            setUser(fresh);
-            syncCredentials(fresh);
-            await persistUser(fresh);
+          // Rinfresca dati e token in background: se il profilo è cambiato
+          // (o l'account non esiste più) li allineiamo, e il token viene
+          // rinnovato esibendo quello attuale (vedi
+          // components/auth/api.ts:renewSocketToken sul perché è sicuro
+          // farlo con un endpoint pubblico). Un errore di rete qui non deve
+          // buttare fuori l'utente da una sessione altrimenti valida (stesso
+          // comportamento, best-effort, di sempre): se il rinnovo fallisce
+          // si continua col token già in SecureStore, che scadrà comunque
+          // producendo un 401 gestito più avanti dallo stesso meccanismo.
+          const storedToken = (sessionUser as AuthUser & { socketToken?: string }).socketToken;
+          const [freshProfile, renewedToken] = await Promise.all([
+            fetchUserById(sessionUser._id),
+            storedToken ? renewSocketToken(sessionUser._id, storedToken) : Promise.resolve(null),
+          ]);
+
+          if (!cancelled && (freshProfile || renewedToken)) {
+            const merged: AuthUser = {
+              ...(freshProfile ?? sessionUser),
+              socketToken: renewedToken ?? storedToken,
+            };
+            setUser(merged);
+            syncCredentials(merged);
+            await persistUser(merged);
           }
         } else {
           setStatus("signedOut");
@@ -240,8 +254,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshSession = useCallback(async () => {
     if (!user?._id) return null;
-    const fresh = await fetchUserById(user._id);
-    if (!fresh) return null;
+    const storedToken = (user as AuthUser & { socketToken?: string }).socketToken;
+    // Niente token da esibire come prova: non c'è nulla da rinnovare (non
+    // dovrebbe succedere per una sessione valida, ma senza prova il server
+    // non ha modo di sapere per chi riemettere un token — vedi
+    // Server/func/user.ts:renewToken).
+    if (!storedToken) return null;
+
+    const [freshProfile, renewedToken] = await Promise.all([
+      fetchUserById(user._id),
+      renewSocketToken(user._id, storedToken),
+    ]);
+
+    // Questa funzione è quella che REST (authToken.ts) e socket
+    // (RealtimeProvider) chiamano proprio quando il token attuale viene
+    // rifiutato: se il rinnovo vero e proprio fallisce (firma non valida o
+    // rete assente), non c'è nulla di utile da restituire — insistere col
+    // token vecchio ripeterebbe subito lo stesso rifiuto.
+    if (!renewedToken) return null;
+
+    const fresh: AuthUser = { ...(freshProfile ?? user), socketToken: renewedToken };
     setUser(fresh);
     syncCredentials(fresh);
     try {
@@ -252,7 +284,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("Impossibile salvare la sessione aggiornata:", error);
     }
     return fresh;
-  }, [user?._id]);
+  }, [user]);
 
   // Come ottenere credenziali REST nuove quando il server risponde 401 a un
   // token scaduto (vedi shared/data/authToken.ts): stessa idea del

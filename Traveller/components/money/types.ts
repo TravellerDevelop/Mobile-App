@@ -75,6 +75,8 @@ export interface MoneyMovement {
   peopleCount: number;
   paidCount: number;
   creator: MoneyMovementCreator;
+  /** Nome file (o URL S3) dello scontrino allegato, se presente. */
+  receipt?: string;
 }
 
 export interface MoneyOverview {

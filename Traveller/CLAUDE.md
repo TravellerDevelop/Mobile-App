@@ -20,11 +20,11 @@ There is no lint script configured in `package.json`.
 
 ### Before building for release
 
-`global/globalVariable.js` holds environment flags that must be set by hand before every build (see the `/* ISTRUZIONI */` comment at the bottom of that file):
-- `ISDEBUG` must be `false` so `serverLink` points at the production server (`https://traveller-ttze.onrender.com/`) instead of the hardcoded local IP (`myIp`).
-- `ISBETA` must be set correctly for the target release.
+`global/globalVariable.js` holds environment flags:
+- `ISDEBUG` is no longer a manual switch — it's `computeIsDebug(dev)`, true unless `dev === false`, called with Metro/Hermes's `__DEV__` global (guarded with `typeof __DEV__ !== "undefined"` since that global doesn't exist outside a React Native bundle, e.g. under Jest). `__DEV__` is `false` only in a real release bundle (`eas build --profile production`, `expo export`), so there's no longer a step to remember before shipping — same class of fix as `computeIsDebug(NODE_ENV)` on the backend (`Server/server.ts`). `serverLink` derives from it via `resolveServerLink(isDebug)` (prod URL `https://traveller-ttze.onrender.com/` vs. the hardcoded local IP `myIp`), both exported as pure functions specifically so they can be unit-tested with explicit `true`/`false` instead of depending on the ambient (and, under Jest, always-debug) environment.
+- `ISBETA` is still a plain manual boolean and must be set correctly for the target release — see the `/* ISTRUZIONI */` comment at the bottom of that file.
 
-`shared/data/offline.test.ts` covers the offline layer (cache fallback, queue ordering, retry/drop policy) with in-memory doubles for AsyncStorage and axios; `general.test.js` / `forTests.js` are not unit tests in the usual sense — they are a pre-release sanity check that asserts `ISDEBUG`/`ISBETA` are flipped to production values, `serverLink` is the prod URL, the prod server is reachable, and `appVersion` matches what the server reports. Expect this suite to fail during normal local development (since `ISDEBUG` is `true` locally) and to only pass once the app is configured for a release build.
+`shared/data/offline.test.ts` covers the offline layer (cache fallback, queue ordering, retry/drop policy) with in-memory doubles for AsyncStorage and axios; `general.test.js` / `forTests.js` are not unit tests in the usual sense — they are a pre-release sanity check. `computeIsDebug`/`resolveServerLink` are tested directly (both branches, via explicit arguments — Jest never sees a real `__DEV__ === false`, so the previous `expect(ISDEBUG).toBe(false)`/`expect(serverLink).toBe(prodUrl)` assertions on the *computed* values could never pass here anymore and were replaced); `ISBETA`, the prod server's reachability and `appVersion` matching what the server reports are still asserted on the live values. Expect the "Server configuration" block (reachability, version match) to fail during normal local development, since `serverLink` resolves to the local IP whenever `__DEV__` isn't `false` — which, under plain `npm test`, is always.
 
 ## Architecture
 

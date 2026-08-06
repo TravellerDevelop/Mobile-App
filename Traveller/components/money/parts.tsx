@@ -7,6 +7,8 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,6 +21,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ds } from "../../global/designSystem";
 import { InitialsAvatar, ProgressTrack, StatusBadge } from "../ui";
 import SkeletonScreen from "../SkeletonScreen";
+import { resolveImageUri } from "../../shared/imageUrl";
 import { money, personName, relativeDate, signedMoney } from "./format";
 import {
   MoneyBalance,
@@ -657,6 +660,7 @@ interface MovementDetailProps {
 export function MovementDetail({ movement, onClose }: MovementDetailProps) {
   const tone = DIRECTION_STYLE[movement.direction];
   const totalCost = movement.amount * Math.max(1, movement.peopleCount);
+  const [receiptVisible, setReceiptVisible] = React.useState(false);
 
   return (
     <View style={styles.detail}>
@@ -691,6 +695,45 @@ export function MovementDetail({ movement, onClose }: MovementDetailProps) {
           tone={movement.pending > 0 ? ds.colors.warningText : ds.colors.successText}
         />
       </View>
+
+      {movement.receipt ? (
+        <>
+          <TouchableOpacity activeOpacity={0.85} onPress={() => setReceiptVisible(true)}>
+            <View style={styles.receiptRow}>
+              <Image
+                source={{ uri: resolveImageUri(movement.receipt, "userImage/posts/") }}
+                style={styles.receiptThumb}
+              />
+              <Text style={styles.receiptRowText}>Vedi scontrino</Text>
+            </View>
+          </TouchableOpacity>
+
+          <Modal
+            visible={receiptVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setReceiptVisible(false)}
+          >
+            <TouchableOpacity
+              style={styles.receiptModalBackdrop}
+              activeOpacity={1}
+              onPress={() => setReceiptVisible(false)}
+            >
+              <TouchableOpacity
+                style={styles.receiptModalClose}
+                onPress={() => setReceiptVisible(false)}
+              >
+                <MaterialCommunityIcons name="close" size={20} color={ds.colors.white} />
+              </TouchableOpacity>
+              <Image
+                source={{ uri: resolveImageUri(movement.receipt, "userImage/posts/") }}
+                style={styles.receiptModalImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </Modal>
+        </>
+      ) : null}
 
       {movement.direction !== "personal" ? (
         <>
@@ -1272,6 +1315,47 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     color: ds.colors.textSecondary,
     marginTop: ds.space[4],
+  },
+
+  /* ---- Scontrino ---- */
+  receiptRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: ds.space[3] + 2,
+    marginBottom: ds.space[5],
+  },
+  receiptThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: ds.radius.m,
+    backgroundColor: ds.colors.scale.neutral[4],
+  },
+  receiptRowText: {
+    fontFamily: ds.fontFamily.semibold,
+    fontSize: 12,
+    color: ds.colors.action,
+  },
+  receiptModalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  receiptModalClose: {
+    position: "absolute",
+    top: 56,
+    right: ds.layout.headerPaddingH,
+    width: 36,
+    height: 36,
+    borderRadius: ds.radius.full,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  receiptModalImage: {
+    width: "92%",
+    height: "80%",
   },
 
   /* ---- Errore ---- */
